@@ -8,7 +8,7 @@ export type CanvasEvent = ({
   type: "mousemove";
   movement: Coords;
 } | {
-  type: "click" | "mousedown" | "mouseup";
+  type: "click" | "mousedown" | "mouseup" | "doubleclick";
 }) & {
   shiftKey: boolean;
   pos: Coords;
@@ -29,7 +29,7 @@ export abstract class Tool {
 export class SelectTool extends Tool {
   name = "select";
   selected: Set<number>;
-  setSelected: Dispatch<SetStateAction<Set<number>>>;
+  private setSelected: Dispatch<SetStateAction<Set<number>>>;
   lastCursorPos?: Coords;
   onEvent(ev: CanvasEvent): void {
     switch (ev.type) {
@@ -79,13 +79,6 @@ export class SelectTool extends Tool {
           this.setProject(translated);
         }
         this.lastCursorPos = undefined;
-        // console.log(
-        //   [
-        //     ...this.project.devices.values().map((it) =>
-        //       `${it.id} ${it.pos.x} ${it.pos.y}`
-        //     ),
-        //   ].join("\n"),
-        // );
         break;
     }
   }

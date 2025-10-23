@@ -16,6 +16,12 @@ export class Device {
   }
 }
 
+export class Router extends Device {
+  constructor(id: number, pos: Coords) {
+    super(id, pos, "#router-icon");
+  }
+}
+
 export function DeviceComponent(
   device: Device,
   tool: RefObject<Tool>,

@@ -1,9 +1,8 @@
 "use client";
 import { useState, useRef, MouseEvent, RefObject } from "react";
-import { Device, DeviceComponent } from "./Device";
+import { DeviceComponent } from "./Device";
 import { Project } from "./Project";
 import { SelectTool, CanvasEvent } from "./Tool";
-import { Coords } from "./common";
 import { Tool } from "./Tool";
 
 export function Editor(p: Project) {
@@ -34,6 +33,7 @@ export function Editor(p: Project) {
   return (
     <svg
       onClick={toEventHandler(tool, "click")}
+      onDoubleClick={toEventHandler(tool, "doubleclick")}
       onMouseUp={toEventHandler(tool, "mouseup")}
       onMouseDown={toEventHandler(tool, "mousedown")}
       onMouseMove={toEventHandler(tool, "mousemove")}
