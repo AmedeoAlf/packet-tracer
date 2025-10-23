@@ -2,6 +2,7 @@
 import { Device } from "./Device";
 import { Coords } from "./common";
 import { Project } from "./Project";
+import { Dispatch, SetStateAction, useState } from "react";
 
 export type CanvasEvent = ({
   type: "mousemove";
@@ -27,33 +28,45 @@ export abstract class Tool {
 
 export class SelectTool extends Tool {
   name = "select";
-  selected = new Set<number>();
-  // dragging from è da ripensare
+  selected: Set<number>;
+  setSelected: Dispatch<SetStateAction<Set<number>>>;
   lastCursorPos?: Coords;
   onEvent(ev: CanvasEvent): void {
     switch (ev.type) {
       case "click":
         if (ev.device) {
           if (!ev.shiftKey) {
-            this.selected.clear();
+            this.setSelected(new Set());
           } else {
             console.log("append", ...this.selected)
           }
-          this.selected.add(ev.device.id);
+          this.setSelected(new Set(this.selected.add(ev.device.id)));
         } else {
-          this.selected.clear();
+          this.setSelected(new Set());
         }
         break;
       case "mousedown":
         if (!ev.device) {
+          this.selected.clear();
           return;
         }
-        if (!this.selected.has(ev.device.id)) {
-          // this.selected.clear();
-          this.selected.add(ev.device.id);
+        if (!ev.shiftKey && !this.selected.has(ev.device.id)) {
+          this.selected.clear();
         }
+        this.setSelected(new Set(this.selected.add(ev.device.id)));
         this.lastCursorPos = this.selected.size != 0 ? ev.pos : undefined;
         console.log("Mousedown", ev.pos.x, ev.pos.y, ...this.selected);
+        break;
+      case "mousemove":
+        if (this.lastCursorPos) {
+          const translated = new Project(this.project);
+          for (const dev of this.selected) {
+            translated.devices.get(dev)!!.pos.x += ev.pos.x - this.lastCursorPos.x;
+            translated.devices.get(dev)!!.pos.y += ev.pos.y - this.lastCursorPos.y;
+          }
+          this.setProject(translated);
+          this.lastCursorPos = ev.pos;
+        }
         break;
       case "mouseup":
         // console.log("Mouseup", ev.pos, this.dragging_from, ev.device);
@@ -74,18 +87,13 @@ export class SelectTool extends Tool {
         //   ].join("\n"),
         // );
         break;
-      case "mousemove":
-        if (this.lastCursorPos) {
-          const translated = new Project(this.project);
-          for (const dev of this.selected) {
-            translated.devices.get(dev)!!.pos.x += ev.pos.x - this.lastCursorPos.x;
-            translated.devices.get(dev)!!.pos.y += ev.pos.y - this.lastCursorPos.y;
-          }
-          this.setProject(translated);
-          this.lastCursorPos = ev.pos;
-        }
-        break;
     }
+  }
+  constructor(project: Project, setProject: (p: Project) => void) {
+    super(project, setProject);
+    const t = useState(new Set<number>());
+    this.selected = t[0];
+    this.setSelected = t[1];
   }
 }
 

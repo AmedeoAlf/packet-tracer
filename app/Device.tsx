@@ -5,7 +5,6 @@ import { SelectTool, Tool } from "./Tool";
 
 export type Icon = "#router-icon";
 
-
 export class Device {
   id: number;
   pos: Coords;
@@ -20,11 +19,13 @@ export class Device {
 export function DeviceComponent(
   device: Device,
   tool: RefObject<Tool>,
-  props?: {}
+  props?: {},
 ) {
   const extra = { "data-id": device.id };
-  console.log((tool.current instanceof SelectTool), (tool.current as SelectTool).selected.has(device.id));
-  const highlighted = (tool.current instanceof SelectTool) && tool.current.selected.has(device.id) ? " brightness-50" : "";
+  const highlighted =
+    (tool.current instanceof SelectTool) && tool.current.selected.has(device.id)
+      ? " brightness-50"
+      : "";
   return (
     <use
       href={device.iconId}
@@ -32,7 +33,7 @@ export function DeviceComponent(
       className={"device" + highlighted}
       {...device.pos}
       {...extra}
-      {...props} />
+      {...props}
+    />
   );
 }
-
