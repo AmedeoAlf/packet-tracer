@@ -38,6 +38,7 @@ export function Editor(p: Project) {
       onMouseDown={toEventHandler(tool, "mousedown")}
       onMouseMove={toEventHandler(tool, "mousemove")}
       style={{ width: 500, height: 500 }}
+      className="bg-gray-800"
     >
       <defs>
         <g id="router-icon" transform="scale(0.04)">

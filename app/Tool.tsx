@@ -1,8 +1,8 @@
 "use client";
 import { Device } from "./Device";
-import { Coords } from "./common";
+import { Coords, StateSetter } from "./common";
 import { Project } from "./Project";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 
 export type CanvasEvent = ({
   type: "mousemove";
@@ -29,7 +29,7 @@ export abstract class Tool {
 export class SelectTool extends Tool {
   name = "select";
   selected: Set<number>;
-  private setSelected: Dispatch<SetStateAction<Set<number>>>;
+  private setSelected: StateSetter<Set<number>>;
   lastCursorPos?: Coords;
   onEvent(ev: CanvasEvent): void {
     switch (ev.type) {
