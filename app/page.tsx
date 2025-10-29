@@ -1,14 +1,18 @@
 "use client";
 import { Editor } from "./Editor";
-import { Device } from "./Device";
+import { Router } from "./Device";
 import { Project } from "./Project";
 
 export default function Home() {
   const proj = new Project();
-  proj.devices.set(0, new Device(0, { x: 100, y: 100 }, "#router-icon"));
-  proj.devices.set(1, new Device(1, { x: 0, y: 0 }, "#router-icon"));
-  proj.devices.set(2, new Device(2, { x: 150, y: 50 }, "#router-icon"));
-  proj.devices.set(3, new Device(3, { x: 50, y: 50 }, "#router-icon"));
-  proj.devices.set(4, new Device(4, { x: 200, y: 50 }, "#router-icon"));
+  proj.devices = new Map(
+    [
+      new Router(0, { x: 100, y: 100 }, "a"),
+      new Router(1, { x: 0, y: 0 }, "b"),
+      new Router(2, { x: 150, y: 50 }, "c"),
+      new Router(3, { x: 50, y: 50 }, "d"),
+      new Router(4, { x: 200, y: 50 }, "e"),
+    ].map(it => [it.id, it])
+  )
   return Editor(proj);
 }

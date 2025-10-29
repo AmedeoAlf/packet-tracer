@@ -1,28 +1,51 @@
 "use client";
 import { RefObject } from "react";
 import { Coords } from "./common";
-import { SelectTool, Tool } from "./Tool";
+import { SelectTool } from "./tools/SelectTool";
+import { Tool } from "./tools/Tool";
+import { DeviceEmulator, routerEmulator } from "./DeviceEmulator";
+import { ICONS } from "./Icons";
 
-export type Icon = "#router-icon";
+export type InternalState<Ext> = {
+  netInterfaces: Array<string>;
+} & Ext;
 
-export class Device {
-  id: number;
+interface DeviceTypeData {
+  iconId: keyof typeof ICONS;
+  emulator: DeviceEmulator<any>;
+}
+
+export const deviceTypesDB: Record<string, DeviceTypeData> = {
+  router: {
+    iconId: "#router-icon",
+    emulator: routerEmulator,
+  },
+};
+
+export abstract class Device {
+  readonly id: number;
+  abstract readonly deviceType: string;
+  name: string;
   pos: Coords;
-  iconId: Icon;
-  constructor(id: number, pos: Coords, icon: Icon) {
+  abstract internalState: InternalState<any>;
+  constructor(id: number, pos: Coords, name: string) {
     this.id = id;
     this.pos = pos;
-    this.iconId = icon;
+    this.name = name;
   }
 }
 
 export class Router extends Device {
-  constructor(id: number, pos: Coords) {
-    super(id, pos, "#router-icon");
+  internalState: InternalState<{}> = {
+    netInterfaces: ["interface_a", "interface_b"],
+  };
+  readonly deviceType = "router";
+  constructor(id: number, pos: Coords, name: string) {
+    super(id, pos, name);
   }
 }
 
-export function DeviceComponent(
+export function DeviceToSVG(
   device: Device,
   tool: RefObject<Tool>,
   props?: {},
@@ -34,7 +57,7 @@ export function DeviceComponent(
       : "";
   return (
     <use
-      href={device.iconId}
+      href={deviceTypesDB[device.deviceType].iconId}
       key={device.id}
       className={"device" + highlighted}
       {...device.pos}
