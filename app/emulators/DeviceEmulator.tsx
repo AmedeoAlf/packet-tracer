@@ -1,9 +1,8 @@
-"use client";
-import { JSX, ReactNode } from "react";
-import { StateSetter } from "./common";
-import { InternalState } from "./Device";
+import { ReactNode } from "react";
 
-type CommandRunner<State> = (state: State, args: string[]) => { output: string, newState?: State };
+export type InternalState<Ext> = {
+  netInterfaces: Array<string>;
+} & Ext;
 
 type AutoCompleteOption = { option: string, desc: string }
 type Command<State> = ({
@@ -24,7 +23,7 @@ export type Interpreter<State> = {
 export type EmulatorContext<State> = {
   interpreter: Interpreter<State>,
   state: State,
-  setState: StateSetter<State>,
+  setState: (s: State) => void,
   args?: string[],
   write: (msg: string) => void
 }
@@ -33,7 +32,7 @@ export function runOnInterpreter<State>(ctx: EmulatorContext<State>) {
   if (!ctx.args) return;
   let cmd = ctx.interpreter.shell;
   for (const arg of ctx.args.keys()) {
-    const err = () => ctx.write(`ERROR: Invalid argument in position ${arg} "${ctx.args!![arg]}" in command\n`)
+    const err = () => ctx.write(`ERROR: Invalid argument in position ${arg} "${ctx.args!![arg]}" in command`)
     switch (true) {
       case ("subcommands" in cmd && !!cmd.subcommands):
         if (ctx.args[arg] in cmd.subcommands) {
@@ -73,7 +72,7 @@ export function getAutoComplete<State>(ctx: EmulatorContext<State>) {
       if (arg == ctx.args!!.length - 1) {
         return writeOrComplete(opts.filter(({ option }) => option.startsWith(ctx.args!![arg])))
       } else {
-        ctx.write(`ERROR: Invalid argument in position ${arg} "${ctx.args!![arg]}" in command\n`)
+        ctx.write(`ERROR: Invalid argument in position ${arg} "${ctx.args!![arg]}" in command`)
       }
     }
     switch (true) {
@@ -96,7 +95,7 @@ export function getAutoComplete<State>(ctx: EmulatorContext<State>) {
         );
         continue;
       default:
-        ctx.write(`ERROR: Command finished with ${arg} "${ctx.args!![arg]}" in command\n`)
+        ctx.write(`ERROR: Command finished with ${arg} "${ctx.args!![arg]}" in command`)
     }
   }
   return;

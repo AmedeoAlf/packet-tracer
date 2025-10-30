@@ -1,10 +1,10 @@
 "use client";
 import { useState, useRef, MouseEvent, RefObject } from "react";
-import { DeviceToSVG } from "./Device";
+import { DeviceToSVG } from "./devices/Device";
 import { Project } from "./Project";
 import { CanvasEvent, Tool } from "./tools/Tool";
 import { SelectTool } from "./tools/SelectTool";
-import { ICONS } from "./Icons";
+import { ICONS } from "./devices/Icons";
 
 export function Editor(p: Project) {
   const [project, setProject] = useState(p);

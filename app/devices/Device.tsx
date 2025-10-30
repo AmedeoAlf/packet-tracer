@@ -1,14 +1,10 @@
 "use client";
 import { RefObject } from "react";
-import { Coords } from "./common";
-import { SelectTool } from "./tools/SelectTool";
-import { Tool } from "./tools/Tool";
-import { DeviceEmulator, routerEmulator } from "./DeviceEmulator";
+import { Coords } from "../common";
+import { SelectTool } from "../tools/SelectTool";
+import { Tool } from "../tools/Tool";
+import { DeviceEmulator, InternalState, routerEmulator } from "../emulators/DeviceEmulator";
 import { ICONS } from "./Icons";
-
-export type InternalState<Ext> = {
-  netInterfaces: Array<string>;
-} & Ext;
 
 interface DeviceTypeData {
   iconId: keyof typeof ICONS;
@@ -32,16 +28,6 @@ export abstract class Device {
     this.id = id;
     this.pos = pos;
     this.name = name;
-  }
-}
-
-export class Router extends Device {
-  internalState: InternalState<{}> = {
-    netInterfaces: ["interface_a", "interface_b"],
-  };
-  readonly deviceType = "router";
-  constructor(id: number, pos: Coords, name: string) {
-    super(id, pos, name);
   }
 }
 

@@ -1,5 +1,5 @@
 "use client";
-import { Device } from "../Device";
+import { Device } from "../devices/Device";
 import { Coords } from "../common";
 import { Project } from "../Project";
 import { JSX } from "react";

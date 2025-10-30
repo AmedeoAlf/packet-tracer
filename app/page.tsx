@@ -1,6 +1,6 @@
 "use client";
+import { Router } from "./devices/Router";
 import { Editor } from "./Editor";
-import { Router } from "./Device";
 import { Project } from "./Project";
 
 export default function Home() {

@@ -1,5 +1,5 @@
 "use client";
-import { Device } from "./Device";
+import { Device } from "./devices/Device";
 
 
 export class Project {

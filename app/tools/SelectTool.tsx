@@ -1,21 +1,20 @@
 "use client";
-import { ChangeEvent, ChangeEventHandler, useEffect, useRef, useState } from "react";
-import { StateSetter, Coords } from "../common";
+import { useState } from "react";
 import { Project } from "../Project";
 import { Tool, CanvasEvent } from "./Tool";
-import { Device, deviceTypesDB, InternalState } from "../Device";
-import { DeviceEmulator, DevicePanel, EmulatorContext, getAutoComplete, Interpreter, runOnInterpreter } from "../DeviceEmulator";
-import { text } from "stream/consumers";
+import { deviceTypesDB } from "../devices/Device";
+import { DevicePanel, EmulatorContext, getAutoComplete, runOnInterpreter } from "../emulators/DeviceEmulator";
+import { Coords } from "../common";
 
 
 export class SelectTool extends Tool {
   name = "select";
   selected: Set<number>;
-  private setSelected: StateSetter<Set<number>>;
+  private setSelected: (s: Set<number>) => void;
   lastCursorPos?: Coords;
   panel = () => {
     const [stdout, setStdout] = useState("= Terminal emulator =");
-    const stdin = useState("");
+    const [stdin, setStdin] = useState("");
     switch (this.selected.size) {
       case 0:
         return (
@@ -32,7 +31,7 @@ export class SelectTool extends Tool {
           write: (msg) => setStdout((stdout) => stdout + (msg.startsWith("\n") ? msg : "\n" + msg)),
         }
         const panels: [string, DevicePanel<any>][] = [
-          ["terminal", TerminalEmulator<any>(stdin, stdout)],
+          ["terminal", TerminalEmulator<any>(stdin, setStdin, stdout)],
           ...Object.entries(emulator.configPanel)
         ];
         return (
@@ -114,34 +113,45 @@ export class SelectTool extends Tool {
 
 // TODO: separate correctly args
 function TerminalEmulator<InternalState>(
-  inputBarUseState: [string, (s: string) => void],
+  inputBar: string,
+  setInputBar: (s: string) => void,
   content: string,
 ): DevicePanel<InternalState> {
   return (ctx: EmulatorContext<InternalState>) => {
-    const setInputBar = (s: string) => {
+    const setInput = (s: string) => {
       if (!s.endsWith("?")) {
-        inputBarUseState[1](s);
+        setInputBar(s);
         return;
       }
-      const lastArg = getAutoComplete({ ...ctx, args: inputBarUseState[0].split(" ") });
+      const lastArg = getAutoComplete({ ...ctx, args: inputBar.split(" ") });
       if (lastArg) {
         const args = s.split(" ");
         args[args.length - 1] = lastArg;
-        inputBarUseState[1](args.join(" "));
+        setInput(args.join(" "));
       }
     }
     return (
       <div>
-        <textarea ref={area => { if (area) area.scrollTop = area.scrollHeight }} value={content} className="font-mono" readOnly />
+        <textarea
+          ref={area => { if (area) area.scrollTop = area.scrollHeight }}
+          value={content}
+          className="font-mono"
+          rows={8} cols={50}
+          readOnly />
         <form>
-          <input type="text" className="font-mono" value={inputBarUseState[0]} onChange={ev => setInputBar(ev.target.value)} />
+          <input
+            type="text"
+            className="font-mono"
+            value={inputBar}
+            onChange={ev => setInput(ev.target.value)} />
           <input type="submit" onClick={(ev) => {
             ev.preventDefault();
-            ctx.write("> " + inputBarUseState[0]);
+            ctx.write("> " + inputBar);
             runOnInterpreter({
-              args: inputBarUseState[0].split(" "),
+              args: inputBar.split(" "),
               ...ctx
             });
+            setInput("");
           }} />
         </form>
       </div>
