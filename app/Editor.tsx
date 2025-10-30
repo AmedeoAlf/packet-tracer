@@ -32,7 +32,7 @@ export function Editor(p: Project) {
     };
   };
   return (
-    <div>
+    <div className="flex flex-row">
       <svg
         onClick={toEventHandler(tool, "click")}
         onDoubleClick={toEventHandler(tool, "doubleclick")}

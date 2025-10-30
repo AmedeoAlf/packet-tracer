@@ -20,7 +20,7 @@ export const deviceTypesDB: Record<string, DeviceTypeData> = {
 
 export abstract class Device {
   readonly id: number;
-  abstract readonly deviceType: string;
+  abstract readonly deviceType: keyof typeof deviceTypesDB;
   name: string;
   pos: Coords;
   abstract internalState: InternalState<any>;
