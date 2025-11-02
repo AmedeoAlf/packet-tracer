@@ -1,7 +1,7 @@
 import { JSX } from "react";
 
 export const ICONS = {
-  "#router-icon": (<g id="router-icon" transform="scale(0.04)" key="router-icon">
+  "#router-icon": (<g id="router-icon" transform="scale(0.04) translate(-600 -400)" key="router-icon">
     <path
       d="M186.97049 390.020858c249.283591-143.926213 654.058848-143.926213 903.342438 0 249.283591 143.921015 249.283591 377.621133 0 521.542148-249.283591 143.926213-654.058848 143.926213-903.342438 0-249.288789-143.921015-249.288789-377.621133 0-521.542148z"
       fill="#4467AE" />

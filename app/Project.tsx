@@ -1,16 +1,25 @@
 "use client";
+import { Coords } from "./common";
 import { Device } from "./devices/Device";
+import { deviceTypesDB } from "./devices/deviceTypesDB";
 
 
 export class Project {
-  devices = new Map<number, Device>();
+  devices: Record<number, Device> = {};
+  lastId: number;
   deviceFromTag(tag: SVGUseElement) {
     if (tag.dataset.id) {
-      return this.devices.get(+tag.dataset.id);
+      return this.devices[+tag.dataset.id];
     }
   }
+  createDevice(type: keyof typeof deviceTypesDB, pos: Coords, name?: string) {
+    const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+    ++this.lastId;
+    this.devices[this.lastId] = new deviceTypesDB[type].constr(this.lastId, pos, name || `${capitalize(type)} ${this.lastId}`);
+  }
   constructor(p?: Project) {
-    this.devices = new Map(p?.devices);
+    this.devices = { ...p?.devices };
+    this.lastId = p?.lastId || 0;
   }
 }
 

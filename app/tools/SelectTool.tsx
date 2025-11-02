@@ -1,49 +1,60 @@
 "use client";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { Project } from "../Project";
-import { Tool, CanvasEvent } from "./Tool";
-import { deviceTypesDB } from "../devices/Device";
-import { DevicePanel, EmulatorContext, getAutoComplete, runOnInterpreter } from "../emulators/DeviceEmulator";
+import { Tool, CanvasEvent, ToolCtx } from "./Tool";
+import { deviceTypesDB } from "../devices/deviceTypesDB";
+import { DevicePanel, EmulatorContext, getAutoComplete, InternalState, runOnInterpreter } from "../emulators/DeviceEmulator";
 import { Coords } from "../common";
 
-
-export class SelectTool extends Tool {
-  name = "select";
+export type SelectToolCtx = ToolCtx & {
   selected: Set<number>;
-  private setSelected: (s: Set<number>) => void;
   lastCursorPos?: Coords;
-  panel = () => {
-    const [stdout, setStdout] = useState("= Terminal emulator =");
-    const [stdin, setStdin] = useState("");
-    switch (this.selected.size) {
+  stdout: string;
+  stdin: string;
+}
+
+export const SelectTool: Tool = {
+  toolname: "select",
+  panel: (context: ToolCtx) => {
+    const toolctx = context as SelectToolCtx;
+    switch (toolctx.selected.size) {
       case 0:
         return (
           <p>Seleziona un dispositivo per vedere le proprietà</p>
         );
       case 1:
-        const device = this.project.devices
-          .get(this.selected.values().next().value!!)!!;
+        const device = toolctx.project.devices[toolctx.selected.values().next().value!!];
         const emulator = deviceTypesDB[device.deviceType].emulator;
         const ctx: EmulatorContext<any> = {
           interpreter: emulator.cmdInterpreter,
-          setState: () => { },
+          updateState() {
+            device.internalState = { ...device.internalState };
+            toolctx.updateProject();
+          },
           state: device.internalState,
-          write: (msg) => setStdout((stdout) => stdout + (msg.startsWith("\n") ? msg : "\n" + msg)),
-        }
+          write(msg) {
+            toolctx.stdout += "\n" + msg;
+            toolctx.update();
+          },
+        };
         const panels: [string, DevicePanel<any>][] = [
-          ["terminal", TerminalEmulator<any>(stdin, setStdin, stdout)],
+          ["terminal",
+            TerminalEmulator(
+              toolctx.stdin,
+              (stdin) => { toolctx.stdin = stdin; toolctx.update(); },
+              toolctx.stdout
+            )],
           ...Object.entries(emulator.configPanel)
         ];
         return (
           <div>
             <h1 className="text-xl font-bold">{device.name}</h1>
-            {
-              panels.map(([k, v]) => (
-                <div key={k}>
-                  <h2 className="text-lg font-bold">{k}</h2> <hr />
-                  {v(ctx)} <hr />
-                </div>
-              ))}
+            {panels.map(([k, v]) => (
+              <div key={k}>
+                <h2 className="text-lg font-bold">{k}</h2> <hr />
+                {v(ctx)} <hr />
+              </div>
+            ))}
           </div>
         );
       default:
@@ -51,73 +62,74 @@ export class SelectTool extends Tool {
           <p>Non ancora implementato</p>
         );
     }
-  };
-  onEvent(ev: CanvasEvent): void {
+  },
+  onEvent(ctx, ev): void {
+    const toolctx = ctx as SelectToolCtx;
     switch (ev.type) {
       case "click":
         if (ev.device) {
-          if (!ev.shiftKey) {
-            this.setSelected(new Set());
-          } else {
-            console.log("append", ...this.selected);
-          }
-          this.setSelected(new Set(this.selected.add(ev.device.id)));
+          if (!ev.shiftKey) toolctx.selected.clear();
+          toolctx.selected.add(ev.device.id);
         } else {
-          this.setSelected(new Set());
+          toolctx.selected.clear();
         }
+        toolctx.update();
         break;
       case "mousedown":
         if (!ev.device) {
-          this.selected.clear();
+          toolctx.selected.clear();
+          toolctx.update();
           return;
         }
-        if (!ev.shiftKey && !this.selected.has(ev.device.id)) {
-          this.selected.clear();
+        if (!ev.shiftKey && !toolctx.selected.has(ev.device.id)) {
+          toolctx.selected.clear();
         }
-        this.setSelected(new Set(this.selected.add(ev.device.id)));
-        this.lastCursorPos = this.selected.size != 0 ? ev.pos : undefined;
-        console.log("Mousedown", ev.pos.x, ev.pos.y, ...this.selected);
+        toolctx.selected.add(ev.device.id);
+        toolctx.lastCursorPos = toolctx.selected.size != 0 ? ev.pos : undefined;
+        toolctx.update();
         break;
       case "mousemove":
-        if (this.lastCursorPos) {
-          const translated = new Project(this.project);
-          for (const dev of this.selected) {
-            translated.devices.get(dev)!!.pos.x += ev.pos.x - this.lastCursorPos.x;
-            translated.devices.get(dev)!!.pos.y += ev.pos.y - this.lastCursorPos.y;
+        if (toolctx.lastCursorPos) {
+          for (const dev of toolctx.selected) {
+            toolctx.project.devices[dev].pos.x += ev.pos.x - toolctx.lastCursorPos.x;
+            toolctx.project.devices[dev].pos.y += ev.pos.y - toolctx.lastCursorPos.y;
           }
-          this.setProject(translated);
-          this.lastCursorPos = ev.pos;
+          toolctx.updateProject();
+          toolctx.lastCursorPos = ev.pos;
+          toolctx.update();
         }
         break;
       case "mouseup":
-        // console.log("Mouseup", ev.pos, this.dragging_from, ev.device);
-        if (this.lastCursorPos) {
-          const translated = new Project(this.project);
-          for (const dev of this.selected) {
-            translated.devices.get(dev)!!.pos.x += ev.pos.x - this.lastCursorPos.x;
-            translated.devices.get(dev)!!.pos.y += ev.pos.y - this.lastCursorPos.y;
+        if (toolctx.lastCursorPos) {
+          for (const dev of toolctx.selected) {
+            toolctx.project.devices[dev].pos.x += ev.pos.x - toolctx.lastCursorPos.x;
+            toolctx.project.devices[dev].pos.y += ev.pos.y - toolctx.lastCursorPos.y;
           }
-          this.setProject(translated);
         }
-        this.lastCursorPos = undefined;
+        toolctx.updateProject();
+        toolctx.lastCursorPos = undefined;
+        toolctx.update();
         break;
     }
-  }
-  constructor(project: Project, setProject: (p: Project) => void) {
-    super(project, setProject);
-    const t = useState(new Set<number>());
-    this.selected = t[0];
-    this.setSelected = t[1];
-  }
+  },
+  make: (context) => {
+    const ctx = context as SelectToolCtx;
+    SelectTool.ctx = ctx;
+    ctx.selected ||= new Set<number>();
+    ctx.stdin ||= "";
+    ctx.stdout ||= "= Terminal emulator =";
+    return SelectTool;
+  },
+  svgElements: () => (<></>)
 }
 
 // TODO: separate correctly args
-function TerminalEmulator<InternalState>(
+function TerminalEmulator<State extends InternalState<any>>(
   inputBar: string,
   setInputBar: (s: string) => void,
   content: string,
-): DevicePanel<InternalState> {
-  return (ctx: EmulatorContext<InternalState>) => {
+): DevicePanel<State> {
+  return (ctx: EmulatorContext<State>) => {
     const setInput = (s: string) => {
       if (!s.endsWith("?")) {
         setInputBar(s);
@@ -127,34 +139,45 @@ function TerminalEmulator<InternalState>(
       if (lastArg) {
         const args = s.split(" ");
         args[args.length - 1] = lastArg;
-        setInput(args.join(" "));
+        setInputBar(args.join(" ") + " ");
       }
     }
     return (
-      <div>
+      <div className="font-mono">
         <textarea
-          ref={area => { if (area) area.scrollTop = area.scrollHeight }}
+          ref={area => { if (area) area.scrollTop = area.scrollHeight }
+          }
           value={content}
-          className="font-mono"
           rows={8} cols={50}
           readOnly />
-        <form>
+        <form onSubmit={(ev) => {
+          ev.preventDefault();
+          ctx.write("> " + inputBar);
+          runOnInterpreter({
+            args: inputBar.split(" "),
+            ...ctx
+          });
+          setInput("");
+        }
+        }>
           <input
             type="text"
-            className="font-mono"
             value={inputBar}
+            placeholder=">"
+            className="w-full bg-gray-700"
+            onKeyDown={ev => {
+              if (ev.key != "Tab") return;
+              ev.preventDefault();
+              const lastArg = getAutoComplete({ ...ctx, args: inputBar.split(" ") });
+              if (lastArg) {
+                const args = inputBar.split(" ");
+                args[args.length - 1] = lastArg;
+                setInput(args.join(" "));
+              }
+            }}
             onChange={ev => setInput(ev.target.value)} />
-          <input type="submit" onClick={(ev) => {
-            ev.preventDefault();
-            ctx.write("> " + inputBar);
-            runOnInterpreter({
-              args: inputBar.split(" "),
-              ...ctx
-            });
-            setInput("");
-          }} />
         </form>
-      </div>
+      </div >
     )
   }
 }

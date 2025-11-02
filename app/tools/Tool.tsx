@@ -2,7 +2,7 @@
 import { Device } from "../devices/Device";
 import { Coords } from "../common";
 import { Project } from "../Project";
-import { JSX } from "react";
+import { JSX, ReactNode } from "react";
 
 export type CanvasEvent = ({
   type: "mousemove";
@@ -15,16 +15,16 @@ export type CanvasEvent = ({
   device?: Device;
 }
 
-export abstract class Tool {
-  abstract name: string;
-  abstract onEvent(ev: CanvasEvent): void;
-  abstract panel: () => JSX.Element;
-  project: Project;
-  setProject: (p: Project) => void;
-  constructor(project: Project, setProject: (p: Project) => void) {
-    this.project = project;
-    this.setProject = setProject;
-  }
+export type ToolCtx = {
+  project: Project,
+  updateProject: () => void,
+  update: () => void
 }
-
-
+export type Tool = {
+  readonly toolname: string;
+  readonly onEvent: (ctx: ToolCtx, ev: CanvasEvent) => void;
+  readonly panel: (ctx: ToolCtx) => JSX.Element;
+  readonly svgElements: (ctx: ToolCtx) => ReactNode;
+  ctx?: ToolCtx;
+  make: (ctx: ToolCtx) => Tool
+}

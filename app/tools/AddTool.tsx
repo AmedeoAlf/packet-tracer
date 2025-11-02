@@ -1,32 +1,59 @@
 "use client";
 import { useState } from "react";
 import { Project } from "../Project";
-import { Tool, CanvasEvent } from "./Tool";
-import { deviceTypesDB } from "../devices/Device";
-import { todo } from "node:test";
+import { Tool, CanvasEvent, ToolCtx } from "./Tool";
+import { deviceTypesDB } from "../devices/deviceTypesDB";
+import { Coords } from "../common";
 
-
-export class AddTool extends Tool {
-  name = "add";
+type AddToolCtx = ToolCtx & {
   deviceType: keyof typeof deviceTypesDB;
-  private setDeviceType: (t: typeof this.deviceType) => void;
-  panel = () => {
-    return (
-      <p>WIP</p>
-    )
-  };
-  onEvent(ev: CanvasEvent): void {
-    switch (ev.type) {
-      case "click":
-        todo("Unimplemented");
-        break;
-    }
-  }
-  constructor(project: Project, setProject: (p: Project) => void) {
-    super(project, setProject);
-    const state = useState("");
-    this.deviceType = state[0];
-    this.setDeviceType = state[1];
-  }
+  cursorPos: Coords;
 }
 
+export const AddTool: Tool = {
+  toolname: "add",
+  panel: (context) => {
+    const ctx = context as AddToolCtx;
+    return (
+      <div>
+        Device type:
+        <select
+          defaultValue={ctx.deviceType}
+          onChange={ev => { ctx.deviceType = ev.target.value; ctx.update() }} >
+          {Object.keys(deviceTypesDB).map(it => (<option key={it} value={it}>{it}</option>))}
+        </select>
+      </div>
+    )
+  },
+  onEvent(context, ev): void {
+    const ctx = context as AddToolCtx;
+    switch (ev.type) {
+      case "click":
+        ctx.project.createDevice(ctx.deviceType, ev.pos);
+        ctx.updateProject();
+        break;
+      case "mousemove":
+        ctx.cursorPos = ev.pos;
+        ctx.update();
+        break;
+    }
+  },
+  make: (context) => {
+    const ctx = context as AddToolCtx;
+    AddTool.ctx = context;
+    ctx.deviceType ||= Object.keys(deviceTypesDB)[0];
+    ctx.cursorPos ||= { x: 0, y: 0 };
+    // ctx.indicator ||= deviceTypesDB[ctx.deviceType].iconId
+    return AddTool;
+  },
+  svgElements(context) {
+    const ctx = context as AddToolCtx;
+    return (
+      <use
+        href={deviceTypesDB[ctx.deviceType].iconId}
+        className="opacity-50"
+        {...ctx.cursorPos}
+      />
+    )
+  },
+}

@@ -1,26 +1,22 @@
 "use client";
 import { RefObject } from "react";
 import { Coords } from "../common";
-import { SelectTool } from "../tools/SelectTool";
+import { SelectTool, SelectToolCtx } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
-import { DeviceEmulator, InternalState, routerEmulator } from "../emulators/DeviceEmulator";
+import { DeviceEmulator, InternalState } from "../emulators/DeviceEmulator";
 import { ICONS } from "./Icons";
+import { Router } from "./Router";
+import { deviceTypesDB } from "./deviceTypesDB";
 
-interface DeviceTypeData {
+export interface DeviceTypeData {
   iconId: keyof typeof ICONS;
   emulator: DeviceEmulator<any>;
+  constr: typeof Router;
 }
-
-export const deviceTypesDB: Record<string, DeviceTypeData> = {
-  router: {
-    iconId: "#router-icon",
-    emulator: routerEmulator,
-  },
-};
 
 export abstract class Device {
   readonly id: number;
-  abstract readonly deviceType: keyof typeof deviceTypesDB;
+  abstract readonly deviceType: string;
   name: string;
   pos: Coords;
   abstract internalState: InternalState<any>;
@@ -29,26 +25,4 @@ export abstract class Device {
     this.pos = pos;
     this.name = name;
   }
-}
-
-export function DeviceToSVG(
-  device: Device,
-  tool: RefObject<Tool>,
-  props?: {},
-) {
-  const extra = { "data-id": device.id };
-  const highlighted =
-    (tool.current instanceof SelectTool) && tool.current.selected.has(device.id)
-      ? " brightness-50"
-      : "";
-  return (
-    <use
-      href={deviceTypesDB[device.deviceType].iconId}
-      key={device.id}
-      className={"device" + highlighted}
-      {...device.pos}
-      {...extra}
-      {...props}
-    />
-  );
 }
