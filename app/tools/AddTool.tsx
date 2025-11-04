@@ -1,8 +1,6 @@
 "use client";
-import { useState } from "react";
-import { Project } from "../Project";
-import { Tool, CanvasEvent, ToolCtx } from "./Tool";
-import { deviceTypesDB } from "../devices/deviceTypesDB";
+import { Tool, ToolCtx } from "./Tool";
+import { DeviceType, deviceTypesDB } from "../devices/deviceTypesDB";
 import { Coords } from "../common";
 
 type AddToolCtx = ToolCtx & {
@@ -19,7 +17,7 @@ export const AddTool: Tool = {
         Device type:
         <select
           defaultValue={ctx.deviceType}
-          onChange={ev => { ctx.deviceType = ev.target.value; ctx.update() }} >
+          onChange={ev => { ctx.deviceType = ev.target.value as DeviceType; ctx.update() }} >
           {Object.keys(deviceTypesDB).map(it => (<option key={it} value={it}>{it}</option>))}
         </select>
       </div>
@@ -41,7 +39,7 @@ export const AddTool: Tool = {
   make: (context) => {
     const ctx = context as AddToolCtx;
     AddTool.ctx = context;
-    ctx.deviceType ||= Object.keys(deviceTypesDB)[0];
+    ctx.deviceType ||= Object.keys(deviceTypesDB)[0] as DeviceType;
     ctx.cursorPos ||= { x: 0, y: 0 };
     // ctx.indicator ||= deviceTypesDB[ctx.deviceType].iconId
     return AddTool;

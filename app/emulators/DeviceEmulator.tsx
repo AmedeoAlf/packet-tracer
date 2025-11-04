@@ -5,7 +5,7 @@ export type InternalState<Ext extends object> = {
 } & Ext;
 
 type AutoCompleteOption = { option: string, desc: string }
-type Command<State> = ({
+export type Command<State extends InternalState<object>> = ({
   autocomplete: (state: State, past: string[]) => AutoCompleteOption[],
   validate: (state: State, past: string[]) => boolean,
   then: Command<State>
@@ -16,11 +16,11 @@ type Command<State> = ({
   desc: string
 }
 
-export type Interpreter<State> = {
+export type Interpreter<State extends InternalState<object>> = {
   shell: Command<State>,
 }
 
-export type EmulatorContext<State extends InternalState<any>> = {
+export type EmulatorContext<State extends InternalState<object>> = {
   interpreter: Interpreter<State>,
   state: State,
   updateState: () => void,
@@ -28,7 +28,7 @@ export type EmulatorContext<State extends InternalState<any>> = {
   write: (msg: string) => void
 }
 
-export function runOnInterpreter<State>(ctx: EmulatorContext<State>) {
+export function runOnInterpreter<State extends InternalState<object>>(ctx: EmulatorContext<State>) {
   if (!ctx.args) return;
   let cmd = ctx.interpreter.shell;
   for (const arg of ctx.args.keys()) {
@@ -55,7 +55,7 @@ export function runOnInterpreter<State>(ctx: EmulatorContext<State>) {
 }
 
 // last element in ctx.args must be "" to get all options
-export function getAutoComplete<State>(ctx: EmulatorContext<State>) {
+export function getAutoComplete<State extends InternalState<object>>(ctx: EmulatorContext<State>) {
   if (ctx.args == undefined) return;
   let cmd = ctx.interpreter.shell;
 
@@ -109,8 +109,8 @@ export function getAutoComplete<State>(ctx: EmulatorContext<State>) {
   return;
 }
 
-export type DevicePanel<State extends InternalState<any>> = (ctx: EmulatorContext<State>) => ReactNode
-export interface DeviceEmulator<State extends InternalState<any>> {
+export type DevicePanel<State extends InternalState<object>> = (ctx: EmulatorContext<State>) => ReactNode
+export interface DeviceEmulator<State extends InternalState<object>> {
   configPanel: Record<
     string,
     DevicePanel<State>

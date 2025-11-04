@@ -1,18 +1,19 @@
 "use client";
 import { Coords } from "../common";
 import { DeviceEmulator, InternalState } from "../emulators/DeviceEmulator";
-import { ICONS } from "./Icons";
+import { DeviceType } from "./deviceTypesDB";
+import { ICONS } from "./ICONS";
 
 export interface DeviceFactory {
   iconId: keyof typeof ICONS;
   emulator: DeviceEmulator<any>;
-  deviceType: string
+  deviceType: DeviceType;
   defaultState: () => InternalState<object>
 }
 
 export class Device {
   id: number;
-  readonly deviceType: string;
+  readonly deviceType: DeviceType;
   name: string;
   pos: Coords;
   internalState: InternalState<object>;

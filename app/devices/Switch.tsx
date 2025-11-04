@@ -1,9 +1,9 @@
-import { routerEmulator } from "../emulators/routerEmulator";
+import { switchEmulator } from "../emulators/switchEmulator";
 import { DeviceFactory } from "./Device";
 
 export const Switch: DeviceFactory = {
   iconId: "#switch-icon",
-  emulator: routerEmulator,
+  emulator: switchEmulator,
   deviceType: "switch",
   defaultState() {
     return {

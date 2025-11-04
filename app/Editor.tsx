@@ -1,9 +1,9 @@
 "use client";
-import { useState, useRef, MouseEvent, RefObject } from "react";
+import { useState, useRef, MouseEvent } from "react";
 import { Project } from "./Project";
 import { CanvasEvent, Tool, ToolCtx } from "./tools/Tool";
 import { SelectTool } from "./tools/SelectTool";
-import { ICONS } from "./devices/Icons";
+import { ICONS } from "./devices/ICONS";
 import { toolFromToolName, TOOLS } from "./tools/TOOLS";
 import { DeviceComponent } from "./devices/deviceTypesDB";
 
@@ -61,6 +61,11 @@ export function Editor(p: Project) {
           onMouseMove={toEventHandler(tool, "mousemove")}
           style={{ width: 500, height: 500 }}
           className="bg-gray-800"
+          viewBox={
+            Object.values(project.viewBoxPos)
+              .concat([500 / project.viewBoxZoom, 500 / project.viewBoxZoom])
+              .join(" ")
+          }
           ref={svg => {
             svgCanvas.current = svg;
             pt = svgCanvas.current?.createSVGPoint();

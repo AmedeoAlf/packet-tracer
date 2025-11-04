@@ -5,7 +5,9 @@ import { deviceTypesDB } from "./devices/deviceTypesDB";
 
 
 export class Project {
-  devices: Record<number, Device> = {};
+  devices: Record<number, Device>;
+  viewBoxPos: Coords;
+  viewBoxZoom: number;
   lastId: number;
   deviceFromTag(tag: SVGUseElement) {
     if (tag.dataset.id) {
@@ -25,6 +27,8 @@ export class Project {
   constructor(p?: Project) {
     this.devices = { ...p?.devices };
     this.lastId = p?.lastId || 0;
+    this.viewBoxPos = p?.viewBoxPos || { x: 0, y: 0 };
+    this.viewBoxZoom = p?.viewBoxZoom || 1;
   }
 }
 

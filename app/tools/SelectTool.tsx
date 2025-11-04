@@ -122,7 +122,7 @@ export const SelectTool: Tool = {
 }
 
 // TODO: separate correctly args
-function TerminalEmulator<State extends InternalState<any>>(
+function TerminalEmulator<State extends InternalState<object>>(
   inputBar: string,
   setInputBar: (s: string) => void,
   content: string,

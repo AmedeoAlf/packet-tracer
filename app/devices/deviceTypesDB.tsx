@@ -1,15 +1,17 @@
 "use client";
 import { SelectToolCtx } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
-import { Device, DeviceFactory } from "./Device";
+import { Device } from "./Device";
 import { Router } from "./Router";
 import { Switch } from "./Switch";
 
 
-export const deviceTypesDB: Record<string, DeviceFactory> = {
+export const deviceTypesDB = {
   router: Router,
   switch: Switch
 };
+
+export type DeviceType = keyof typeof deviceTypesDB
 
 export function DeviceComponent(
   device: Device,
