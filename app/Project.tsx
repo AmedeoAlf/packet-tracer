@@ -15,7 +15,12 @@ export class Project {
   createDevice(type: keyof typeof deviceTypesDB, pos: Coords, name?: string) {
     const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
     ++this.lastId;
-    this.devices[this.lastId] = new deviceTypesDB[type].constr(this.lastId, pos, name || `${capitalize(type)} ${this.lastId}`);
+    this.devices[this.lastId] = new Device(
+      deviceTypesDB[type],
+      this.lastId,
+      pos,
+      name || `${capitalize(type)} ${this.lastId}`
+    );
   }
   constructor(p?: Project) {
     this.devices = { ...p?.devices };

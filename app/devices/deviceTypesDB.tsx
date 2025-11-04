@@ -1,20 +1,17 @@
 "use client";
-import { routerEmulator } from "../emulators/routerEmulator";
 import { SelectToolCtx } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
-import { Device, DeviceTypeData } from "./Device";
+import { Device, DeviceFactory } from "./Device";
 import { Router } from "./Router";
+import { Switch } from "./Switch";
 
 
-export const deviceTypesDB: Record<string, DeviceTypeData> = {
-  router: {
-    iconId: "#router-icon",
-    emulator: routerEmulator,
-    constr: Router
-  },
+export const deviceTypesDB: Record<string, DeviceFactory> = {
+  router: Router,
+  switch: Switch
 };
 
-export function DeviceToSVG(
+export function DeviceComponent(
   device: Device,
   tool: Tool,
   props?: {},

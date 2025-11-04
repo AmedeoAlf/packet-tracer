@@ -1,7 +1,5 @@
 "use client";
-import { ReactNode, useState } from "react";
-import { Project } from "../Project";
-import { Tool, CanvasEvent, ToolCtx } from "./Tool";
+import { Tool, ToolCtx } from "./Tool";
 import { deviceTypesDB } from "../devices/deviceTypesDB";
 import { DevicePanel, EmulatorContext, getAutoComplete, InternalState, runOnInterpreter } from "../emulators/DeviceEmulator";
 import { Coords } from "../common";

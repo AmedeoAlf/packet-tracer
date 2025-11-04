@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-export type InternalState<Ext> = {
+export type InternalState<Ext extends object> = {
   netInterfaces: Array<string>;
 } & Ext;
 

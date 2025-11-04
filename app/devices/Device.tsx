@@ -1,28 +1,26 @@
 "use client";
-import { RefObject } from "react";
 import { Coords } from "../common";
-import { SelectTool, SelectToolCtx } from "../tools/SelectTool";
-import { Tool } from "../tools/Tool";
 import { DeviceEmulator, InternalState } from "../emulators/DeviceEmulator";
 import { ICONS } from "./Icons";
-import { Router } from "./Router";
-import { deviceTypesDB } from "./deviceTypesDB";
 
-export interface DeviceTypeData {
+export interface DeviceFactory {
   iconId: keyof typeof ICONS;
   emulator: DeviceEmulator<any>;
-  constr: typeof Router;
+  deviceType: string
+  defaultState: () => InternalState<object>
 }
 
-export abstract class Device {
-  readonly id: number;
-  abstract readonly deviceType: string;
+export class Device {
+  id: number;
+  readonly deviceType: string;
   name: string;
   pos: Coords;
-  abstract internalState: InternalState<any>;
-  constructor(id: number, pos: Coords, name: string) {
+  internalState: InternalState<object>;
+  constructor(factory: DeviceFactory, id: number, pos: Coords, name: string) {
     this.id = id;
     this.pos = pos;
     this.name = name;
+    this.deviceType = factory.deviceType;
+    this.internalState = factory.defaultState();
   }
 }

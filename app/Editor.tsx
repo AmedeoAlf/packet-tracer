@@ -5,7 +5,7 @@ import { CanvasEvent, Tool, ToolCtx } from "./tools/Tool";
 import { SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/Icons";
 import { toolFromToolName, TOOLS } from "./tools/TOOLS";
-import { DeviceToSVG } from "./devices/deviceTypesDB";
+import { DeviceComponent } from "./devices/deviceTypesDB";
 
 export function Editor(p: Project) {
   const [project, setProject] = useState(p);
@@ -70,7 +70,7 @@ export function Editor(p: Project) {
           <defs>
             {Object.values(ICONS)}
           </defs>
-          {Object.values(project.devices).map((d) => DeviceToSVG(d, tool))}
+          {Object.values(project.devices).map((d) => DeviceComponent(d, tool))}
           {tool.svgElements(toolCtx)}
         </svg>
         {tool.panel(toolCtx)}

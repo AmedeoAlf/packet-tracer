@@ -1,15 +1,13 @@
-"use client";
 import { routerEmulator } from "../emulators/routerEmulator";
 import { DeviceFactory } from "./Device";
 
-export const Router: DeviceFactory = {
-  iconId: "#router-icon",
+export const Switch: DeviceFactory = {
+  iconId: "#switch-icon",
   emulator: routerEmulator,
-  deviceType: "router",
+  deviceType: "switch",
   defaultState() {
     return {
-      netInterfaces: ["interface_a", "interface_b"]
+      netInterfaces: ['interface_a', 'interface_b']
     }
   }
 }
-
