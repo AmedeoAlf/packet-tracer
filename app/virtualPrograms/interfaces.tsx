@@ -11,11 +11,11 @@ export const interfaces: Command<InternalState<object>> = {
       },
       desc: "Renames an interface",
       then: {
-        desc: "<New name>",
-        autocomplete: () => [{ option: "<new name>", desc: "The interface's new name" }],
+        desc: "New name",
+        autocomplete: () => [],
         validate: () => true,
         then: {
-          desc: "<New name>",
+          desc: "Finished",
           run(ctx) {
             const [_1, _2, interf, newName] = ctx.args!!;
             ctx.state.netInterfaces[ctx.state.netInterfaces.indexOf(interf)] = newName;

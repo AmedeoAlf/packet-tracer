@@ -14,7 +14,7 @@ export const routerEmulator: DeviceEmulator<InternalState<{}>> = {
   },
   cmdInterpreter: {
     shell: {
-      desc: "",
+      desc: "Command",
       subcommands: {
         hello,
         interfaces

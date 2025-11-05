@@ -2,13 +2,15 @@
 import { SelectToolCtx } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
 import { Device } from "./Device";
+import { ExampleDevice } from "./ExampleDevice";
 import { Router } from "./Router";
 import { Switch } from "./Switch";
 
 
 export const deviceTypesDB = {
   router: Router,
-  switch: Switch
+  switch: Switch,
+  exampleDevice: ExampleDevice,
 };
 
 export type DeviceType = keyof typeof deviceTypesDB

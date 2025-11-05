@@ -48,9 +48,9 @@ export const SelectTool: Tool = {
           <div>
             <h1 className="text-xl font-bold">{device.name}</h1>
             {panels.map(([k, v]) => (
-              <div key={k}>
+              <div key={k} className="mb-2">
                 <h2 className="text-lg font-bold">{k}</h2> <hr />
-                {v(ctx)} <hr />
+                {v(ctx)}
               </div>
             ))}
           </div>

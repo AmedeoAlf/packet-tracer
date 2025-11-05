@@ -51,7 +51,7 @@ export function runOnInterpreter<State extends InternalState<object>>(ctx: Emula
   if ("run" in cmd && cmd.run)
     cmd.run(ctx);
   else
-    ctx.write(`ERROR: incomplete command, missing: ${cmd.desc}`);
+    ctx.write(`ERROR: incomplete command`);
 }
 
 // last element in ctx.args must be "" to get all options
@@ -59,13 +59,14 @@ export function getAutoComplete<State extends InternalState<object>>(ctx: Emulat
   if (ctx.args == undefined) return;
   let cmd = ctx.interpreter.shell;
 
-  const writeOrComplete = (opts: AutoCompleteOption[]) => {
+  const writeOrComplete = (desc: string, opts: AutoCompleteOption[]) => {
     switch (opts.length) {
       case 0:
+        ctx.write(`<${desc}>`);
         return;
       case 1: return opts[0].option + " ";
       default:
-        ctx.write(opts.map(({ option, desc }) => `${option} - ${desc}`).join("\n"))
+        ctx.write(`<${desc}>\n` + opts.map(({ option, desc }) => `${option} - ${desc}`).join("\n"))
         const equalUntil = (a: string, b: string) => {
           if (a.length < b.length) [a, b] = [b, a];
           return [...a].findIndex((chr, i) => chr !== b[i]);
@@ -77,9 +78,9 @@ export function getAutoComplete<State extends InternalState<object>>(ctx: Emulat
   }
 
   for (const arg of ctx.args.keys()) {
-    const autocompleteIfLast = (opts: AutoCompleteOption[]) => {
+    const autocompleteIfLast = (desc: string, opts: AutoCompleteOption[]) => {
       if (arg == ctx.args!!.length - 1) {
-        return writeOrComplete(opts.filter(({ option }) => option.startsWith(ctx.args!![arg])))
+        return writeOrComplete(desc, opts.filter(({ option }) => option.startsWith(ctx.args!![arg])))
       } else {
         ctx.write(`ERROR: Invalid argument in position ${arg} "${ctx.args!![arg]}" in command`)
       }
@@ -89,6 +90,7 @@ export function getAutoComplete<State extends InternalState<object>>(ctx: Emulat
         if (ctx.args[arg] in cmd.subcommands) {
           cmd = cmd.subcommands[ctx.args[arg]];
         } else return autocompleteIfLast(
+          cmd.desc,
           Object.entries(cmd.subcommands!!).map(
             ([option, { desc }]) => ({ option, desc })
           )
@@ -96,9 +98,10 @@ export function getAutoComplete<State extends InternalState<object>>(ctx: Emulat
         continue;
       case ("validate" in cmd):
         const args = ctx.args.slice(0, arg + 1);
-        if (cmd.validate(ctx.state, args)) {
+        if (args[arg] != "" && cmd.validate(ctx.state, args)) {
           cmd = cmd.then;
         } else return autocompleteIfLast(
+          cmd.desc,
           cmd.autocomplete(ctx.state, args)
         );
         continue;
