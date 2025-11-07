@@ -112,7 +112,7 @@ export function Editor(p: Project) {
         <defs>
           {Object.values(ICONS)}
         </defs>
-        {Object.values(project.devices).map((d) => DeviceComponent(d, tool))}
+        {Object.values(project.devices).map((d) => (<DeviceComponent device={d} tool={tool} key={d.id} />))}
         {tool.svgElements(toolCtx)}
       </svg >
 
