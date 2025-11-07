@@ -6,6 +6,7 @@ import { SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { toolFromToolName, TOOLS } from "./tools/TOOLS";
 import { DeviceComponent } from "./devices/deviceTypesDB";
+import { Coords } from "./common";
 
 export function Editor(p: Project) {
   const [project, setProject] = useState(p);
@@ -44,6 +45,8 @@ export function Editor(p: Project) {
       });
     }
   };
+
+  const [canvasSize, setCanvasSize] = useState<[number, number] | undefined>(undefined);
   return (
     <>
 
@@ -87,24 +90,31 @@ export function Editor(p: Project) {
         onMouseUp={toEventHandler(tool, "mouseup")}
         onMouseDown={toEventHandler(tool, "mousedown")}
         onMouseMove={toEventHandler(tool, "mousemove")}
-        className="bg-gray-800 -z-1 w-full h-full"
+        className={`bg-${svgCanvas.current ? "gray-800" : "stone-800"} -z-1 w-full h-full`}
         viewBox={
           Object.values(project.viewBoxPos)
-            .concat([500 / project.viewBoxZoom, 500 / project.viewBoxZoom])
+            .concat(canvasSize?.map(it => it / project.viewBoxZoom) || [10000, 10000])
             .join(" ")
         }
         ref={svg => {
           svgCanvas.current = svg;
           pt = svgCanvas.current?.createSVGPoint();
-        }
-        }
+          if (svgCanvas.current) {
+            const sizes = [
+              svgCanvas.current.width.baseVal.value,
+              svgCanvas.current.height.baseVal.value
+            ] satisfies typeof canvasSize;
+            if (!canvasSize || sizes[0] != canvasSize[0] && sizes[1] != canvasSize[1])
+              setCanvasSize(sizes);
+          }
+        }}
       >
         <defs>
           {Object.values(ICONS)}
         </defs>
         {Object.values(project.devices).map((d) => DeviceComponent(d, tool))}
         {tool.svgElements(toolCtx)}
-      </svg>
+      </svg >
 
     </>
   );
