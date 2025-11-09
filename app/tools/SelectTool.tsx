@@ -75,8 +75,6 @@ export const SelectTool: Tool = {
         break;
       case "mousedown":
         if (!ev.device) {
-          toolctx.selected.clear();
-          toolctx.update();
           return;
         }
         if (!ev.shiftKey && !toolctx.selected.has(ev.device.id)) {
@@ -91,6 +89,7 @@ export const SelectTool: Tool = {
           for (const dev of toolctx.selected) {
             toolctx.project.devices[dev].pos.x += ev.pos.x - toolctx.lastCursorPos.x;
             toolctx.project.devices[dev].pos.y += ev.pos.y - toolctx.lastCursorPos.y;
+            toolctx.project.devices[dev] = { ...toolctx.project.devices[dev] }
           }
           toolctx.updateProject();
           toolctx.lastCursorPos = ev.pos;

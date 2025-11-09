@@ -2,7 +2,7 @@
 import { useState, useRef, MouseEvent, useEffect } from "react";
 import { Project } from "./Project";
 import { CanvasEvent, Tool, ToolCtx } from "./tools/Tool";
-import { SelectTool } from "./tools/SelectTool";
+import { SelectTool, SelectToolCtx } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { toolFromToolName, TOOLS } from "./tools/TOOLS";
 import { DeviceComponent } from "./devices/deviceTypesDB";
@@ -51,6 +51,8 @@ export function Editor(p: Project) {
   useEffect(() => {
     window.onresize = () => setCanvasSize(undefined);
   })
+
+  const highlighted = tool.toolname == "select" && (tool.ctx as SelectToolCtx).selected;
   return (
     <>
 
@@ -113,7 +115,15 @@ export function Editor(p: Project) {
         <defs>
           {Object.values(ICONS)}
         </defs>
-        {Object.values(project.devices).map((d) => (<DeviceComponent device={d} tool={tool} key={d.id} />))}
+        {
+          Object.values(project.devices).map(
+            highlighted
+              ? (d) =>
+                (<DeviceComponent device={d} key={d.id} extraClass={highlighted.has(d.id) ? " brightness-50" : undefined} />)
+              : (d) =>
+                (<DeviceComponent device={d} key={d.id} />)
+          )
+        }
         {tool.svgElements(toolCtx)}
       </svg >
 

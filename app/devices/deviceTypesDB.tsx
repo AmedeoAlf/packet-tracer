@@ -1,6 +1,5 @@
 "use client";
-import { SelectToolCtx } from "../tools/SelectTool";
-import { Tool } from "../tools/Tool";
+import { memo } from "react";
 import { Device } from "./Device";
 import { ExampleDevice } from "./ExampleDevice";
 import { Router } from "./Router";
@@ -15,21 +14,15 @@ export const deviceTypesDB = {
 
 export type DeviceType = keyof typeof deviceTypesDB
 
-export function DeviceComponent(
-  { device, tool }: { device: Device, tool: Tool },
-) {
-  const highlighted =
-    tool.toolname == "select"
-      && tool.ctx
-      && (tool.ctx as SelectToolCtx).selected.has(device.id)
-      ? " brightness-50" : "";
+export const DeviceComponent = memo((
+  { device, extraClass }: { device: Device, extraClass?: string },
+) => {
   return (
     <use
       href={deviceTypesDB[device.deviceType].iconId}
-      key={device.id}
-      className={"device" + highlighted}
+      className={"device " + (extraClass || "")}
       {...device.pos}
       {...{ "data-id": device.id }}
     />
   );
-}
+})
