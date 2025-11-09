@@ -10,9 +10,24 @@ export const switchEmulator: DeviceEmulator<InternalState<{}>> = {
     },
     interfacce(ctx) {
       return (
-        <ul>
-          {ctx.state.netInterfaces.map((val, idx) => <li key={idx}>{val}</li>)}
-        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Max speed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ctx.state.netInterfaces.map((val, idx) =>
+              <tr key={idx}>
+                <td>{val.name}</td>
+                <td>{val.type}</td>
+                <td>{val.maxMbps} Mbps</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       );
     },
   },

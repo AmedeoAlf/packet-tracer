@@ -8,7 +8,10 @@ export const Router: DeviceFactory = {
   deviceType: "router",
   defaultState() {
     return {
-      netInterfaces: ["interface_a", "interface_b"]
+      netInterfaces: [
+        { name: "if0", maxMbps: 100, type: "copper" },
+        { name: "if1", maxMbps: 100, type: "copper" },
+      ]
     }
   }
 }

@@ -5,9 +5,9 @@ export const interfaces: Command<InternalState<object>> = {
   run: ctx => ctx.write(ctx.state.netInterfaces.join("\n")),
   subcommands: {
     rename: {
-      autocomplete: (state, _args) => state.netInterfaces.map(it => { return { desc: "interface", option: it } }),
+      autocomplete: (state, _args) => state.netInterfaces.map(it => { return { desc: `${it.type} ${it.maxMbps} Mbps`, option: it.name } }),
       validate(state, args) {
-        return state.netInterfaces.indexOf(args[2]) != -1
+        return state.netInterfaces.some(it => it.name == args[2])
       },
       desc: "Renames an interface",
       then: {
@@ -17,8 +17,9 @@ export const interfaces: Command<InternalState<object>> = {
         then: {
           desc: "Finished",
           run(ctx) {
-            const [_1, _2, interf, newName] = ctx.args!!;
-            ctx.state.netInterfaces[ctx.state.netInterfaces.indexOf(interf)] = newName;
+            const [_1, _2, currName, newName] = ctx.args!!;
+            const intf = ctx.state.netInterfaces.find(it => it.name == currName);
+            if (intf) intf.name = newName
             ctx.updateState();
           },
         }

@@ -12,7 +12,7 @@ export interface DeviceFactory {
 }
 
 export class Device {
-  id: number;
+  readonly id: number;
   readonly deviceType: DeviceType;
   name: string;
   pos: Coords;

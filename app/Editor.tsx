@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, MouseEvent } from "react";
+import { useState, useRef, MouseEvent, useEffect } from "react";
 import { Project } from "./Project";
 import { CanvasEvent, Tool, ToolCtx } from "./tools/Tool";
 import { SelectTool } from "./tools/SelectTool";
@@ -47,6 +47,10 @@ export function Editor(p: Project) {
   };
 
   const [canvasSize, setCanvasSize] = useState<[number, number] | undefined>(undefined);
+
+  useEffect(() => {
+    window.onresize = () => setCanvasSize(undefined);
+  })
   return (
     <>
 
@@ -90,7 +94,7 @@ export function Editor(p: Project) {
         onMouseUp={toEventHandler(tool, "mouseup")}
         onMouseDown={toEventHandler(tool, "mousedown")}
         onMouseMove={toEventHandler(tool, "mousemove")}
-        className={`bg-${svgCanvas.current ? "gray-800" : "stone-800"} -z-1 w-full h-full`}
+        className={`bg-${svgCanvas.current ? "gray-700" : "gray-100"} -z-1 w-full h-screen transition-colors`}
         viewBox={
           Object.values(project.viewBoxPos)
             .concat(canvasSize?.map(it => it / project.viewBoxZoom) || [10000, 10000])
@@ -100,12 +104,9 @@ export function Editor(p: Project) {
           svgCanvas.current = svg;
           pt = svgCanvas.current?.createSVGPoint();
           if (svgCanvas.current) {
-            const sizes = [
-              svgCanvas.current.width.baseVal.value,
-              svgCanvas.current.height.baseVal.value
-            ] satisfies typeof canvasSize;
-            if (!canvasSize || sizes[0] != canvasSize[0] && sizes[1] != canvasSize[1])
-              setCanvasSize(sizes);
+            const rect = svgCanvas.current.getBoundingClientRect();
+            if (!canvasSize || rect.width != canvasSize[0] || rect.height != canvasSize[1])
+              setCanvasSize([rect.width, rect.height]);
           }
         }}
       >

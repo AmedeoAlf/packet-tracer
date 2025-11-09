@@ -34,8 +34,8 @@ export const HandTool: Tool = {
         break;
       case "mousemove":
         if (ctx.holding) {
-          ctx.project.viewBoxPos.x -= ev.movement.x;
-          ctx.project.viewBoxPos.y -= ev.movement.y;
+          ctx.project.viewBoxPos.x -= ev.movement.x / ctx.project.viewBoxZoom;
+          ctx.project.viewBoxPos.y -= ev.movement.y / ctx.project.viewBoxZoom;
           ctx.updateProject();
         }
         break;

@@ -16,7 +16,10 @@ export const ExampleDevice: DeviceFactory = {
   // it is meant to set all extra params related to device
   defaultState(): ExampleDeviceInternalState {
     return {
-      netInterfaces: ["interface_a", "interface_b"],
+      netInterfaces: [
+        { name: "if0", maxMbps: 100, type: "copper" },
+        { name: "if1", maxMbps: 100, type: "copper" },
+      ],
       exampleProp1: 42,
       exampleProp2: "Some string to be assigned to this prop"
     }

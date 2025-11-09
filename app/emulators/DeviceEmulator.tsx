@@ -1,10 +1,16 @@
 import { ReactNode } from "react";
 
+interface NetworkInterface {
+  type: "serial" | "copper" | "fiber";
+  maxMbps: 10 | 100 | 1000 | 10000;
+  name: string;
+}
+
 export type InternalState<Ext extends object> = {
-  netInterfaces: Array<string>;
+  netInterfaces: Array<NetworkInterface>;
 } & Ext;
 
-type AutoCompleteOption = { option: string, desc: string }
+interface AutoCompleteOption { option: string, desc: string };
 export type Command<State extends InternalState<object>> = ({
   autocomplete: (state: State, past: string[]) => AutoCompleteOption[],
   validate: (state: State, past: string[]) => boolean,
@@ -54,7 +60,7 @@ export function runOnInterpreter<State extends InternalState<object>>(ctx: Emula
     ctx.write(`ERROR: incomplete command`);
 }
 
-// last element in ctx.args must be "" to get all options
+// last element in ctx.args must be "" to get all autocomplete options
 export function getAutoComplete<State extends InternalState<object>>(ctx: EmulatorContext<State>) {
   if (ctx.args == undefined) return;
   let cmd = ctx.interpreter.shell;
