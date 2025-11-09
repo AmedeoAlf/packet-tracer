@@ -6,14 +6,13 @@ import { SelectTool, SelectToolCtx } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { toolFromToolName, TOOLS } from "./tools/TOOLS";
 import { DeviceComponent } from "./devices/deviceTypesDB";
-import { Coords } from "./common";
 
 export function Editor(p: Project) {
   const [project, setProject] = useState(p);
   const [toolCtx, setToolCtx] = useState<ToolCtx>({
     project, updateProject: () => setProject(new Project(project)), update: () => { }
   });
-  toolCtx.update = () => { setToolCtx({ ...toolCtx }) };
+  toolCtx.update = () => { console.log("called"); setToolCtx({ ...toolCtx }) };
   const [tool, setTool] = useState<Tool>(SelectTool.make(toolCtx));
 
   const svgCanvas = useRef<SVGSVGElement>(null);

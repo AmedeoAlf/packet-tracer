@@ -63,6 +63,7 @@ export const SelectTool: Tool = {
   },
   onEvent(ctx, ev): void {
     const toolctx = ctx as SelectToolCtx;
+    const originalDevices = new Set(toolctx.selected);
     switch (ev.type) {
       case "click":
         if (ev.device) {
@@ -71,7 +72,6 @@ export const SelectTool: Tool = {
         } else {
           toolctx.selected.clear();
         }
-        toolctx.update();
         break;
       case "mousedown":
         if (!ev.device) {
@@ -82,7 +82,6 @@ export const SelectTool: Tool = {
         }
         toolctx.selected.add(ev.device.id);
         toolctx.lastCursorPos = toolctx.selected.size != 0 ? ev.pos : undefined;
-        toolctx.update();
         break;
       case "mousemove":
         if (toolctx.lastCursorPos) {
@@ -93,7 +92,6 @@ export const SelectTool: Tool = {
           }
           toolctx.updateProject();
           toolctx.lastCursorPos = ev.pos;
-          toolctx.update();
         }
         break;
       case "mouseup":
@@ -102,12 +100,12 @@ export const SelectTool: Tool = {
             toolctx.project.devices[dev].pos.x += ev.pos.x - toolctx.lastCursorPos.x;
             toolctx.project.devices[dev].pos.y += ev.pos.y - toolctx.lastCursorPos.y;
           }
+          toolctx.updateProject();
+          toolctx.lastCursorPos = undefined;
         }
-        toolctx.updateProject();
-        toolctx.lastCursorPos = undefined;
-        toolctx.update();
         break;
     }
+    if (originalDevices.symmetricDifference(toolctx.selected).size > 0) toolctx.update();
   },
   make: (context) => {
     const ctx = context as SelectToolCtx;
