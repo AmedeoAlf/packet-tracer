@@ -46,10 +46,5 @@ export const HandTool: Tool = {
     HandTool.ctx = ctx;
     return HandTool;
   },
-  svgElements(context) {
-    const ctx = context as HandToolCtx;
-    return (
-      <></>
-    )
-  },
+  svgElements(_context) { return <></> },
 }

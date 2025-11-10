@@ -105,7 +105,10 @@ export const SelectTool: Tool = {
         }
         break;
     }
-    if (originalDevices.symmetricDifference(toolctx.selected).size > 0) toolctx.update();
+    if (originalDevices.symmetricDifference(toolctx.selected).size > 0) {
+      toolctx.selected = new Set(toolctx.selected);
+      toolctx.update();
+    }
   },
   bind: (context) => {
     const ctx = context as SelectToolCtx;

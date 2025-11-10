@@ -8,7 +8,7 @@ export type CanvasEvent = ({
   type: "mousemove";
   movement: Coords;
 } | {
-  type: "click" | "mousedown" | "mouseup" | "doubleclick";
+  type: "click" | "mousedown" | "mouseup" | "doubleclick" | "mouseenter" | "mouseleave";
 }) & {
   shiftKey: boolean;
   pos: Coords;
