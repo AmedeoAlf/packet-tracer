@@ -1,5 +1,4 @@
 "use client";
-import { Project } from "../Project";
 import { Tool, ToolCtx } from "./Tool";
 
 type HandToolCtx = ToolCtx & {
@@ -19,7 +18,8 @@ export const HandTool: Tool = {
           step={10}
           value={Math.round(context.project.viewBoxZoom * 100)}
           onChange={ev => { context.project.viewBoxZoom = +ev.target.value / 100; context.updateProject() }}
-        />%
+        />
+        %
       </div>
     )
   },
@@ -41,7 +41,7 @@ export const HandTool: Tool = {
         break;
     }
   },
-  make: (context) => {
+  bind: (context) => {
     const ctx = context as HandToolCtx;
     HandTool.ctx = ctx;
     return HandTool;

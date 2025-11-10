@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, MouseEvent, useEffect } from "react";
+import { useState, useRef, MouseEvent, useEffect, JSX } from "react";
 import { Project } from "./Project";
 import { CanvasEvent, Tool, ToolCtx } from "./tools/Tool";
 import { SelectTool, SelectToolCtx } from "./tools/SelectTool";
@@ -7,13 +7,13 @@ import { ICONS } from "./devices/ICONS";
 import { toolFromToolName, TOOLS } from "./tools/TOOLS";
 import { DeviceComponent } from "./devices/deviceTypesDB";
 
-export function Editor(p: Project) {
+export function Editor(p: Project): JSX.Element {
   const [project, setProject] = useState(p);
   const [toolCtx, setToolCtx] = useState<ToolCtx>({
     project, updateProject: () => setProject(new Project(project)), update: () => { }
   });
   toolCtx.update = () => { console.log("called"); setToolCtx({ ...toolCtx }) };
-  const [tool, setTool] = useState<Tool>(SelectTool.make(toolCtx));
+  const [tool, setTool] = useState<Tool>(SelectTool.bind(toolCtx));
 
   const svgCanvas = useRef<SVGSVGElement>(null);
   let pt = svgCanvas.current?.createSVGPoint()
@@ -81,7 +81,7 @@ export function Editor(p: Project) {
         <div className="h-[20%] bg-sky-700"></div>
         <div className="h-[80%] bg-zinc-900">
           <select onChange={ev => {
-            setTool(toolFromToolName[ev.target.value].make(toolCtx))
+            setTool(toolFromToolName[ev.target.value].bind(toolCtx))
           }
           }>
             {Object.values(TOOLS).map(it => it.toolname).map(it => (<option value={it} key={it}>{it}</option>))}

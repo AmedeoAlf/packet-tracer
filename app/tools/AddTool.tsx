@@ -36,7 +36,7 @@ export const AddTool: Tool = {
         break;
     }
   },
-  make: (context) => {
+  bind: (context) => {
     const ctx = context as AddToolCtx;
     AddTool.ctx = context;
     ctx.deviceType ||= Object.keys(deviceTypesDB)[0] as DeviceType;

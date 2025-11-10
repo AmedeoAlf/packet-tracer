@@ -107,7 +107,7 @@ export const SelectTool: Tool = {
     }
     if (originalDevices.symmetricDifference(toolctx.selected).size > 0) toolctx.update();
   },
-  make: (context) => {
+  bind: (context) => {
     const ctx = context as SelectToolCtx;
     SelectTool.ctx = ctx;
     ctx.selected ||= new Set<number>();

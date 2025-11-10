@@ -29,5 +29,5 @@ export type Tool = {
   readonly panel: (ctx: ToolCtx) => ReactNode;
   readonly svgElements: (ctx: ToolCtx) => ReactNode;
   ctx?: ToolCtx;
-  make: (ctx: ToolCtx) => Tool
+  bind: (ctx: ToolCtx) => Tool
 }
