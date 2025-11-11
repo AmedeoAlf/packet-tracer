@@ -15,7 +15,7 @@ export class Project {
     }
   }
   createDevice(type: keyof typeof deviceTypesDB, pos: Coords, name?: string) {
-    const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+    function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); };
     ++this.lastId;
     this.devices[this.lastId] = new Device(
       deviceTypesDB[type],
