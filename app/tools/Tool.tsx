@@ -3,7 +3,9 @@ import { Device } from "../devices/Device";
 import { Coords } from "../common";
 import { Project } from "../Project";
 import { ReactNode } from "react";
-import { TOOLS } from "./TOOLS";
+import { makeSelectTool } from "./SelectTool";
+import { makeAddTool } from "./AddTool";
+import { makeHandTool } from "./HandTool";
 
 export type CanvasEvent = ({
   type: "mousemove";
@@ -30,3 +32,11 @@ export type ToolCtx = {
   // Triggers a React rerender with changes applied to the ctx, any further edit won't be applied
   update: () => void
 }
+export const TOOLS = {
+  select: makeSelectTool,
+  add: makeAddTool,
+  hand: makeHandTool
+} satisfies Record<string, (ctx: ToolCtx) => Tool>;
+
+export const TOOL_LIST = ['select', 'add', 'hand'] as const satisfies (keyof typeof TOOLS)[];
+

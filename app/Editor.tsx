@@ -1,10 +1,9 @@
 "use client";
 import { useState, useRef, MouseEvent, useEffect, JSX, memo, RefObject } from "react";
 import { Project } from "./Project";
-import { CanvasEvent, Tool } from "./tools/Tool";
+import { CanvasEvent, Tool, TOOL_LIST, TOOLS } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
-import { TOOLS, TOOL_LIST } from "./tools/TOOLS";
 import { DeviceComponent } from "./devices/deviceTypesDB";
 
 function toEventHandler(
