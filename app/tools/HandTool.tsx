@@ -1,50 +1,51 @@
-"use client";
 import { Tool, ToolCtx } from "./Tool";
 
-type HandToolCtx = ToolCtx & {
+export type HandTool = Tool & {
   holding: boolean
 }
 
-export const HandTool: Tool = {
-  toolname: "hand",
-  panel: (context) => {
-    return (
-      <div>
-        Zoom level:
-        <input
-          type="number"
-          min={0}
-          max={500}
-          step={10}
-          value={Math.round(context.project.viewBoxZoom * 100)}
-          onChange={ev => { context.project.viewBoxZoom = +ev.target.value / 100; context.updateProject() }}
-        />
-        %
-      </div>
-    )
-  },
-  onEvent(context, ev): void {
-    const ctx = context as HandToolCtx;
-    switch (ev.type) {
-      case "mousedown":
-        ctx.holding = true;
-        break;
-      case "mouseup":
-        ctx.holding = false;
-        break;
-      case "mousemove":
-        if (ctx.holding) {
-          ctx.project.viewBoxPos.x -= ev.movement.x / ctx.project.viewBoxZoom;
-          ctx.project.viewBoxPos.y -= ev.movement.y / ctx.project.viewBoxZoom;
-          ctx.updateProject();
-        }
-        break;
-    }
-  },
-  bind: (context) => {
-    const ctx = context as HandToolCtx;
-    HandTool.ctx = ctx;
-    return HandTool;
-  },
-  svgElements(_context) { return <></> },
+export function makeHandTool(ctx: ToolCtx): HandTool {
+  return {
+    holding: false,
+    ...ctx,
+    toolname: "hand",
+    panel() {
+      return (
+        <div>
+          Zoom level:
+          <input
+            type="number"
+            min={0}
+            max={500}
+            step={10}
+            value={Math.round(this.project.viewBoxZoom * 100)}
+            onChange={ev => {
+              this.project.viewBoxZoom = +ev.target.value / 100;
+              this.updateProject();
+              this.update();
+            }}
+          />
+          %
+        </div>
+      )
+    },
+    onEvent(ev) {
+      switch (ev.type) {
+        case "mousedown":
+          this.holding = true;
+          break;
+        case "mouseup":
+          this.holding = false;
+          break;
+        case "mousemove":
+          if (this.holding) {
+            this.project.viewBoxPos.x -= ev.movement.x / this.project.viewBoxZoom;
+            this.project.viewBoxPos.y -= ev.movement.y / this.project.viewBoxZoom;
+            this.updateProject();
+          }
+          break;
+      }
+    },
+    svgElements() { return <></> },
+  }
 }

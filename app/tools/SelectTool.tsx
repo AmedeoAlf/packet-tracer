@@ -1,125 +1,122 @@
-"use client";
-import { Tool, ToolCtx } from "./Tool";
+import { CanvasEvent, Tool, ToolCtx } from "./Tool";
 import { deviceTypesDB } from "../devices/deviceTypesDB";
 import { DevicePanel, EmulatorContext, getAutoComplete, InternalState, runOnInterpreter } from "../emulators/DeviceEmulator";
 import { Coords } from "../common";
 
-export type SelectToolCtx = ToolCtx & {
+export type SelectTool = Tool & {
   selected: Set<number>;
   lastCursorPos?: Coords;
   stdout: string;
   stdin: string;
 }
 
-export const SelectTool: Tool = {
-  toolname: "select",
-  panel: (context: ToolCtx) => {
-    const toolctx = context as SelectToolCtx;
-    switch (toolctx.selected.size) {
-      case 0:
-        return (
-          <p>Seleziona un dispositivo per vedere le proprietà</p>
-        );
-      case 1:
-        const device = toolctx.project.devices[toolctx.selected.values().next().value!!];
-        const emulator = deviceTypesDB[device.deviceType].emulator;
-        const ctx: EmulatorContext<any> = {
-          interpreter: emulator.cmdInterpreter,
-          updateState() {
-            device.internalState = { ...device.internalState };
-            toolctx.updateProject();
-          },
-          state: device.internalState,
-          write(msg) {
-            toolctx.stdout += "\n" + msg;
-            toolctx.update();
-          },
-        };
-        const panels: [string, DevicePanel<any>][] = [
-          ["terminal",
-            TerminalEmulator(
-              toolctx.stdin,
-              (stdin) => { toolctx.stdin = stdin; toolctx.update(); },
-              toolctx.stdout
-            )],
-          ...Object.entries(emulator.configPanel)
-        ];
-        return (
-          <div>
-            <h1 className="text-xl font-bold">{device.name}</h1>
-            {panels.map(([k, v]) => (
-              <div key={k} className="mb-2">
-                <h2 className="text-lg font-bold">{k}</h2> <hr />
-                {v(ctx)}
-              </div>
-            ))}
-          </div>
-        );
-      default:
-        return (
-          <p>Non ancora implementato</p>
-        );
-    }
-  },
-  onEvent(ctx, ev): void {
-    const toolctx = ctx as SelectToolCtx;
-    const originalDevices = new Set(toolctx.selected);
-    switch (ev.type) {
-      case "click":
-        if (ev.device) {
-          if (!ev.shiftKey) toolctx.selected.clear();
-          toolctx.selected.add(ev.device.id);
-        } else {
-          toolctx.selected.clear();
-        }
-        break;
-      case "mousedown":
-        if (!ev.device) {
-          return;
-        }
-        if (!ev.shiftKey && !toolctx.selected.has(ev.device.id)) {
-          toolctx.selected.clear();
-        }
-        toolctx.selected.add(ev.device.id);
-        toolctx.lastCursorPos = toolctx.selected.size != 0 ? ev.pos : undefined;
-        break;
-      case "mousemove":
-        if (toolctx.lastCursorPos) {
-          for (const dev of toolctx.selected) {
-            toolctx.project.devices[dev].pos.x += ev.pos.x - toolctx.lastCursorPos.x;
-            toolctx.project.devices[dev].pos.y += ev.pos.y - toolctx.lastCursorPos.y;
-            toolctx.project.devices[dev] = { ...toolctx.project.devices[dev] }
+export function makeSelectTool(ctx: ToolCtx): SelectTool {
+  return {
+    selected: new Set<number>(),
+    stdin: "",
+    stdout: "= Terminal emulator =",
+    svgElements: () => (<></>),
+    ...ctx,
+    toolname: "select",
+    panel() {
+      switch (this.selected.size) {
+        case 0:
+          return (
+            <p>Seleziona un dispositivo per vedere le proprietà</p>
+          );
+        case 1:
+          const device = this.project.devices[this.selected.values().next().value!!];
+          const emulator = deviceTypesDB[device.deviceType].emulator;
+          const tool = this;
+          const ctx: EmulatorContext<any> = {
+            interpreter: emulator.cmdInterpreter,
+            updateState() {
+              device.internalState = { ...device.internalState };
+              tool.updateProject();
+            },
+            state: device.internalState,
+            write(msg) {
+              tool.stdout += "\n" + msg;
+              tool.update();
+            },
+          };
+          const panels: [string, DevicePanel<any>][] = [
+            ["terminal",
+              TerminalEmulator(
+                tool.stdin,
+                (stdin) => { tool.stdin = stdin; tool.update(); },
+                tool.stdout
+              )],
+            ...Object.entries(emulator.configPanel)
+          ];
+          return (
+            <div>
+              <h1 className="text-xl font-bold">{device.name}</h1>
+              {panels.map(([k, v]) => (
+                <div key={k} className="mb-2">
+                  <h2 className="text-lg font-bold">{k}</h2> <hr />
+                  {v(ctx)}
+                </div>
+              ))}
+            </div>
+          );
+        default:
+          return (
+            <p>Non ancora implementato</p>
+          );
+      }
+    },
+    onEvent(ev: CanvasEvent): void {
+      const originalDevices = new Set(this.selected);
+      switch (ev.type) {
+        case "click":
+          if (ev.device) {
+            if (!ev.shiftKey) this.selected.clear();
+            this.selected.add(ev.device.id);
+          } else {
+            this.selected.clear();
           }
-          toolctx.updateProject();
-          toolctx.lastCursorPos = ev.pos;
-        }
-        break;
-      case "mouseup":
-        if (toolctx.lastCursorPos) {
-          for (const dev of toolctx.selected) {
-            toolctx.project.devices[dev].pos.x += ev.pos.x - toolctx.lastCursorPos.x;
-            toolctx.project.devices[dev].pos.y += ev.pos.y - toolctx.lastCursorPos.y;
+          break;
+        case "mousedown":
+          if (!ev.device) {
+            return;
           }
-          toolctx.updateProject();
-          toolctx.lastCursorPos = undefined;
-        }
-        break;
-    }
-    if (originalDevices.symmetricDifference(toolctx.selected).size > 0) {
-      toolctx.selected = new Set(toolctx.selected);
-      toolctx.update();
-    }
-  },
-  bind: (context) => {
-    const ctx = context as SelectToolCtx;
-    SelectTool.ctx = ctx;
-    ctx.selected ||= new Set<number>();
-    ctx.stdin ||= "";
-    ctx.stdout ||= "= Terminal emulator =";
-    return SelectTool;
-  },
-  svgElements: () => (<></>)
+          if (!ev.shiftKey && !this.selected.has(ev.device.id)) {
+            this.selected.clear();
+          }
+          this.selected.add(ev.device.id);
+          this.lastCursorPos = this.selected.size != 0 ? ev.pos : undefined;
+          break;
+        case "mousemove":
+          if (this.lastCursorPos) {
+            for (const dev of this.selected) {
+              this.project.devices[dev].pos.x += ev.pos.x - this.lastCursorPos.x;
+              this.project.devices[dev].pos.y += ev.pos.y - this.lastCursorPos.y;
+              this.project.devices[dev] = { ...this.project.devices[dev] }
+            }
+            this.updateProject();
+            this.lastCursorPos = ev.pos;
+          }
+          break;
+        case "mouseup":
+          if (this.lastCursorPos) {
+            for (const dev of this.selected) {
+              this.project.devices[dev].pos.x += ev.pos.x - this.lastCursorPos.x;
+              this.project.devices[dev].pos.y += ev.pos.y - this.lastCursorPos.y;
+            }
+            this.updateProject();
+            this.lastCursorPos = undefined;
+          }
+          break;
+      }
+      if (originalDevices.symmetricDifference(this.selected).size > 0) {
+        this.selected = new Set(this.selected);
+        this.update();
+      }
+    },
+  }
 }
+
 
 // TODO: separate correctly args
 function TerminalEmulator<State extends InternalState<object>>(

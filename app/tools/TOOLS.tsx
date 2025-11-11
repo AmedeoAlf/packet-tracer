@@ -1,8 +1,13 @@
-import { AddTool } from "./AddTool";
-import { HandTool } from "./HandTool";
-import { SelectTool } from "./SelectTool";
-import { Tool } from "./Tool";
+import { makeAddTool } from "./AddTool";
+import { makeHandTool } from "./HandTool";
+import { makeSelectTool } from "./SelectTool";
+import { Tool, ToolCtx } from "./Tool";
 
-export const TOOLS = [SelectTool, AddTool, HandTool] as const satisfies Tool[];
+export const TOOLS = {
+  select: makeSelectTool,
+  add: makeAddTool,
+  hand: makeHandTool
+} satisfies Record<string, (ctx: ToolCtx) => Tool>;
 
-export const toolFromToolName = Object.fromEntries(TOOLS.map(it => [it.toolname, it]))
+export const TOOL_LIST = ['select', 'add', 'hand'] as const satisfies (keyof typeof TOOLS)[];
+
