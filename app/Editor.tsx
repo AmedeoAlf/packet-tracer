@@ -57,7 +57,7 @@ export function Editor(p: Project): ReactNode {
         onMouseMove={handler("mousemove")}
         onMouseEnter={handler("mouseenter")}
         onMouseLeave={handler("mouseleave")}
-        className={`bg-${svgCanvas.current ? "gray-700" : "gray-100"} -z-1 w-full h-screen transition-colors`}
+        className={`bg-${svgCanvas.current ? "gray-700" : "gray-100"} -z-1 w-full h-screen transition-colors select-none`}
         viewBox={
           Object.values(project.viewBoxPos)
             .concat(canvasSize?.map(it => it / project.viewBoxZoom) || [10000, 10000])
@@ -184,7 +184,6 @@ const DeviceComponent = memo((
         width="100px"
         textAnchor="middle"
         fill="#ffffff"
-        className="select-none"
         {...dataProps}
       >
         {device.name}
