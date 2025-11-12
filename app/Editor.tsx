@@ -1,83 +1,12 @@
 "use client";
-import { useState, useRef, MouseEvent, useEffect, JSX, memo, RefObject } from "react";
+import { useState, useRef, MouseEvent, useEffect, memo, RefObject, ReactNode } from "react";
 import { Project } from "./Project";
 import { CanvasEvent, Tool, TOOL_LIST, TOOLS } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { DeviceComponent } from "./devices/deviceTypesDB";
 
-function toEventHandler(
-  svgCanvas: RefObject<SVGSVGElement | null>,
-  tool: Tool,
-  canvasPt: SVGPoint | undefined,
-  type: CanvasEvent['type']
-): ((ev: MouseEvent) => void) {
-  function getPos(ev: MouseEvent) {
-    if (!canvasPt) return { x: 0, y: 0 };
-    canvasPt.x = ev.clientX;
-    canvasPt.y = ev.clientY;
-
-    const { x, y } = canvasPt.matrixTransform(svgCanvas.current!!.getScreenCTM()!!.inverse());
-    return { x, y };
-  }
-
-  if (type == "mousemove") {
-    return (ev: MouseEvent) => tool.onEvent({
-      type,
-      movement: { x: ev.movementX, y: ev.movementY },
-      pos: getPos(ev),
-      device: tool.project.deviceFromTag(ev.target as SVGUseElement),
-      shiftKey: ev.shiftKey,
-    });
-  } else {
-    return (ev: MouseEvent) => tool.onEvent({
-      type,
-      pos: getPos(ev),
-      device: tool.project.deviceFromTag(ev.target as SVGUseElement),
-      shiftKey: ev.shiftKey,
-    });
-  }
-};
-
-const SideBar = memo(({ tool }: { tool: Tool }) => {
-  const [open, setOpen] = useState(true);
-  return open
-    ? (
-      <div className="fixed top-[50px] right-0 w-[30%] h-(--h-spec-cont) indent-[1.5em] border-sky-800 border-solid border-t-[.1em] border-l-[.1em]">
-        <div className="bg-sky-700 h-[20px] indent-0">
-          <div className="fixed right-0 cursor-pointer h-[20px] text-[.85em] pr-[5px] pl-[6px] hover:bg-red-500/80" onClick={() => setOpen(false)}>&#128473</div>
-        </div>
-        {tool.panel()}
-      </div>
-    )
-    : (
-      <button className="fixed top-[50px] right-0 indent-[1.5em] border-sky-800 border-solid border-t-[.1em] border-l-[.1em]" onClick={() => setOpen(true)}>
-        Riapri
-      </button>
-    )
-})
-
-const ToolSelector = memo(({ tool, setTool }: { tool: Tool, setTool: (t: Tool) => void }) => {
-  return <div className="fixed bottom-0 left-[35.3%] w-[29.4%] h-[90px] indent-[1,5em] z-0 border-solid border-sky-800 border-t-[.1em]">
-    <div className="h-[20%] bg-sky-700"></div>
-    <div className="h-[80%] bg-zinc-900">
-      <select value={tool.toolname} onChange={ev => setTool(TOOLS[ev.target.value as keyof typeof TOOLS](tool))}>
-        {TOOL_LIST.map(it => (<option value={it} key={it}>{it}</option>))}
-      </select>
-    </div>
-  </div>
-})
-
-const Devices = memo(({ project, highlighted }: { project: Project, highlighted?: Set<number> }) =>
-  Object.values(project.devices).map(
-    highlighted
-      ? (d) =>
-        (<DeviceComponent device={d} key={d.id} extraClass={highlighted.has(d.id) ? " brightness-50" : undefined} />)
-      : (d) =>
-        (<DeviceComponent device={d} key={d.id} />)
-  ));
-
-export function Editor(p: Project): JSX.Element {
+export function Editor(p: Project): ReactNode {
   const [project, setProject] = useState(p);
   const [tool, setTool] = useState<Tool>(makeSelectTool({ project, updateProject: () => setProject(new Project(project)), update: () => { } }));
   tool.update = () => setTool({ ...tool });
@@ -87,7 +16,7 @@ export function Editor(p: Project): JSX.Element {
 
   const [canvasSize, setCanvasSize] = useState<[number, number] | undefined>(undefined);
 
-  const handler = toEventHandler.bind(null, svgCanvas, tool, pt);
+  const handler = buildEventHandler.bind(null, svgCanvas, tool, pt);
 
   useEffect(() => {
     window.onresize = () => setCanvasSize(undefined);
@@ -146,4 +75,77 @@ export function Editor(p: Project): JSX.Element {
     </>
   );
 }
+
+function buildEventHandler(
+  svgCanvas: RefObject<SVGSVGElement | null>,
+  tool: Tool,
+  canvasPt: SVGPoint | undefined,
+  type: CanvasEvent['type']
+): ((ev: MouseEvent) => void) {
+  const getPos = canvasPt
+    ? (ev: MouseEvent) => {
+      canvasPt.x = ev.clientX;
+      canvasPt.y = ev.clientY;
+
+      const { x, y } = canvasPt.matrixTransform(svgCanvas.current!!.getScreenCTM()!!.inverse());
+      return { x, y };
+    }
+    : () => { return { x: 0, y: 0 } };
+
+  if (type == "mousemove") {
+    return (ev: MouseEvent) => tool.onEvent({
+      type,
+      movement: { x: ev.movementX, y: ev.movementY },
+      pos: getPos(ev),
+      device: tool.project.deviceFromTag(ev.target as SVGUseElement),
+      shiftKey: ev.shiftKey,
+    });
+  } else {
+    return (ev: MouseEvent) => tool.onEvent({
+      type,
+      pos: getPos(ev),
+      device: tool.project.deviceFromTag(ev.target as SVGUseElement),
+      shiftKey: ev.shiftKey,
+    });
+  }
+};
+
+const SideBar = memo(({ tool }: { tool: Tool }) => {
+  const [open, setOpen] = useState(true);
+  return open
+    ? (
+      <div className="fixed top-[50px] right-0 w-[30%] h-(--h-spec-cont) indent-[1.5em] border-sky-800 border-solid border-t-[.1em] border-l-[.1em]">
+        <div className="bg-sky-700 h-[20px] indent-0">
+          <div className="fixed right-0 cursor-pointer h-[20px] text-[.85em] pr-[5px] pl-[6px] hover:bg-red-500/80" onClick={() => setOpen(false)}>&#128473</div>
+        </div>
+        {tool.panel()}
+      </div>
+    )
+    : (
+      <button className="fixed top-[50px] right-0 indent-[1.5em] border-sky-800 border-solid border-t-[.1em] border-l-[.1em]" onClick={() => setOpen(true)}>
+        Riapri
+      </button>
+    )
+})
+
+const ToolSelector = memo(({ tool, setTool }: { tool: Tool, setTool: (t: Tool) => void }) => {
+  return <div className="fixed bottom-0 left-[35.3%] w-[29.4%] h-[90px] indent-[1,5em] z-0 border-solid border-sky-800 border-t-[.1em]">
+    <div className="h-[20%] bg-sky-700"></div>
+    <div className="h-[80%] bg-zinc-900">
+      <select value={tool.toolname} onChange={ev => setTool(TOOLS[ev.target.value as keyof typeof TOOLS](tool))}>
+        {TOOL_LIST.map(it => (<option value={it} key={it}>{it}</option>))}
+      </select>
+    </div>
+  </div>
+})
+
+const Devices = memo(({ project, highlighted }: { project: Project, highlighted?: Set<number> }) =>
+  Object.values(project.devices).map(
+    highlighted
+      ? (d) =>
+        (<DeviceComponent device={d} key={d.id} extraClass={highlighted.has(d.id) ? " brightness-50" : undefined} />)
+      : (d) =>
+        (<DeviceComponent device={d} key={d.id} />)
+  ));
+
 
