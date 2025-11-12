@@ -6,14 +6,13 @@ import { DeviceFactory } from "./Device";
 export type ExampleDeviceInternalState = InternalState<{ exampleProp1: number, exampleProp2: string }>
 
 export const ExampleDevice: DeviceFactory = {
-  // The SVG `<g>` tag for the device icon, list is in `ICONS.tsx`
+  // L'id del tag `<g>` per l'icona del dispositivo, la lista è in `ICONS.tsx`
   iconId: "#router-icon",
-  // The `DeviceEmulator` (which is what handles the `InternalState`)
+  // Il `DeviceEmulator` (l'oggetto che gestisce `InternalState`)
   emulator: exampleDeviceEmulator,
-  // The device type code (must be present in `deviceTypeDB.tsx`)
+  // Il tipo di dispositivo (deve essere presente in `deviceTypeDB.tsx`)
   deviceType: "exampleDevice",
-  // Function called to generate the InternalState of the device
-  // it is meant to set all extra params related to device
+  // Funzione chiamata per impostare l'`internalState` di default
   defaultState(): ExampleDeviceInternalState {
     return {
       netInterfaces: [
