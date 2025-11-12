@@ -6,6 +6,11 @@ import { makeSelectTool, SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { DeviceComponent } from "./devices/deviceTypesDB";
 
+/*
+ * Questo componente è tutta l'interfaccia del sito. Crea gli hook sia per il
+ * `Project` che il `Tool` in uso, pertanto viene rirenderizzato ad ogni
+ * cambiamento di questi.
+ */
 export function Editor(p: Project): ReactNode {
   const [project, setProject] = useState(p);
   const [tool, setTool] = useState<Tool>(makeSelectTool({ project, updateProject: () => setProject(new Project(project)), update: () => { } }));
@@ -76,6 +81,8 @@ export function Editor(p: Project): ReactNode {
   );
 }
 
+// Ritorna una funzione che chiama `tool.onEvent(event)` con un oggetto
+// `CanvasEvent`, costruito a partire dal tipo di evento DOM specificato
 function buildEventHandler(
   svgCanvas: RefObject<SVGSVGElement | null>,
   tool: Tool,
@@ -110,6 +117,8 @@ function buildEventHandler(
   }
 };
 
+// La barra laterale dell'interfaccia: il suo contenuto è intermente deciso dal
+// tool in uso.
 const SideBar = memo(({ tool }: { tool: Tool }) => {
   const [open, setOpen] = useState(true);
   return open
@@ -128,17 +137,20 @@ const SideBar = memo(({ tool }: { tool: Tool }) => {
     )
 })
 
-const ToolSelector = memo(({ tool, setTool }: { tool: Tool, setTool: (t: Tool) => void }) => {
-  return <div className="fixed bottom-0 left-[35.3%] w-[29.4%] h-[90px] indent-[1,5em] z-0 border-solid border-sky-800 border-t-[.1em]">
+// Il selettore del tool in uso
+const ToolSelector = memo(({ tool, setTool }: { tool: Tool, setTool: (t: Tool) => void }) => (
+  <div className="fixed bottom-0 left-[35.3%] w-[29.4%] h-[90px] indent-[1,5em] z-0 border-solid border-sky-800 border-t-[.1em]">
     <div className="h-[20%] bg-sky-700"></div>
     <div className="h-[80%] bg-zinc-900">
       <select value={tool.toolname} onChange={ev => setTool(TOOLS[ev.target.value as keyof typeof TOOLS](tool))}>
         {TOOL_LIST.map(it => (<option value={it} key={it}>{it}</option>))}
       </select>
     </div>
-  </div>
-})
+  </div>)
+)
 
+// Utility function che disegna i dispositivi del progetto, opzionalmente
+// evidenziandoli
 const Devices = memo(({ project, highlighted }: { project: Project, highlighted?: Set<number> }) =>
   Object.values(project.devices).map(
     highlighted
