@@ -2,8 +2,8 @@ import { ExampleDeviceInternalState } from "../devices/ExampleDevice";
 import { DeviceEmulator, runOnInterpreter } from "./DeviceEmulator";
 
 export const exampleDeviceEmulator: DeviceEmulator<ExampleDeviceInternalState> = {
-  // The various menus in the side panel drawn by `SelectTool`
-  // NOTE: Terminal is drawn by default
+  // I vari menu mostrati `SelectTool`
+  // NOTE: Il menu terminale è disegnato sempre
   configPanel: {
     menu1() {
       return (<p> This is the menu No. 1 </p>);
