@@ -4,7 +4,8 @@ import { Project } from "./Project";
 import { CanvasEvent, Tool, TOOL_LIST, TOOLS } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
-import { DeviceComponent } from "./devices/deviceTypesDB";
+import { deviceTypesDB } from "./devices/deviceTypesDB";
+import { Device } from "./devices/Device";
 
 /*
  * Questo componente è tutta l'interfaccia del sito. Crea gli hook sia per il
@@ -161,3 +162,33 @@ const Devices = memo(({ project, highlighted }: { project: Project, highlighted?
   ));
 
 
+// Componente che ritorna un dispositivo come SVG, cliccando sopra il
+// dispositivo si può ricavare l'id tramite la proprietà "data-id"
+// dell'elemento. L'icona è data dalla factory del `deviceType` del dispositivo
+// stesso
+const DeviceComponent = memo((
+  { device, extraClass }: { device: Device, extraClass?: string },
+) => {
+  const dataProps = { "data-id": device.id };
+  return (
+    <>
+      <use
+        href={deviceTypesDB[device.deviceType].iconId}
+        className={"device " + (extraClass || "")}
+        {...device.pos}
+        {...dataProps}
+      />
+      <text
+        x={device.pos.x}
+        y={device.pos.y + 40}
+        width="100px"
+        textAnchor="middle"
+        fill="#ffffff"
+        className="select-none"
+        {...dataProps}
+      >
+        {device.name}
+      </text>
+    </>
+  );
+})
