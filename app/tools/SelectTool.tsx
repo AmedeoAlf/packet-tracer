@@ -15,9 +15,9 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
     selected: new Set<number>(),
     stdin: "",
     stdout: "= Terminal emulator =",
-    svgElements: () => (<></>),
     ...ctx,
     toolname: "select",
+    svgElements: () => (<></>),
     panel() {
       switch (this.selected.size) {
         case 0:
