@@ -11,7 +11,6 @@ export type SelectTool = Tool & {
 }
 
 export function makeSelectTool(ctx: ToolCtx): SelectTool {
-  console.log(ctx)
   return {
     selected: new Set<number>(),
     stdin: "",
@@ -27,7 +26,7 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
             <p>Seleziona un dispositivo per vedere le proprietà</p>
           );
         case 1:
-          const device = this.project.devices[this.selected.values().next().value!!];
+          const device = this.project.devices.get(this.selected.values().next().value!!)!!;
           const emulator = deviceTypesDB[device.deviceType].emulator;
           const tool = this;
           const ctx: EmulatorContext<any> = {
@@ -92,9 +91,9 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
         case "mousemove":
           if (this.lastCursorPos) {
             for (const dev of this.selected) {
-              this.project.devices[dev].pos.x += ev.pos.x - this.lastCursorPos.x;
-              this.project.devices[dev].pos.y += ev.pos.y - this.lastCursorPos.y;
-              this.project.devices[dev] = { ...this.project.devices[dev] }
+              this.project.devices.get(dev)!!.pos.x += ev.pos.x - this.lastCursorPos.x;
+              this.project.devices.get(dev)!!.pos.y += ev.pos.y - this.lastCursorPos.y;
+              this.project.devices.set(dev, { ...this.project.devices.get(dev)!! })
             }
             this.updateProject();
             this.lastCursorPos = ev.pos;
@@ -106,8 +105,8 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
             const diffY = ev.pos.y - this.lastCursorPos.y;
             if (diffX || diffY) {
               for (const dev of this.selected) {
-                this.project.devices[dev].pos.x += diffX;
-                this.project.devices[dev].pos.y += diffY;
+                this.project.devices.get(dev)!!.pos.x += diffX;
+                this.project.devices.get(dev)!!.pos.y += diffY;
               }
               this.updateProject();
             }

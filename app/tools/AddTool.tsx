@@ -19,7 +19,6 @@ export function makeAddTool(ctx: ToolCtx): AddTool {
           Device type:
           <select
             defaultValue={this.deviceType}
-            // BROKEN
             onChange={ev => { this.deviceType = ev.target.value as DeviceType; this.update() }} >
             {Object.keys(deviceTypesDB).map(it => (<option key={it} value={it}>{it}</option>))}
           </select>

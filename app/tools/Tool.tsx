@@ -6,6 +6,7 @@ import { ReactNode } from "react";
 import { makeSelectTool } from "./SelectTool";
 import { makeAddTool } from "./AddTool";
 import { makeHandTool } from "./HandTool";
+import { makeConnectTool } from "./ConnectTool";
 
 export type CanvasEvent = ({
   type: "mousemove";
@@ -35,8 +36,9 @@ export type ToolCtx = {
 export const TOOLS = {
   select: makeSelectTool,
   add: makeAddTool,
-  hand: makeHandTool
+  hand: makeHandTool,
+  connect: makeConnectTool
 } satisfies Record<string, (ctx: ToolCtx) => Tool>;
 
-export const TOOL_LIST = ['select', 'add', 'hand'] as const satisfies (keyof typeof TOOLS)[];
+export const TOOL_LIST = ['select', 'add', 'hand', 'connect'] as const satisfies (keyof typeof TOOLS)[];
 

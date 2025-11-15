@@ -29,6 +29,7 @@ export function Editor(p: Project): ReactNode {
   useEffect(() => {
     window.onresize = () => setCanvasSize(undefined);
   })
+  // console.log(project.getCables());
 
   return (
     <>
@@ -80,6 +81,7 @@ export function Editor(p: Project): ReactNode {
       >
         <defs> {Object.values(ICONS)} </defs>
         <Devices project={project} highlighted={tool.toolname == "select" ? (tool as SelectTool).selected : undefined} />
+        {project.getCables().entries().map(([idx, [a, b]]) => <line x1={a.pos.x} y1={a.pos.y} x2={b.pos.x} y2={b.pos.y} key={idx} stroke="black" />)}
         {tool.svgElements()}
       </svg >
 
@@ -158,7 +160,7 @@ function ToolSelector({ tool, setTool }: { tool: Tool, setTool: (t: Tool) => voi
 // Utility function che disegna i dispositivi del progetto, opzionalmente
 // evidenziandoli
 const Devices = memo(({ project, highlighted }: { project: Project, highlighted?: Set<number> }) =>
-  Object.values(project.devices).map(
+  project.devices.values().map(
     highlighted
       ? (d) =>
         (<DeviceComponent device={d} key={d.id} extraClass={highlighted.has(d.id) ? " brightness-50" : undefined} />)

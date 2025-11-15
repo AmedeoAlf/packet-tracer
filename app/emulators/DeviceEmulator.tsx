@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-interface NetworkInterface {
+export interface NetworkInterface {
   type: "serial" | "copper" | "fiber";
   maxMbps: 10 | 100 | 1000 | 10000;
   name: string;
