@@ -11,11 +11,13 @@ export type SelectTool = Tool & {
 }
 
 export function makeSelectTool(ctx: ToolCtx): SelectTool {
+  console.log(ctx)
   return {
     selected: new Set<number>(),
     stdin: "",
     stdout: "= Terminal emulator =",
     ...ctx,
+    lastCursorPos: undefined,
     toolname: "select",
     svgElements: () => (<></>),
     panel() {
@@ -100,11 +102,15 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
           break;
         case "mouseup":
           if (this.lastCursorPos) {
-            for (const dev of this.selected) {
-              this.project.devices[dev].pos.x += ev.pos.x - this.lastCursorPos.x;
-              this.project.devices[dev].pos.y += ev.pos.y - this.lastCursorPos.y;
+            const diffX = ev.pos.x - this.lastCursorPos.x;
+            const diffY = ev.pos.y - this.lastCursorPos.y;
+            if (diffX || diffY) {
+              for (const dev of this.selected) {
+                this.project.devices[dev].pos.x += diffX;
+                this.project.devices[dev].pos.y += diffY;
+              }
+              this.updateProject();
             }
-            this.updateProject();
             this.lastCursorPos = undefined;
           }
           break;

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, MouseEvent, useEffect, memo, RefObject, ReactNode } from "react";
+import { useState, useRef, MouseEvent, useEffect, memo, RefObject, ReactNode, useMemo } from "react";
 import { Project } from "./Project";
 import { CanvasEvent, Tool, TOOL_LIST, TOOLS } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
@@ -15,7 +15,9 @@ import { Device } from "./devices/Device";
 export function Editor(p: Project): ReactNode {
   const [project, setProject] = useState(p);
   const [tool, setTool] = useState<Tool>(makeSelectTool({ project, updateProject: () => setProject(new Project(project)), update: () => { } }));
-  tool.update = () => setTool({ ...tool });
+  tool.update = () => {
+    setTool({ ...tool })
+  };
 
   const svgCanvas = useRef<SVGSVGElement>(null);
   let pt = svgCanvas.current?.createSVGPoint();
@@ -47,7 +49,10 @@ export function Editor(p: Project): ReactNode {
         <div className="h-[80%] bg-zinc-900"></div>
       </div>
 
-      <ToolSelector tool={tool} setTool={setTool} />
+      {useMemo(
+        () => ToolSelector({ tool, setTool }),
+        [tool.toolname]
+      )}
 
       <svg
         onClick={handler("click")}
@@ -139,8 +144,8 @@ const SideBar = memo(({ tool }: { tool: Tool }) => {
 })
 
 // Il selettore del tool in uso
-const ToolSelector = memo(({ tool, setTool }: { tool: Tool, setTool: (t: Tool) => void }) => (
-  <div className="fixed bottom-0 left-[35.3%] w-[29.4%] h-[90px] indent-[1,5em] z-0 border-solid border-sky-800 border-t-[.1em]">
+function ToolSelector({ tool, setTool }: { tool: Tool, setTool: (t: Tool) => void }): ReactNode {
+  return (<div className="fixed bottom-0 left-[35.3%] w-[29.4%] h-[90px] indent-[1,5em] z-0 border-solid border-sky-800 border-t-[.1em]">
     <div className="h-[20%] bg-sky-700"></div>
     <div className="h-[80%] bg-zinc-900">
       <select value={tool.toolname} onChange={ev => setTool(TOOLS[ev.target.value as keyof typeof TOOLS](tool))}>
@@ -148,7 +153,7 @@ const ToolSelector = memo(({ tool, setTool }: { tool: Tool, setTool: (t: Tool) =
       </select>
     </div>
   </div>)
-)
+}
 
 // Utility function che disegna i dispositivi del progetto, opzionalmente
 // evidenziandoli
