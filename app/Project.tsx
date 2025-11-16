@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+"use client"
 import { Coords } from "./common";
 import { Device } from "./devices/Device";
 import { deviceTypesDB } from "./devices/deviceTypesDB";
@@ -53,6 +53,9 @@ export class Project {
   getInterface(devId: number, ifId: number): NetworkInterface | undefined {
     return this.devices.get(devId)?.internalState.netInterfaces.at(ifId)
   }
+  getInterfaceFromId(intf: InterfaceId): NetworkInterface | undefined {
+    return this.getInterface(deviceOfIntf(intf), idxOfIntf(intf));
+  }
   connect(devIdA: number, ifIdA: number, devIdB: number, ifIdB: number) {
     {
       const a = this.getInterface(devIdA, ifIdA);
@@ -69,15 +72,22 @@ export class Project {
     return;
   }
   // Maps two deviceIds to the amount of connections between them
-  getCables(): Map<number, number> {
+  getCables(): Map<number, Omit<NetworkInterface, "name">[]> {
     const cabled = new Set<number>();
-    const cableToOccurencies = new Map<number, number>();
+    const cableToOccurencies = new Map();
     for (const conn of this.connections) {
       if (cabled.has(conn[0])) continue;
       cabled.add(conn[1]);
 
       const key = [deviceOfIntf(conn[0]), deviceOfIntf(conn[1])].toSorted().reduce((acc, val) => (acc << 16) | val);
-      cableToOccurencies.set(key, (cableToOccurencies.get(key) || 0) + 1)
+      if (!cableToOccurencies.has(key)) cableToOccurencies.set(key, []);
+
+      const ifA = this.getInterfaceFromId(conn[0])!!;
+      const ifB = this.getInterfaceFromId(conn[1])!!;
+      cableToOccurencies.get(key)!!.push({
+        type: ifA.type,
+        maxMbps: Math.min(ifA.maxMbps, ifB.maxMbps) as any
+      });
     }
     return cableToOccurencies;
   }
@@ -93,48 +103,4 @@ export class Project {
     this.viewBoxPos = p?.viewBoxPos || { x: 0, y: 0 };
     this.viewBoxZoom = p?.viewBoxZoom || 1;
   }
-}
-
-
-export function Cables({ project, cables }: { project: Project, cables: ReturnType<Project['getCables']> }): ReactNode {
-  return (<> {
-    cables.entries()
-      .flatMap(
-        ([cable, amount]) => {
-          const aPos = project.devices.get(cable >> 16)!!.pos;
-          const bPos = project.devices.get(cable & 0xFFFF)!!.pos;
-
-          // C'è un solo cavo tra due dispositivi, caso facile
-          if (amount == 1) {
-            return [{
-              x1: aPos.x,
-              x2: bPos.x,
-              y1: aPos.y,
-              y2: bPos.y
-            }]
-          }
-
-          // Altrimenti disegnali con offset corretti
-          const dx = bPos.x - aPos.x;
-          const dy = bPos.y - aPos.y;
-          const len = Math.sqrt(dx * dx + dy * dy);
-          const CABLE_DIAMETER = Math.min(amount * 3 + 5, 20);
-          const height = dx / len * CABLE_DIAMETER;
-          const width = dy / len * CABLE_DIAMETER;
-
-          const lines = [];
-          for (let t = -0.5; t <= 0.5; t += 1 / (amount - 1)) {
-            lines.push({
-              x1: aPos.x - width * t,
-              x2: bPos.x - width * t,
-              y1: aPos.y + height * t,
-              y2: bPos.y + height * t,
-            })
-          }
-          return lines;
-        }
-      ).map(
-        (position, idx) => <line {...position} stroke="black" key={idx} />
-      )
-  } </>)
 }

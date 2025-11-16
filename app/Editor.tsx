@@ -1,11 +1,12 @@
 "use client";
 import { useState, useRef, MouseEvent, useEffect, memo, RefObject, ReactNode, useMemo } from "react";
-import { Cables, Project } from "./Project";
+import { Project } from "./Project";
 import { CanvasEvent, Tool, TOOL_LIST, TOOLS } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { deviceTypesDB } from "./devices/deviceTypesDB";
 import { Device } from "./devices/Device";
+import { Cables } from "./Cables";
 
 /*
  * Questo componente è tutta l'interfaccia del sito. Crea gli hook sia per il
@@ -200,3 +201,4 @@ const DeviceComponent = memo((
     </>
   );
 })
+
