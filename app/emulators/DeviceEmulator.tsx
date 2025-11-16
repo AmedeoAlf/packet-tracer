@@ -1,9 +1,15 @@
 import { ReactNode } from "react";
+import { Device } from "../devices/Device";
+import { deviceTypesDB } from "../devices/deviceTypesDB";
+import { ToolCtx } from "../tools/Tool";
+import { toInterfaceId } from "../Project";
+import { MacAddress } from "../protocols/802_3";
 
 export interface NetworkInterface {
   type: "serial" | "copper" | "fiber";
   maxMbps: 10 | 100 | 1000 | 10000;
   name: string;
+  mac: MacAddress;
 }
 
 export type InternalState<Ext extends object> = {
@@ -28,6 +34,7 @@ export type Interpreter<State extends InternalState<object>> = {
 
 export type EmulatorContext<State extends InternalState<object>> = {
   interpreter: Interpreter<State>,
+  sendOnIf: (ifIdx: number, data: Uint8Array) => void,
   state: State,
   updateState: () => void,
   args?: string[],
@@ -125,6 +132,21 @@ export interface DeviceEmulator<State extends InternalState<object>> {
     DevicePanel<State>
   >;
   cmdInterpreter: Interpreter<State>;
+  packetHandler: (ctx: EmulatorContext<State>, data: Uint8Array, intf: number) => void;
 }
 
-
+export function buildEmulatorContext<T extends InternalState<object>>(device: Device, toolCtx: ToolCtx): EmulatorContext<T> {
+  const emulator = deviceTypesDB[device.deviceType].emulator;
+  return {
+    interpreter: emulator.cmdInterpreter,
+    updateState() {
+      device.internalState = { ...device.internalState };
+      toolCtx.updateProject();
+    },
+    sendOnIf(ifIdx, data) {
+      toolCtx.project.sendOn(toInterfaceId(device.id, ifIdx), toolCtx, data)
+    },
+    state: device.internalState as any,
+    write() { },
+  };
+}

@@ -1,4 +1,5 @@
 import { switchEmulator } from "../emulators/switchEmulator";
+import { randomMAC } from "../protocols/802_3";
 import { DeviceFactory } from "./Device";
 
 export const Switch: DeviceFactory = {
@@ -8,14 +9,14 @@ export const Switch: DeviceFactory = {
   defaultState() {
     return {
       netInterfaces: [
-        { name: "if0", maxMbps: 100, type: "copper" },
-        { name: "if1", maxMbps: 100, type: "copper" },
-        { name: "if2", maxMbps: 100, type: "copper" },
-        { name: "if3", maxMbps: 100, type: "copper" },
-        { name: "if4", maxMbps: 100, type: "copper" },
-        { name: "if5", maxMbps: 100, type: "copper" },
-        { name: "if6", maxMbps: 100, type: "copper" },
-        { name: "if7", maxMbps: 100, type: "copper" },
+        { name: "if0", maxMbps: 100, type: "copper", mac: randomMAC() },
+        { name: "if1", maxMbps: 100, type: "copper", mac: randomMAC() },
+        { name: "if2", maxMbps: 100, type: "copper", mac: randomMAC() },
+        { name: "if3", maxMbps: 100, type: "copper", mac: randomMAC() },
+        { name: "if4", maxMbps: 100, type: "copper", mac: randomMAC() },
+        { name: "if5", maxMbps: 100, type: "copper", mac: randomMAC() },
+        { name: "if6", maxMbps: 100, type: "copper", mac: randomMAC() },
+        { name: "if7", maxMbps: 100, type: "copper", mac: randomMAC() },
       ]
     }
   }

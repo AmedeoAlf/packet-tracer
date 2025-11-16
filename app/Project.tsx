@@ -2,7 +2,8 @@
 import { Coords } from "./common";
 import { Device } from "./devices/Device";
 import { deviceTypesDB } from "./devices/deviceTypesDB";
-import { NetworkInterface } from "./emulators/DeviceEmulator";
+import { buildEmulatorContext, NetworkInterface } from "./emulators/DeviceEmulator";
+import { ToolCtx } from "./tools/Tool";
 
 export type InterfaceId = number;
 
@@ -91,8 +92,17 @@ export class Project {
     }
     return cableToOccurencies;
   }
-  getConnectedTo(intfA: InterfaceId): InterfaceId | undefined {
-    return this.connections.get(intfA);
+  getConnectedTo(intf: InterfaceId): InterfaceId | undefined {
+    return this.connections.get(intf);
+  }
+  sendOn(intf: InterfaceId, toolCtx: ToolCtx, data: Uint8Array) {
+    const target = this.getConnectedTo(intf);
+    if (!target) return;
+    const dev = this.devices.get(deviceOfIntf(target));
+    if (!dev) return;
+    const ifIdx = idxOfIntf(intf)
+    console.assert(dev.internalState.netInterfaces.length > ifIdx);
+    deviceTypesDB[dev.deviceType].emulator.packetHandler(buildEmulatorContext(dev, toolCtx), data, ifIdx);
   }
   // Il construttore serve a creare copie identiche del progetto
   // per scatenare un rerender

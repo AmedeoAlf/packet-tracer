@@ -1,6 +1,6 @@
 import { CanvasEvent, Tool, ToolCtx } from "./Tool";
 import { deviceTypesDB } from "../devices/deviceTypesDB";
-import { DevicePanel, EmulatorContext, getAutoComplete, InternalState, runOnInterpreter } from "../emulators/DeviceEmulator";
+import { buildEmulatorContext, DevicePanel, EmulatorContext, getAutoComplete, InternalState, runOnInterpreter } from "../emulators/DeviceEmulator";
 import { Coords } from "../common";
 
 export type SelectTool = Tool & {
@@ -29,17 +29,10 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
           const device = this.project.devices.get(this.selected.values().next().value!!)!!;
           const emulator = deviceTypesDB[device.deviceType].emulator;
           const tool = this;
-          const ctx: EmulatorContext<any> = {
-            interpreter: emulator.cmdInterpreter,
-            updateState() {
-              device.internalState = { ...device.internalState };
-              tool.updateProject();
-            },
-            state: device.internalState,
-            write(msg) {
-              tool.stdout += "\n" + msg;
-              tool.update();
-            },
+          const ctx = buildEmulatorContext(device, tool);
+          ctx.write = (msg) => {
+            tool.stdout += "\n" + msg;
+            tool.update();
           };
           const panels: [string, DevicePanel<any>][] = [
             ["terminal",

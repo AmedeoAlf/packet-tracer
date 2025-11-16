@@ -50,6 +50,7 @@ export const exampleDeviceEmulator: DeviceEmulator<ExampleDeviceInternalState> =
       </div>);
     }
   },
+  packetHandler() { },
   cmdInterpreter: {
     shell: {
       // Any entry must have a description

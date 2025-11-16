@@ -10,7 +10,7 @@ export default function Home() {
     p.createDevice("router", { x: 250, y: 300 }, "Router A")
     p.createDevice("router", { x: 350, y: 200 }, "Internet A")
     p.createDevice("router", { x: 350, y: 300 }, "Internet B")
-    p.devices.get(p.lastId)?.internalState.netInterfaces.push({ name: "se2", maxMbps: 100, type: "serial" })
+    p.devices.get(p.lastId)?.internalState.netInterfaces.push({ name: "se2", maxMbps: 100, type: "serial", mac: 0x102030405060 })
     p.createDevice("router", { x: 350, y: 400 }, "Internet C")
     p.createDevice("router", { x: 450, y: 400 }, "Router B")
     p.createDevice("switch", { x: 600, y: 300 }, "Rete B")

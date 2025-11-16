@@ -1,5 +1,7 @@
+import { Layer2Packet } from "../protocols/802_3";
 import { hello } from "../virtualPrograms/hello";
 import { interfaces } from "../virtualPrograms/interfaces";
+import { l2send } from "../virtualPrograms/l2send";
 import { DeviceEmulator, InternalState } from "./DeviceEmulator";
 
 export const switchEmulator: DeviceEmulator<InternalState<{}>> = {
@@ -36,9 +38,13 @@ export const switchEmulator: DeviceEmulator<InternalState<{}>> = {
       desc: "Command",
       subcommands: {
         hello,
-        interfaces
+        interfaces,
+        l2send
       }
     }
-  }
+  },
+  packetHandler(_ctx, data, _intf) {
+    console.log(Layer2Packet.fromBytes(data.buffer));
+  },
 };
 

@@ -1,6 +1,7 @@
 "use client";
 import { InternalState } from "../emulators/DeviceEmulator";
 import { exampleDeviceEmulator } from "../emulators/exampleDeviceEmulator";
+import { randomMAC } from "../protocols/802_3";
 import { DeviceFactory } from "./Device";
 
 export type ExampleDeviceInternalState = InternalState<{ exampleProp1: number, exampleProp2: string }>
@@ -16,8 +17,8 @@ export const ExampleDevice: DeviceFactory = {
   defaultState(): ExampleDeviceInternalState {
     return {
       netInterfaces: [
-        { name: "if0", maxMbps: 100, type: "copper" },
-        { name: "if1", maxMbps: 100, type: "copper" },
+        { name: "if0", maxMbps: 100, type: "copper", mac: randomMAC() },
+        { name: "if1", maxMbps: 100, type: "copper", mac: randomMAC() },
       ],
       exampleProp1: 42,
       exampleProp2: "Some string to be assigned to this prop"
