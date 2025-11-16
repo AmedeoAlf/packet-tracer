@@ -3,7 +3,7 @@ import { Project } from "./Project";
 import { NetworkInterface } from "./emulators/DeviceEmulator";
 
 export function Cables({ project, cables }: { project: Project, cables: ReturnType<Project['getCables']> }): ReactNode {
-  return (<> {
+  return (<g> {
     [...cables.entries()
       .flatMap(
         ([fromTo, cables]) => {
@@ -43,7 +43,7 @@ export function Cables({ project, cables }: { project: Project, cables: ReturnTy
       ).map(
         (props, idx) => <line {...props} key={idx} strokeWidth="1pt" />
       )]
-  } </>)
+  } </g>)
 }
 
 const intfColor = {

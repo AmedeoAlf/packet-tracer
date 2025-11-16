@@ -163,13 +163,13 @@ function ToolSelector({ tool, setTool }: { tool: Tool, setTool: (t: Tool) => voi
 // Utility function che disegna i dispositivi del progetto, opzionalmente
 // evidenziandoli
 const Devices = memo(({ project, highlighted }: { project: Project, highlighted?: Set<number> }) =>
-  [...project.devices.values().map(
+  <g>{[...project.devices.values().map(
     highlighted
       ? (d) =>
         (<DeviceComponent device={d} key={d.id} extraClass={highlighted.has(d.id) ? " brightness-50" : undefined} />)
       : (d) =>
         (<DeviceComponent device={d} key={d.id} />)
-  )]);
+  )]}</g>);
 
 
 // Componente che ritorna un dispositivo come SVG, cliccando sopra il
