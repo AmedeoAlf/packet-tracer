@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import { Project } from "./Project";
-import { NetworkInterface } from "./emulators/DeviceEmulator";
+import { Project } from "../Project";
+import { NetworkInterface } from "../emulators/DeviceEmulator";
 
 export function Cables({ project, cables }: { project: Project, cables: ReturnType<Project['getCables']> }): ReactNode {
   return (<g> {
