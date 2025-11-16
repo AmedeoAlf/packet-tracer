@@ -10,6 +10,12 @@ export const Switch: DeviceFactory = {
       netInterfaces: [
         { name: "if0", maxMbps: 100, type: "copper" },
         { name: "if1", maxMbps: 100, type: "copper" },
+        { name: "if2", maxMbps: 100, type: "copper" },
+        { name: "if3", maxMbps: 100, type: "copper" },
+        { name: "if4", maxMbps: 100, type: "copper" },
+        { name: "if5", maxMbps: 100, type: "copper" },
+        { name: "if6", maxMbps: 100, type: "copper" },
+        { name: "if7", maxMbps: 100, type: "copper" },
       ]
     }
   }

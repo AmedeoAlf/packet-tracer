@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, MouseEvent, useEffect, memo, RefObject, ReactNode, useMemo } from "react";
-import { Project } from "./Project";
+import { Cables, Project } from "./Project";
 import { CanvasEvent, Tool, TOOL_LIST, TOOLS } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
@@ -29,7 +29,6 @@ export function Editor(p: Project): ReactNode {
   useEffect(() => {
     window.onresize = () => setCanvasSize(undefined);
   })
-  // console.log(project.getCables());
 
   return (
     <>
@@ -80,8 +79,11 @@ export function Editor(p: Project): ReactNode {
         }}
       >
         <defs> {Object.values(ICONS)} </defs>
+        {useMemo(
+          () => <Cables project={project} cables={project.getCables()} />,
+          [project.getCables()]
+        )}
         <Devices project={project} highlighted={tool.toolname == "select" ? (tool as SelectTool).selected : undefined} />
-        {project.getCables().entries().map(([idx, [a, b]]) => <line x1={a.pos.x} y1={a.pos.y} x2={b.pos.x} y2={b.pos.y} key={idx} stroke="black" />)}
         {tool.svgElements()}
       </svg >
 

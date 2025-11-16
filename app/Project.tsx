@@ -1,4 +1,4 @@
-"use client";
+import { ReactNode } from "react";
 import { Coords } from "./common";
 import { Device } from "./devices/Device";
 import { deviceTypesDB } from "./devices/deviceTypesDB";
@@ -7,9 +7,8 @@ import { NetworkInterface } from "./emulators/DeviceEmulator";
 export type InterfaceId = number;
 
 export function toInterfaceId(device: number, intfIdx: number): InterfaceId {
-  console.log(device)
   console.assert(intfIdx < (1 << 8));
-  return device << 8 + intfIdx;
+  return (device << 8) | intfIdx;
 }
 
 export function deviceOfIntf(i: InterfaceId): number {
@@ -51,36 +50,38 @@ export class Project {
       name || `${capitalize(type)} ${this.lastId}`
     ));
   }
-  getInterface(intf: InterfaceId): NetworkInterface | undefined {
-    console.log(deviceOfIntf(intf), idxOfIntf(intf))
-    return this.devices.get(deviceOfIntf(intf))?.internalState.netInterfaces.at(idxOfIntf(intf))
+  getInterface(devId: number, ifId: number): NetworkInterface | undefined {
+    return this.devices.get(devId)?.internalState.netInterfaces.at(ifId)
   }
-  connect(intfA: InterfaceId, intfB: InterfaceId): boolean {
+  connect(devIdA: number, ifIdA: number, devIdB: number, ifIdB: number) {
     {
-      const a = this.getInterface(intfA);
-      const b = this.getInterface(intfB);
-      if (!a || !b) return false;
-      console.log("A e B validi")
-      if (a.type != b.type) return false;
-      console.log("Hanno lo stesso tipo")
+      const a = this.getInterface(devIdA, ifIdA);
+      const b = this.getInterface(devIdB, ifIdB);
+      if (!a || !b) return "Interfacce non trovate";
+      if (a.type != b.type) return "Interfacce non compatibili";
     }
+    const intfA = toInterfaceId(devIdA, ifIdA);
+    const intfB = toInterfaceId(devIdB, ifIdB);
     this.connections.delete(this.connections.get(intfA) || -1);
     this.connections.delete(this.connections.get(intfB) || -1);
     this.connections.set(intfA, intfB);
     this.connections.set(intfB, intfA);
-    return true;
+    return;
   }
-  getCables(): [Device, Device][] {
+  // Maps two deviceIds to the amount of connections between them
+  getCables(): Map<number, number> {
     const cabled = new Set<number>();
-    const result: [Device, Device][] = [];
+    const cableToOccurencies = new Map<number, number>();
     for (const conn of this.connections) {
       if (cabled.has(conn[0])) continue;
       cabled.add(conn[1]);
-      result.push(conn.map(it => this.devices.get(deviceOfIntf(it))!!) as [Device, Device]);
+
+      const key = [deviceOfIntf(conn[0]), deviceOfIntf(conn[1])].toSorted().reduce((acc, val) => (acc << 16) | val);
+      cableToOccurencies.set(key, (cableToOccurencies.get(key) || 0) + 1)
     }
-    return result;
+    return cableToOccurencies;
   }
-  getConnectedTo(intfA: InterfaceId): number | undefined {
+  getConnectedTo(intfA: InterfaceId): InterfaceId | undefined {
     return this.connections.get(intfA);
   }
   // Il construttore serve a creare copie identiche del progetto
@@ -94,3 +95,46 @@ export class Project {
   }
 }
 
+
+export function Cables({ project, cables }: { project: Project, cables: ReturnType<Project['getCables']> }): ReactNode {
+  return (<> {
+    cables.entries()
+      .flatMap(
+        ([cable, amount]) => {
+          const aPos = project.devices.get(cable >> 16)!!.pos;
+          const bPos = project.devices.get(cable & 0xFFFF)!!.pos;
+
+          // C'è un solo cavo tra due dispositivi, caso facile
+          if (amount == 1) {
+            return [{
+              x1: aPos.x,
+              x2: bPos.x,
+              y1: aPos.y,
+              y2: bPos.y
+            }]
+          }
+
+          // Altrimenti disegnali con offset corretti
+          const dx = bPos.x - aPos.x;
+          const dy = bPos.y - aPos.y;
+          const len = Math.sqrt(dx * dx + dy * dy);
+          const CABLE_DIAMETER = Math.min(amount * 3 + 5, 20);
+          const height = dx / len * CABLE_DIAMETER;
+          const width = dy / len * CABLE_DIAMETER;
+
+          const lines = [];
+          for (let t = -0.5; t <= 0.5; t += 1 / (amount - 1)) {
+            lines.push({
+              x1: aPos.x - width * t,
+              x2: bPos.x - width * t,
+              y1: aPos.y + height * t,
+              y2: bPos.y + height * t,
+            })
+          }
+          return lines;
+        }
+      ).map(
+        (position, idx) => <line {...position} stroke="black" key={idx} />
+      )
+  } </>)
+}
