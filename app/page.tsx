@@ -14,13 +14,13 @@ export default function Home() {
     p.createDevice("router", { x: 350, y: 400 }, "Internet C")
     p.createDevice("router", { x: 450, y: 400 }, "Router B")
     p.createDevice("switch", { x: 600, y: 300 }, "Rete B")
-    console.assert(p.connect(1, 0, 2, 0) != undefined) // "Rete A" -> "Router A"
-    console.assert(p.connect(2, 2, 3, 2) != undefined) // "Router A" -> "Internet A"
-    console.assert(p.connect(2, 3, 4, 2) != undefined) // "Router A" -> "Internet B"
-    console.assert(p.connect(3, 3, 4, 3) != undefined) // "Internet A" -> "Internet B"
-    console.assert(p.connect(4, 4, 5, 2) != undefined) // "Internet B" -> "Internet C"
-    console.assert(p.connect(5, 3, 6, 2) != undefined) // "Internet C" -> "Router B"
-    console.assert(p.connect(6, 0, 7, 0) != undefined) // "Router B" -> "Rete B"
+    console.assert(p.connect(1, 0, 2, 0) == undefined) // "Rete A" -> "Router A"
+    console.assert(p.connect(2, 2, 3, 2) == undefined) // "Router A" -> "Internet A"
+    console.assert(p.connect(2, 3, 4, 2) == undefined) // "Router A" -> "Internet B"
+    console.assert(p.connect(3, 3, 4, 3) == undefined) // "Internet A" -> "Internet B"
+    console.assert(p.connect(4, 4, 5, 2) == undefined) // "Internet B" -> "Internet C"
+    console.assert(p.connect(5, 3, 6, 2) == undefined) // "Internet C" -> "Router B"
+    console.assert(p.connect(6, 0, 7, 0) == undefined) // "Router B" -> "Rete B"
     return p;
   }, [0]);
   return Editor(proj);
