@@ -1,11 +1,9 @@
 "use client";
-import { useState, useRef, MouseEvent, useEffect, memo, RefObject, ReactNode, useMemo } from "react";
+import { useState, useRef, MouseEvent, useEffect, RefObject, ReactNode, useMemo } from "react";
 import { Project } from "./Project";
 import { CanvasEvent, Tool } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
-import { deviceTypesDB } from "./devices/deviceTypesDB";
-import { Device } from "./devices/Device";
 import { Cables } from "./editorComponents/Cables";
 import { SideBar } from "./editorComponents/SideBar";
 import { ToolSelector } from "./editorComponents/ToolSelector";
@@ -83,10 +81,7 @@ export function Editor(p: Project): ReactNode {
         }}
       >
         <defs> {Object.values(ICONS)} </defs>
-        {useMemo(
-          () => <Cables project={project} cables={project.getCables()} />,
-          [project.getCables()]
-        )}
+        <Cables project={project} cables={project.getCables()} />
         <Devices project={project} highlighted={tool.toolname == "select" ? (tool as SelectTool).selected : undefined} />
         {tool.svgElements()}
       </svg >

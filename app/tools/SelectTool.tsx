@@ -107,6 +107,7 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
               for (const dev of this.selected) {
                 this.project.devices.get(dev)!!.pos.x += diffX;
                 this.project.devices.get(dev)!!.pos.y += diffY;
+                this.project.devices.set(dev, { ...this.project.devices.get(dev)!! })
               }
               this.updateProject();
             }
@@ -145,8 +146,7 @@ function TerminalEmulator<State extends InternalState<object>>(
     return (
       <div className="font-mono">
         <textarea
-          ref={area => { if (area) area.scrollTop = area.scrollHeight }
-          }
+          ref={area => { if (area) area.scrollTop = area.scrollHeight }}
           value={content}
           rows={8} cols={50}
           readOnly />
