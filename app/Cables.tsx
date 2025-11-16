@@ -4,7 +4,7 @@ import { NetworkInterface } from "./emulators/DeviceEmulator";
 
 export function Cables({ project, cables }: { project: Project, cables: ReturnType<Project['getCables']> }): ReactNode {
   return (<> {
-    cables.entries()
+    [...cables.entries()
       .flatMap(
         ([fromTo, cables]) => {
           const aPos = project.devices.get(fromTo >> 16)!!.pos;
@@ -42,7 +42,7 @@ export function Cables({ project, cables }: { project: Project, cables: ReturnTy
         }
       ).map(
         (props, idx) => <line {...props} key={idx} strokeWidth="1pt" />
-      )
+      )]
   } </>)
 }
 
