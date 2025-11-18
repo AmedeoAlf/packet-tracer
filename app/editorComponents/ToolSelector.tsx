@@ -7,7 +7,10 @@ export function ToolSelector({ tool, setTool }: { tool: Tool, setTool: (t: Tool)
     <div className="h-[20%] bg-sky-700"></div>
     <div className="h-[80%] bg-zinc-900">
 
-      <div id="box" className="w-[20%] h-[] border-solid border-[.1em] border-white-600 m-[2.5%]"></div>
+      <div id="box" className="w-[20%] h-[] border-solid border-[.1em] border-white-600 m-[2.5%]">
+
+        
+      </div>
 
       <select value={tool.toolname} onChange={ev => setTool(TOOLS[ev.target.value as keyof typeof TOOLS](tool))}>
         {TOOL_LIST.map(it => (<option value={it} key={it}>{it}</option>))}
