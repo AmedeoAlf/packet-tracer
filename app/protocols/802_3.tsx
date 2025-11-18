@@ -11,10 +11,11 @@ export class Layer2Packet {
   from: MacAddress;
   vlanTag?: number; // https://en.wikipedia.org/wiki/IEEE_802.1Q#Frame_format
   payload: ArrayBufferLike;
-  constructor(payload: ArrayBufferLike, from: MacAddress, to?: MacAddress, vlanTag?: number) {
+  constructor(payload: ArrayBufferLike, from: MacAddress, to: MacAddress = MAC_BROADCAST, vlanTag?: number) {
+    if (payload.byteLength > 1500) throw "Payload required bigger than MTU";
     this.payload = payload;
     this.from = from;
-    this.to = to || MAC_BROADCAST;
+    this.to = to;
     this.vlanTag = vlanTag;
   }
   toBytes(): Uint8Array {
