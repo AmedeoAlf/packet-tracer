@@ -9,7 +9,7 @@ export const SideBar = memo(({ tool }: { tool: Tool }): ReactNode => {
     ? (
       <div className="fixed top-[50px] right-0 w-[30%] h-(--h-spec-cont) indent-[1.5em] border-sky-800 border-solid border-t-[.1em] border-l-[.1em]">
         <div className="bg-sky-700 h-[20px] indent-0">
-          <div className="fixed right-0 cursor-pointer h-[20px] text-[.85em] pr-[5px] pl-[6px] hover:bg-red-500/80" onClick={() => setOpen(false)}>&#128473</div>
+          <div className="fixed right-0 cursor-pointer h-[20px] text-[.85em] pr-[5px] pl-[6px] hover:bg-red-500/80" onClick={() => setOpen(false)}>x</div>
         </div>
         {tool.panel()}
       </div>
