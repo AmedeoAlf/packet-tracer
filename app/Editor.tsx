@@ -41,14 +41,56 @@ export function Editor(p: Project): ReactNode {
 
       <div id="left-side-bar" className="fixed bottom-0 left-0 w-[35.3%] h-[150px] indent-[1,5em] border-solid border-t-[.1em] border-r-[.1em] border-sky-800">
         <div className="h-[20%] bg-sky-700"></div>
-        <div className="h-[80%] bg-zinc-900">
-          <div className="w-full h-screen"></div>
+        <div className="h-[80%] bg-zinc-900 flex flex-wrap justify-center">
+          
+          <button 
+            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+          </button>
+
+          <button 
+            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+          </button> 
+
+          <button 
+            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+          </button> 
+
+          <button 
+            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+          </button> 
+
+          <button 
+            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+          </button>         
+              
         </div>
       </div>
 
       <div id="right-side-bar" className="fixed bottom-0 right-0 w-[35.3%] h-[150px] indent-[1,5em] border-solid border-t-[.1em] border-l-[.1em] border-sky-800">
         <div className="h-[20%] bg-sky-700"></div>
-        <div className="h-[80%] bg-zinc-900"></div>
+        <div className="h-[80%] bg-zinc-900 flex flex-wrap justify-center">
+
+          <button 
+            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+          </button>
+
+          <button 
+            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+          </button> 
+
+          <button 
+            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+          </button> 
+
+          <button 
+            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+          </button> 
+
+          <button 
+            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+          </button>         
+              
+        </div>
       </div>
 
       {useMemo(
