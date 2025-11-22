@@ -35,8 +35,8 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
           <>
             <p>{device.name}</p>
             <select value={intfIdx} onChange={ev => { setIntf(+ev.target.value); this.update() }}>
-              {device.internalState.netInterfaces.entries()
-                .map(([idx, val]) => <option key={idx} value={idx}>{val.name} ({val.type} {val.maxMbps})</option>)}
+              {[...device.internalState.netInterfaces.entries()
+                .map(([idx, val]) => <option key={idx} value={idx}>{val.name} ({val.type} {val.maxMbps})</option>)]}
             </select>
           </>
         )
