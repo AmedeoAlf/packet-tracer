@@ -20,6 +20,9 @@ export function idxOfIntf(i: InterfaceId): number {
   return i & 0xFF;
 }
 
+export const MAX_ZOOM_FACTOR = 3;
+export const MIN_ZOOM_FACTOR = 0.2;
+
 /*
  * La classe che contiene tutti i dati del progetto attuale.
  * È l'unico oggetto da serializzare per salvare un progetto.

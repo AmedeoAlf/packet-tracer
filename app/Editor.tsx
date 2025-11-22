@@ -1,6 +1,6 @@
 "use client";
-import { useState, useRef, MouseEvent, useEffect, RefObject, ReactNode, useMemo } from "react";
-import { Project } from "./Project";
+import { useState, useRef, MouseEvent, useEffect, ReactNode, useMemo } from "react";
+import { MAX_ZOOM_FACTOR, MIN_ZOOM_FACTOR, Project } from "./Project";
 import { CanvasEvent, Tool } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
@@ -8,6 +8,7 @@ import { Cables } from "./editorComponents/Cables";
 import { SideBar } from "./editorComponents/SideBar";
 import { ToolSelector } from "./editorComponents/ToolSelector";
 import { Devices } from "./editorComponents/Devices";
+import { clamp } from "./common";
 
 /*
  * Questo componente è tutta l'interfaccia del sito. Crea gli hook sia per il
@@ -26,11 +27,30 @@ export function Editor(p: Project): ReactNode {
 
   const [canvasSize, setCanvasSize] = useState<[number, number] | undefined>(undefined);
 
-  const handler = buildEventHandler.bind(null, svgCanvas, tool, pt);
+  function svgToDOMPoint(x: number, y: number): DOMPoint | undefined {
+    if (!pt) return;
+    pt.x = x;
+    pt.y = y;
+    return pt.matrixTransform(svgCanvas.current!!.getScreenCTM()!!.inverse());
+  }
+
+  const handler = buildEventHandler.bind(null, svgToDOMPoint, tool);
 
   useEffect(() => {
     window.onresize = () => setCanvasSize(undefined);
+    window.addEventListener("wheel", e => {
+      if (e.ctrlKey) e.preventDefault();
+    }, { passive: false });
   })
+
+  const svgViewBox = [project.viewBoxPos.x, project.viewBoxPos.y, 10000, 10000];
+  if (canvasSize) {
+    svgViewBox[2] = canvasSize[0] / project.viewBoxZoom;
+    svgViewBox[3] = canvasSize[1] / project.viewBoxZoom;
+
+    svgViewBox[0] -= svgViewBox[2] * 0.5;
+    svgViewBox[1] -= svgViewBox[3] * 0.5;
+  }
 
   return (
     <>
@@ -42,27 +62,27 @@ export function Editor(p: Project): ReactNode {
       <div id="left-side-bar" className="fixed bottom-0 left-0 w-[35.3%] h-[150px] indent-[1,5em] border-solid border-t-[.1em] border-r-[.1em] border-sky-800">
         <div className="h-[20%] bg-sky-700"></div>
         <div className="h-[80%] bg-zinc-900 flex flex-wrap justify-center">
-          
-          <button 
+
+          <button
             className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
           </button>
 
-          <button 
+          <button
             className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
-          </button> 
+          </button>
 
-          <button 
+          <button
             className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
-          </button> 
+          </button>
 
-          <button 
+          <button
             className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
-          </button> 
+          </button>
 
-          <button 
+          <button
             className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
-          </button>         
-              
+          </button>
+
         </div>
       </div>
 
@@ -70,26 +90,26 @@ export function Editor(p: Project): ReactNode {
         <div className="h-[20%] bg-sky-700"></div>
         <div className="h-[80%] bg-zinc-900 flex flex-wrap justify-center">
 
-          <button 
+          <button
             className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
           </button>
 
-          <button 
+          <button
             className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
-          </button> 
+          </button>
 
-          <button 
+          <button
             className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
-          </button> 
+          </button>
 
-          <button 
+          <button
             className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
-          </button> 
+          </button>
 
-          <button 
+          <button
             className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
-          </button>         
-              
+          </button>
+
         </div>
       </div>
 
@@ -106,12 +126,26 @@ export function Editor(p: Project): ReactNode {
         onMouseMove={handler("mousemove")}
         onMouseEnter={handler("mouseenter")}
         onMouseLeave={handler("mouseleave")}
-        className={`bg-${svgCanvas.current ? "gray-700" : "gray-100"} -z-1 w-full h-screen transition-colors select-none`}
-        viewBox={
-          Object.values(project.viewBoxPos)
-            .concat(canvasSize?.map(it => it / project.viewBoxZoom) || [10000, 10000])
-            .join(" ")
+        onWheel={ev => {
+          const from = tool.project.viewBoxZoom;
+          tool.project.viewBoxZoom *= 1 + ev.deltaY * -0.0005
+          tool.project.viewBoxZoom = clamp(tool.project.viewBoxZoom, MIN_ZOOM_FACTOR, MAX_ZOOM_FACTOR);
+          // devono entrambe non essere undefined per chiamare svgToDOMPoint
+          if (canvasSize && pt) {
+            const factor = from / tool.project.viewBoxZoom;
+
+            const cursor = svgToDOMPoint(ev.clientX, ev.clientY)!!;
+            const center = svgToDOMPoint(canvasSize[0] / 2, canvasSize[1] / 2)!!;
+
+            tool.project.viewBoxPos.x += (cursor.x - center.x) * (1 - factor);
+            tool.project.viewBoxPos.y += (cursor.y - center.y) * (1 - factor);
+          }
+          tool.updateProject()
+          tool.update()
         }
+        }
+        className={`bg-${svgCanvas.current ? "gray-700" : "gray-100"} -z-1 w-full h-screen transition-colors select-none`}
+        viewBox={svgViewBox.join(" ")}
         ref={svg => {
           svgCanvas.current = svg;
           pt = svgCanvas.current?.createSVGPoint();
@@ -135,36 +169,42 @@ export function Editor(p: Project): ReactNode {
 // Ritorna una funzione che chiama `tool.onEvent(event)` con un oggetto
 // `CanvasEvent`, costruito a partire dal tipo di evento DOM specificato
 function buildEventHandler(
-  svgCanvas: RefObject<SVGSVGElement | null>,
+  toDOMPoint: (x: number, y: number) => DOMPoint | undefined,
   tool: Tool,
-  canvasPt: SVGPoint | undefined,
   type: CanvasEvent['type']
 ): ((ev: MouseEvent) => void) {
-  const getPos = canvasPt
-    ? (ev: MouseEvent) => {
-      canvasPt.x = ev.clientX;
-      canvasPt.y = ev.clientY;
-
-      const { x, y } = canvasPt.matrixTransform(svgCanvas.current!!.getScreenCTM()!!.inverse());
-      return { x, y };
-    }
-    : () => { return { x: 0, y: 0 } };
+  const getPos = (ev: MouseEvent) => {
+    const result = toDOMPoint(ev.clientX, ev.clientY);
+    return result ? { x: result.x, y: result.y } : { x: 0, y: 0 };
+  }
 
   if (type == "mousemove") {
-    return (ev: MouseEvent) => tool.onEvent({
-      type,
-      movement: { x: ev.movementX, y: ev.movementY },
-      pos: getPos(ev),
-      device: tool.project.deviceFromTag(ev.target as SVGUseElement),
-      shiftKey: ev.shiftKey,
-    });
+    return (ev: MouseEvent) => {
+      if (ev.buttons == 4) {
+        ev.preventDefault()
+        tool.project.viewBoxPos.x -= ev.movementX / tool.project.viewBoxZoom;
+        tool.project.viewBoxPos.y -= ev.movementY / tool.project.viewBoxZoom;
+        tool.updateProject();
+      } else {
+        tool.onEvent({
+          type,
+          movement: { x: ev.movementX, y: ev.movementY },
+          pos: getPos(ev),
+          device: tool.project.deviceFromTag(ev.target as SVGUseElement),
+          shiftKey: ev.shiftKey,
+        })
+      }
+    };
   } else {
-    return (ev: MouseEvent) => tool.onEvent({
-      type,
-      pos: getPos(ev),
-      device: tool.project.deviceFromTag(ev.target as SVGUseElement),
-      shiftKey: ev.shiftKey,
-    });
+    return (ev: MouseEvent) => {
+      tool.onEvent({
+        type,
+        pos: getPos(ev),
+        device: tool.project.deviceFromTag(ev.target as SVGUseElement),
+        shiftKey: ev.shiftKey,
+      })
+      return false;
+    };
   }
 };
 

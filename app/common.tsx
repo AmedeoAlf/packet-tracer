@@ -13,3 +13,7 @@ export function areMapsShallowEqual<K, V>(a: Map<K, V>, b: Map<K, V>): boolean {
   for (const [k, v] of a) if (b.get(k) != v) return false;
   return true;
 }
+
+export function clamp(n: number, min: number, max: number): number {
+  return Math.max(Math.min(n, max), min)
+}
