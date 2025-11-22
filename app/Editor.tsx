@@ -41,16 +41,18 @@ export function Editor(p: Project): ReactNode {
     window.addEventListener("wheel", e => {
       if (e.ctrlKey) e.preventDefault();
     }, { passive: false });
-  })
+  }, [])
 
-  const svgViewBox = [project.viewBoxPos.x, project.viewBoxPos.y, 10000, 10000];
-  if (canvasSize) {
-    svgViewBox[2] = canvasSize[0] / project.viewBoxZoom;
-    svgViewBox[3] = canvasSize[1] / project.viewBoxZoom;
-
-    svgViewBox[0] -= svgViewBox[2] * 0.5;
-    svgViewBox[1] -= svgViewBox[3] * 0.5;
-  }
+  const svgViewBox = useMemo(() => {
+    const vb = [project.viewBoxPos.x, project.viewBoxPos.y, 10000, 10000]
+    if (canvasSize) {
+      vb[2] = canvasSize[0] / project.viewBoxZoom;
+      vb[3] = canvasSize[1] / project.viewBoxZoom;
+      vb[0] -= vb[2] * 0.5;
+      vb[1] -= vb[3] * 0.5;
+    }
+    return vb;
+  }, [canvasSize, project.viewBoxZoom, project.viewBoxPos.x, project.viewBoxPos.y]);
 
   return (
     <>
@@ -127,21 +129,32 @@ export function Editor(p: Project): ReactNode {
         onMouseEnter={handler("mouseenter")}
         onMouseLeave={handler("mouseleave")}
         onWheel={ev => {
-          const from = tool.project.viewBoxZoom;
-          tool.project.viewBoxZoom *= 1 + ev.deltaY * -0.0005
-          tool.project.viewBoxZoom = clamp(tool.project.viewBoxZoom, MIN_ZOOM_FACTOR, MAX_ZOOM_FACTOR);
-          // devono entrambe non essere undefined per chiamare svgToDOMPoint
-          if (canvasSize && pt) {
-            const factor = from / tool.project.viewBoxZoom;
+          if (ev.ctrlKey) {
+            const from = tool.project.viewBoxZoom;
+            tool.project.viewBoxZoom *= 1 + ev.deltaY * -0.0005
+            tool.project.viewBoxZoom = clamp(tool.project.viewBoxZoom, MIN_ZOOM_FACTOR, MAX_ZOOM_FACTOR);
+            // devono entrambe non essere undefined per chiamare svgToDOMPoint
+            if (canvasSize && pt) {
+              const factor = from / tool.project.viewBoxZoom;
 
-            const cursor = svgToDOMPoint(ev.clientX, ev.clientY)!!;
-            const center = svgToDOMPoint(canvasSize[0] / 2, canvasSize[1] / 2)!!;
+              const cursor = svgToDOMPoint(ev.clientX, ev.clientY)!!;
+              const center = svgToDOMPoint(canvasSize[0] / 2, canvasSize[1] / 2)!!;
 
-            tool.project.viewBoxPos.x += (cursor.x - center.x) * (1 - factor);
-            tool.project.viewBoxPos.y += (cursor.y - center.y) * (1 - factor);
+              tool.project.viewBoxPos.x += (cursor.x - center.x) * (1 - factor);
+              tool.project.viewBoxPos.y += (cursor.y - center.y) * (1 - factor);
+            }
+            tool.updateProject()
+            tool.update()
+          } else if (ev.shiftKey) {
+            tool.project.viewBoxPos.x += ev.deltaY / tool.project.viewBoxZoom;
+            tool.updateProject()
+            // tool.update()
+          } else {
+            tool.project.viewBoxPos.x += ev.deltaX / tool.project.viewBoxZoom;
+            tool.project.viewBoxPos.y += ev.deltaY / tool.project.viewBoxZoom;
+            tool.updateProject()
+            // tool.update()
           }
-          tool.updateProject()
-          tool.update()
         }
         }
         className={`bg-${svgCanvas.current ? "gray-700" : "gray-100"} -z-1 w-full h-screen transition-colors select-none`}

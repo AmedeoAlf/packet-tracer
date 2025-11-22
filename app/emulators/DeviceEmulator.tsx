@@ -142,6 +142,7 @@ export function buildEmulatorContext<T extends InternalState<object>>(device: De
     updateState() {
       device.internalState = { ...device.internalState };
       toolCtx.updateProject();
+      toolCtx.update();
     },
     sendOnIf(ifIdx, data) {
       toolCtx.project.sendOn(toInterfaceId(device.id, ifIdx), toolCtx, data)
