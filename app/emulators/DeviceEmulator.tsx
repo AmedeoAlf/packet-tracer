@@ -138,7 +138,7 @@ export interface DeviceEmulator<State extends InternalState<object>> {
 export function buildEmulatorContext<T extends InternalState<object>>(device: Device, toolCtx: ToolCtx): EmulatorContext<T> {
   const emulator = deviceTypesDB[device.deviceType].emulator;
   return {
-    interpreter: emulator.cmdInterpreter,
+    interpreter: emulator.cmdInterpreter as any,
     updateState() {
       device.internalState = { ...device.internalState };
       toolCtx.updateProject();

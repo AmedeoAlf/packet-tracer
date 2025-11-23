@@ -12,11 +12,11 @@ import { ICONS } from "./ICONS";
  * all'interno di `deviceTypesDb`; è quindi opportuno aggiungere prima il
  * `deviceType` lì dentro e poi creare la Factory
  */
-export interface DeviceFactory {
+export interface DeviceFactory<State extends InternalState<object>> {
   deviceType: DeviceType;
   iconId: keyof typeof ICONS;
-  emulator: DeviceEmulator<any>;
-  defaultState: () => InternalState<object>
+  emulator: DeviceEmulator<State>;
+  defaultState: () => State
 }
 
 /*
@@ -34,7 +34,7 @@ export class Device {
   name: string;
   pos: Coords;
   internalState: InternalState<object>;
-  constructor(factory: DeviceFactory, id: number, pos: Coords, name: string) {
+  constructor(factory: DeviceFactory<any>, id: number, pos: Coords, name: string) {
     this.id = id;
     this.pos = pos;
     this.name = name;

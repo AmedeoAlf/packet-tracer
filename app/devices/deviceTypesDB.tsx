@@ -13,6 +13,6 @@ export const deviceTypesDB = {
   router: Router,
   switch: Switch,
   exampleDevice: ExampleDevice,
-} as const satisfies Record<string, DeviceFactory>;
+} as const satisfies Record<string, DeviceFactory<any>>;
 
 export type DeviceType = keyof typeof deviceTypesDB

@@ -1,8 +1,9 @@
+import { InternalState } from "../emulators/DeviceEmulator";
 import { switchEmulator } from "../emulators/switchEmulator";
 import { randomMAC } from "../protocols/802_3";
 import { DeviceFactory } from "./Device";
 
-export const Switch: DeviceFactory = {
+export const Switch: DeviceFactory<InternalState<{}>> = {
   iconId: "#switch-icon",
   emulator: switchEmulator,
   deviceType: "switch",

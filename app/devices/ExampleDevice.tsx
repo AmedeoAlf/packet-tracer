@@ -6,7 +6,7 @@ import { DeviceFactory } from "./Device";
 
 export type ExampleDeviceInternalState = InternalState<{ exampleProp1: number, exampleProp2: string }>
 
-export const ExampleDevice: DeviceFactory = {
+export const ExampleDevice: DeviceFactory<ExampleDeviceInternalState> = {
   // L'id del tag `<g>` per l'icona del dispositivo, la lista è in `ICONS.tsx`
   iconId: "#router-icon",
   // Il `DeviceEmulator` (l'oggetto che gestisce `InternalState`)

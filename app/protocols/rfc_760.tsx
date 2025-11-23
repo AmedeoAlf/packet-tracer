@@ -16,6 +16,12 @@ export function ipv4FromString(s: string): IPv4Address | undefined {
   return s.split(".").slice(0, 4).map(parseInt).reduce((acc, val) => (acc << 8) + val);
 }
 
+export type L3Interface = { ip: IPv4Address, mask: IPv4Address };
+
+export function getMatchingInterface(interfaces: L3Interface[], ip: IPv4Address): number {
+  return interfaces.findIndex((v) => (v.ip & v.mask) == (ip & v.mask))
+}
+
 export enum ProtocolCode {
   "icmp" = 1,
   "tcp" = 6,
@@ -149,5 +155,11 @@ export class PartialIPv4Packet extends IPv4Packet {
     const view = new DataView(packet);
     if (view.getUint8(0) >> 4 != 4) throw "Not an IPv4 Packet";
     return view.getUint16(4);
+  }
+
+  static getDestination(packet: ArrayBufferLike): IPv4Address {
+    const view = new DataView(packet);
+    if (view.getUint8(0) >> 4 != 4) throw "Not an IPv4 Packet";
+    return view.getUint32(16);
   }
 }

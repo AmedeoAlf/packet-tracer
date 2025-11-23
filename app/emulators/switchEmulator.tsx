@@ -44,7 +44,7 @@ export const switchEmulator: DeviceEmulator<InternalState<{}>> = {
     }
   },
   packetHandler(_ctx, data, _intf) {
-    console.log(Layer2Packet.fromBytes(data.buffer));
+    console.log(Layer2Packet.fromBytes(new Uint8Array(data).buffer));
   },
 };
 
