@@ -1,3 +1,5 @@
+import { InternalState } from "../emulators/DeviceEmulator";
+
 // NOTE: Implementazione parziale, ad esempio IHL è sempre uguale a 5
 export type IPv4Address = number;
 export const IPV4_BROADCAST: IPv4Address = 0xFFFFFFFF;
@@ -12,15 +14,22 @@ export function ipv4ToString(ip: IPv4Address): string {
   ].join(".");
 }
 
-export function ipv4FromString(s: string): IPv4Address | undefined {
-  return s.split(".").slice(0, 4).map(parseInt).reduce((acc, val) => (acc << 8) + val);
+export function parseIpv4(s: string): IPv4Address | undefined {
+  return s.split(".").slice(0, 4).map(it => +it).reduce((acc, val) => (acc << 8) + val);
 }
 
 export type L3Interface = { ip: IPv4Address, mask: IPv4Address };
 
 export function getMatchingInterface(interfaces: L3Interface[], ip: IPv4Address): number {
-  return interfaces.findIndex((v) => (v.ip & v.mask) == (ip & v.mask))
+  return interfaces.findIndex((v) => v && (v.ip & v.mask) == (ip & v.mask))
 }
+
+export type L3InternalState<T extends object> = InternalState<T & {
+  ipPackets: Map<number, PartialIPv4Packet>,
+  l3Ifs: L3Interface[],
+  gateway: IPv4Address,
+  rawSocketFd?: (packet: IPv4Packet) => void
+}>
 
 export enum ProtocolCode {
   "icmp" = 1,

@@ -1,8 +1,7 @@
 "use client";
-import { InternalState } from "../emulators/DeviceEmulator";
 import { routerEmulator } from "../emulators/routerEmulator";
 import { randomMAC } from "../protocols/802_3";
-import { IPv4Address, L3Interface, PartialIPv4Packet } from "../protocols/rfc_760";
+import { IPV4_BROADCAST, IPv4Address, L3InternalState } from "../protocols/rfc_760";
 import { DeviceFactory } from "./Device";
 
 export type RoutingTableEntry = {
@@ -10,9 +9,7 @@ export type RoutingTableEntry = {
   mask: IPv4Address,
   to: IPv4Address
 };
-export type RouterInternalState = InternalState<{
-  ipPackets: Map<number, PartialIPv4Packet>,
-  l3Ifs: L3Interface[],
+export type RouterInternalState = L3InternalState<{
   routingTables: RoutingTableEntry[]
 }>;
 
@@ -25,6 +22,7 @@ export const Router: DeviceFactory<RouterInternalState> = {
       ipPackets: new Map(),
       routingTables: [],
       l3Ifs: [],
+      gateway: IPV4_BROADCAST,
       netInterfaces: [
         { name: "if0", maxMbps: 100, type: "copper", mac: randomMAC() },
         { name: "if1", maxMbps: 100, type: "copper", mac: randomMAC() },

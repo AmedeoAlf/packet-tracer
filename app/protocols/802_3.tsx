@@ -39,7 +39,7 @@ export class Layer2Packet {
     packetBuf.set(new Uint8Array(this.payload), cursor);
     return packetBuf
   }
-  static fromBytes(bytes: ArrayBuffer): Layer2Packet {
+  static fromBytes(bytes: ArrayBufferLike): Layer2Packet {
     const view = new DataView(bytes);
     let cursor = 0;
     const readMac = () => {

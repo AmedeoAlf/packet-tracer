@@ -1,9 +1,11 @@
 import { RouterInternalState } from "../devices/Router";
 import { Layer2Packet, MAC_BROADCAST } from "../protocols/802_3";
-import { getMatchingInterface, ipv4ToString, PartialIPv4Packet } from "../protocols/rfc_760";
+import { ICMPPacket, ICMPType } from "../protocols/icmp";
+import { getMatchingInterface, IPv4Packet, ipv4ToString, PartialIPv4Packet, ProtocolCode } from "../protocols/rfc_760";
 import { hello } from "../virtualPrograms/hello";
 import { interfaces } from "../virtualPrograms/interfaces";
 import { l2send } from "../virtualPrograms/l2send";
+import { ping } from "../virtualPrograms/ping";
 import { DeviceEmulator } from "./DeviceEmulator";
 
 export const routerEmulator: DeviceEmulator<RouterInternalState> = {
@@ -19,12 +21,18 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
             </tr>
           </thead>
           <tbody>
-            {ctx.state.netInterfaces.map((val, idx) =>
-              <tr key={idx}>
-                <td>{val.name}</td>
-                <td>{val.type}</td>
-                <td>{val.maxMbps} Mbps</td>
-              </tr>
+            {ctx.state.netInterfaces.map((val, idx) => {
+              const l3if = ctx.state.l3Ifs.at(idx);
+              return (
+                <tr key={idx}>
+                  <td>{val.name}</td>
+                  <td>{val.type}</td>
+                  <td>{val.maxMbps} Mbps</td>
+                  <td>{l3if ? ipv4ToString(l3if.ip) : "No ip"}</td>
+                  <td>{l3if ? ipv4ToString(l3if.mask) : "No mask"}</td>
+                </tr>
+              )
+            }
             )}
           </tbody>
         </table>
@@ -35,7 +43,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
     const l2Packet = Layer2Packet.fromBytes(new Uint8Array(data).buffer);
     try {
       const destination = PartialIPv4Packet.getDestination(l2Packet.payload.buffer);
-      const isDestinedInterface = ctx.state.l3Ifs.findIndex(v => v.ip == destination);
+      const isDestinedInterface = ctx.state.l3Ifs.findIndex(v => v && v.ip == destination);
 
       // Non è indirizzato a me?
       if (isDestinedInterface == -1) {
@@ -47,33 +55,49 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
           ctx.sendOnIf(sendTo, l2Packet.toBytes());
         }
       } else {
-        const packetId = PartialIPv4Packet.getId(l2Packet.payload.buffer);
-        const packets = ctx.state.ipPackets;
-        if (!ctx.state.ipPackets.has(packetId)) {
-          packets.set(packetId, new PartialIPv4Packet(l2Packet.payload.buffer));
-        } else {
-          packets.get(packetId)!!.add(l2Packet.payload.buffer);
+        let packet = new PartialIPv4Packet(l2Packet.payload.buffer);
+        if (!packet.isPayloadFinished()) {
+          const packets = ctx.state.ipPackets;
+          if (!ctx.state.ipPackets.has(packet.id)) {
+            packets.set(packet.id, packet);
+          } else {
+            packets.get(packet.id)!!.add(l2Packet.payload.buffer);
+          }
+          packet = packets.get(packet.id)!!;
+          if (packet.isPayloadFinished()) {
+            packets.delete(packet.id);
+          }
         }
-
-        const packet = packets.get(packetId)!!;;
         if (packet.isPayloadFinished()) {
-          console.log("Got packet on if:", intf);
-          console.log(packet)
-          packets.delete(packetId);
+          switch (packet.protocol) {
+            case ProtocolCode.icmp:
+              const icmpPacket = ICMPPacket.fromBytes(packet.payload)
+              // Gestisci i pacchetti echo ICMP
+              switch (icmpPacket.type) {
+                case ICMPType.echoRequest:
+                  const response = new IPv4Packet(ProtocolCode.icmp, ICMPPacket.echoResponse(icmpPacket).toBytes().buffer, packet.destination, packet.source);
+                  for (const p of response.toFragmentedBytes()) {
+                    ctx.sendOnIf(intf, new Layer2Packet(p.buffer, ctx.state.netInterfaces[intf].mac, l2Packet.from).toBytes())
+                  }
+                default:
+                  if (ctx.state.rawSocketFd) ctx.state.rawSocketFd(packet);
+              }
+          }
         }
       }
       ctx.updateState();
 
-    } catch (_) { }
+    } catch (e) { console.log(e) }
   },
   cmdInterpreter: {
     shell: {
       desc: "Command",
-      subcommands: ({
-        hello,
-        interfaces,
-        l2send
-      } as any)
+      subcommands: {
+        hello: hello(),
+        interfaces: interfaces(),
+        l2send: l2send(),
+        ping: ping()
+      }
     }
   }
 };

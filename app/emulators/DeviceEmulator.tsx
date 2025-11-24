@@ -14,6 +14,7 @@ export interface NetworkInterface {
 
 export type InternalState<Ext extends object> = {
   netInterfaces: Array<NetworkInterface>;
+  currShell?: Command<any>;
 } & Ext;
 
 interface AutoCompleteOption { option: string, desc: string };
@@ -135,10 +136,10 @@ export interface DeviceEmulator<State extends InternalState<object>> {
   packetHandler: (ctx: EmulatorContext<State>, data: Uint8Array, intf: number) => void;
 }
 
-export function buildEmulatorContext<T extends InternalState<object>>(device: Device, toolCtx: ToolCtx): EmulatorContext<T> {
+export function buildEmulatorContext(device: Device, toolCtx: ToolCtx): EmulatorContext<InternalState<any>> {
   const emulator = deviceTypesDB[device.deviceType].emulator;
   return {
-    interpreter: emulator.cmdInterpreter as any,
+    interpreter: emulator.cmdInterpreter,
     updateState() {
       device.internalState = { ...device.internalState };
       toolCtx.updateProject();
@@ -147,7 +148,7 @@ export function buildEmulatorContext<T extends InternalState<object>>(device: De
     sendOnIf(ifIdx, data) {
       toolCtx.project.sendOn(toInterfaceId(device.id, ifIdx), toolCtx, data)
     },
-    state: device.internalState as any,
+    state: device.internalState,
     write() { },
   };
 }
