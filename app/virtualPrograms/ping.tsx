@@ -3,7 +3,7 @@ import { Layer2Packet, MAC_BROADCAST } from "../protocols/802_3";
 import { ICMPPacket } from "../protocols/icmp";
 import { getMatchingInterface, parseIpv4, IPv4Packet, ipv4ToString, L3InternalState, ProtocolCode } from "../protocols/rfc_760";
 
-export function ping<T extends L3InternalState<object>>(): Command<T> {
+export function ping<T extends L3InternalState<object>>() {
   return {
     desc: 'Sends an echo request',
     autocomplete() {
@@ -51,5 +51,5 @@ export function ping<T extends L3InternalState<object>>(): Command<T> {
         }
       },
     }
-  }
+  } satisfies Command<T>;
 }

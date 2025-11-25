@@ -14,7 +14,7 @@ function parseInterface(from: string, state: InternalState<object>): number | un
   }
 }
 
-export function l2send<T extends InternalState<object>>(): Command<T> {
+export function l2send<T extends InternalState<object>>(){
   return {
     desc: 'Sends a raw layer 2 packet',
     autocomplete(state, _past) {
@@ -58,5 +58,5 @@ export function l2send<T extends InternalState<object>>(): Command<T> {
         }
       }
     }
-  }
+  } satisfies Command<T>;
 }

@@ -1,6 +1,6 @@
 import { Command, InternalState } from "../emulators/DeviceEmulator";
 
-export function interfaces<T extends InternalState<object>>(): Command<T> {
+export function interfaces<T extends InternalState<object>>(){
   return {
     desc: 'Manages interfaces',
     run: ctx => ctx.write(ctx.state.netInterfaces.join("\n")),
@@ -27,5 +27,5 @@ export function interfaces<T extends InternalState<object>>(): Command<T> {
         }
       }
     }
-  }
+  } satisfies Command<T>;
 }

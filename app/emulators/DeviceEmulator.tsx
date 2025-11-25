@@ -140,7 +140,7 @@ export function buildEmulatorContext(device: Device, toolCtx: ToolCtx): Emulator
   const emulator = deviceTypesDB[device.deviceType].emulator;
   return {
     interpreter: emulator.cmdInterpreter,
-    updateState() {
+    updateState: () => {
       device.internalState = { ...device.internalState };
       toolCtx.updateProject();
       toolCtx.update();

@@ -2,8 +2,9 @@ import { RouterInternalState } from "../devices/Router";
 import { Layer2Packet, MAC_BROADCAST } from "../protocols/802_3";
 import { ICMPPacket, ICMPType } from "../protocols/icmp";
 import { getMatchingInterface, IPv4Packet, ipv4ToString, PartialIPv4Packet, ProtocolCode } from "../protocols/rfc_760";
+import { dumpState } from "../virtualPrograms/dumpstate";
 import { hello } from "../virtualPrograms/hello";
-import { interfaces } from "../virtualPrograms/interfaces";
+import { interfacesL3 } from "../virtualPrograms/interfacesl3";
 import { l2send } from "../virtualPrograms/l2send";
 import { ping } from "../virtualPrograms/ping";
 import { DeviceEmulator } from "./DeviceEmulator";
@@ -94,9 +95,10 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
       desc: "Command",
       subcommands: {
         hello: hello(),
-        interfaces: interfaces(),
+        interfaces: interfacesL3(),
         l2send: l2send(),
-        ping: ping()
+        ping: ping(),
+        dumpState: dumpState()
       }
     }
   }
