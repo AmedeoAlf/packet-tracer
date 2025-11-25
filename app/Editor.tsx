@@ -66,23 +66,38 @@ export function Editor(p: Project): ReactNode {
         <div className="h-[80%] bg-zinc-900 flex flex-wrap justify-center">
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
+            className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
+              <svg viewBox="-25 -25 53 53">
+                  {ICONS["#router-icon"]}
+              </svg>
           </button>
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
+            className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
+              <svg viewBox="-25 -25 53 53">
+                  {ICONS["#switch-icon"]}
+              </svg>
           </button>
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
+            className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
+              <svg viewBox="-27 -20 48 48">
+                  {ICONS["#server-icon"]}
+              </svg>
           </button>
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
+            className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
+              <svg viewBox="-30 -22 53 53">
+                  {ICONS["#database-icon"]}
+              </svg>
           </button>
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
+            className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
+              <svg viewBox="-29 -22.5 53 53">
+                  {ICONS["#pc-icon"]}
+              </svg>
           </button>
 
         </div>
