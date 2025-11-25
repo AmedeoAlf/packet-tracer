@@ -66,23 +66,23 @@ export function Editor(p: Project): ReactNode {
         <div className="h-[80%] bg-zinc-900 flex flex-wrap justify-center">
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
           </button>
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
           </button>
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
           </button>
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
           </button>
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
           </button>
 
         </div>
@@ -93,23 +93,23 @@ export function Editor(p: Project): ReactNode {
         <div className="h-[80%] bg-zinc-900 flex flex-wrap justify-center">
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
           </button>
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
           </button>
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
           </button>
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
           </button>
 
           <button
-            className="h-16 w-16 border-solid border-[.1em] border-white-600 m-[2.5%] ">
+            className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] ">
           </button>
 
         </div>
