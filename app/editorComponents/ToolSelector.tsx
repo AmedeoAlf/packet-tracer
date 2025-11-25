@@ -11,7 +11,7 @@ export function ToolSelector({ tool, setTool }: { tool: Tool, setTool: (t: Tool)
           <button 
             key={it} 
             onClick={ev => setTool(TOOLS[it](tool))} 
-            className={(it==tool.toolname?"bg-gray-600":"")+" w-16 border-solid border-[.1em] border-white-600 m-[2.5%] "}>
+            className={(it==tool.toolname?"bg-gray-600":"")+" w-16 border-solid border-[.1em] border-white m-[2.5%] "}>
               {it}
             </button>        
       ))}
