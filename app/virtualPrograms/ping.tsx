@@ -31,7 +31,7 @@ export function ping<T extends L3InternalState<object>>(): Command<T> {
         }
         const packet = new IPv4Packet(
           ProtocolCode.icmp,
-          ICMPPacket.echoRequest(0, 0, new ArrayBuffer()).toBytes().buffer,
+          ICMPPacket.echoRequest(0, 0, new ArrayBuffer(0)).toBytes().buffer,
           ctx.state.l3Ifs[intf].ip,
           addr
         );
