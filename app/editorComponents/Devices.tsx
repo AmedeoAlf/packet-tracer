@@ -5,23 +5,28 @@ import { deviceTypesDB } from "../devices/deviceTypesDB";
 
 // Utility function che disegna i dispositivi del progetto, opzionalmente
 // evidenziandoli
-export const Devices = memo(({ project, highlighted }: { project: Project, highlighted?: Set<number> }) =>
-  <g>{[...project.devices.values().map(
-    highlighted
-      ? (d) =>
-        (<DeviceComponent device={d} key={d.id} extraClass={highlighted.has(d.id) ? " brightness-50" : undefined} />)
-      : (d) =>
-        (<DeviceComponent device={d} key={d.id} />)
-  )]}</g>);
+export const Devices = memo(function Devices({ project, highlighted }: { project: Project, highlighted?: Set<number> }) {
+  return (
+    <g> {
+      [...project.devices.values().map(
+        highlighted
+          ? (d) =>
+            (<DeviceComponent device={d} key={d.id} extraClass={highlighted.has(d.id) ? " brightness-50" : undefined} />)
+          : (d) =>
+            (<DeviceComponent device={d} key={d.id} />)
+      )]
+    }</g>
+  )
+})
 
 
 // Componente che ritorna un dispositivo come SVG, cliccando sopra il
 // dispositivo si può ricavare l'id tramite la proprietà "data-id"
 // dell'elemento. L'icona è data dalla factory del `deviceType` del dispositivo
 // stesso
-const DeviceComponent = memo((
+const DeviceComponent = memo(function DeviceComponent(
   { device, extraClass }: { device: Device, extraClass?: string },
-) => {
+) {
   const dataProps = { "data-id": device.id };
   return (
     <>

@@ -1,7 +1,7 @@
 "use client";
 import { Coords } from "../common";
 import { DeviceEmulator, InternalState } from "../emulators/DeviceEmulator";
-import { DeviceType } from "./deviceTypesDB";
+import { DeviceType, deviceTypesDB } from "./deviceTypesDB";
 import { ICONS } from "./ICONS";
 
 /*
@@ -34,7 +34,7 @@ export class Device {
   name: string;
   pos: Coords;
   internalState: InternalState<object>;
-  constructor(factory: DeviceFactory<any>, id: number, pos: Coords, name: string) {
+  constructor(factory: typeof deviceTypesDB[keyof typeof deviceTypesDB], id: number, pos: Coords, name: string) {
     this.id = id;
     this.pos = pos;
     this.name = name;

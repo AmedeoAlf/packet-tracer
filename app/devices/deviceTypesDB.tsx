@@ -19,6 +19,7 @@ export const deviceTypesDB = {
   server: Server,
   computer: Computer,
   exampleDevice: ExampleDevice,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, DeviceFactory<any>>;
 
 export type DeviceType = keyof typeof deviceTypesDB

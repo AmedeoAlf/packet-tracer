@@ -12,7 +12,7 @@ export const exampleDeviceEmulator: DeviceEmulator<ExampleDeviceInternalState> =
       return (<p> This is the menu No. 2 </p>);
     },
     "Menu 3"(ctx) {
-      return (<p> Menus can show device state using the "ctx" param <br /> {JSON.stringify(ctx.state, undefined, "  ")} </p>);
+      return (<p> Menus can show device state using the &quot;ctx&quot; param <br /> {JSON.stringify(ctx.state, undefined, "  ")} </p>);
     },
     "Menu 4"(ctx) {
       return (<p>
@@ -33,7 +33,7 @@ export const exampleDeviceEmulator: DeviceEmulator<ExampleDeviceInternalState> =
       // therefore it can't be used inside the panel. The solution is to store all
       // state inside the device's internalState
       return (<div>
-        Panels can also run commands on the interpreter (in this case with output redirected inside "exampleProp2"): <br />
+        Panels can also run commands on the interpreter (in this case with output redirected inside &quot;exampleProp2&quot;): <br />
         <button onClick={() => {
           ctx.state.exampleProp2 = "";
           // Overwrite ctx.write() to change where will the cmd print to
@@ -44,9 +44,9 @@ export const exampleDeviceEmulator: DeviceEmulator<ExampleDeviceInternalState> =
           runOnInterpreter(ctx)
           ctx.updateState();
         }}>
-          Run: "{cmd}"
+          Run: &quot;{cmd}&quot;
         </button>
-        Contents of "exampleProp2": {ctx.state.exampleProp2}
+        Contents of &quot;exampleProp2&quot;: {ctx.state.exampleProp2}
       </div>);
     }
   },
@@ -61,7 +61,7 @@ export const exampleDeviceEmulator: DeviceEmulator<ExampleDeviceInternalState> =
           desc: "Sums all the other arguments passed",
           // An entry *can* also include a `run()` funtion that will actually be responsible for running the command
           run(ctx) {
-            const result = ctx.args!!.slice(1) // Take away arg0 (`sum`)
+            const result = ctx.args!.slice(1) // Take away arg0 (`sum`)
               .reduce((acc, val) => +val + acc, 0);
             ctx.write(result.toString())
           },
@@ -86,8 +86,9 @@ export const exampleDeviceEmulator: DeviceEmulator<ExampleDeviceInternalState> =
 
               desc: "New value (JSON)",
               run(ctx) {
-                const prop = ctx.args!![1];
-                const val = JSON.parse(ctx.args!![2]);
+                const prop = ctx.args![1];
+                const val = JSON.parse(ctx.args![2]);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (ctx.state as any)[prop] = val;
                 ctx.updateState();
               }

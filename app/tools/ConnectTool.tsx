@@ -55,8 +55,8 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
                   <button onClick={() => {
                     this.errorMsg = this.project.connect(
                       // Gli operatori ternari garantiscono che i valori non siano undefined
-                      this.deviceA!!.id, this.idxA!!,
-                      this.deviceB!!.id, this.idxB!!,
+                      this.deviceA!.id, this.idxA!,
+                      this.deviceB!.id, this.idxB!,
                     );
                     this.updateProject();
                     if (!this.errorMsg) clearSelection(this);

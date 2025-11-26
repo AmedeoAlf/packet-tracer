@@ -26,20 +26,20 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
             <p>Seleziona un dispositivo per vedere le proprietà</p>
           );
         case 1:
-          const device = this.project.devices.get(this.selected.values().next().value!!)!!;
+          const device = this.project.devices.get(this.selected.values().next().value!)!;
           const emulator = deviceTypesDB[device.deviceType].emulator;
-          const tool = this;
-          const ctx = buildEmulatorContext(device, tool);
+          const ctx = buildEmulatorContext(device, this);
           ctx.write = (msg) => {
-            tool.stdout += "\n" + msg;
-            tool.update();
+            this.stdout += "\n" + msg;
+            this.update();
           };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const panels: [string, DevicePanel<any>][] = [
             ["terminal",
               TerminalEmulator(
-                tool.stdin,
-                (stdin) => { tool.stdin = stdin; tool.update(); },
-                tool.stdout
+                this.stdin,
+                (stdin) => { this.stdin = stdin; this.update(); },
+                this.stdout
               )],
             ...Object.entries(emulator.configPanel)
           ];
@@ -84,9 +84,9 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
         case "mousemove":
           if (this.lastCursorPos) {
             for (const dev of this.selected) {
-              this.project.devices.get(dev)!!.pos.x += ev.pos.x - this.lastCursorPos.x;
-              this.project.devices.get(dev)!!.pos.y += ev.pos.y - this.lastCursorPos.y;
-              this.project.devices.set(dev, { ...this.project.devices.get(dev)!! })
+              this.project.devices.get(dev)!.pos.x += ev.pos.x - this.lastCursorPos.x;
+              this.project.devices.get(dev)!.pos.y += ev.pos.y - this.lastCursorPos.y;
+              this.project.devices.set(dev, { ...this.project.devices.get(dev)! })
             }
             this.updateProject();
             this.lastCursorPos = ev.pos;
@@ -98,9 +98,9 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
             const diffY = ev.pos.y - this.lastCursorPos.y;
             if (diffX || diffY) {
               for (const dev of this.selected) {
-                this.project.devices.get(dev)!!.pos.x += diffX;
-                this.project.devices.get(dev)!!.pos.y += diffY;
-                this.project.devices.set(dev, { ...this.project.devices.get(dev)!! })
+                this.project.devices.get(dev)!.pos.x += diffX;
+                this.project.devices.get(dev)!.pos.y += diffY;
+                this.project.devices.set(dev, { ...this.project.devices.get(dev)! })
               }
               this.updateProject();
             }
@@ -123,7 +123,7 @@ function TerminalEmulator<State extends InternalState<object>>(
   setInputBar: (s: string) => void,
   content: string,
 ): DevicePanel<State> {
-  return (ctx: EmulatorContext<State>) => {
+  return function TerminalEmulator(ctx: EmulatorContext<State>) {
     const setInput = (s: string) => {
       if (!s.endsWith("?")) {
         setInputBar(s);

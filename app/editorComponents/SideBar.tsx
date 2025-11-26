@@ -3,7 +3,7 @@ import { Tool } from "../tools/Tool";
 
 // La barra laterale dell'interfaccia: il suo contenuto è intermente deciso dal
 // tool in uso.
-export const SideBar = memo(({ tool }: { tool: Tool }): ReactNode => {
+export const SideBar = memo(function SideBar({ tool }: { tool: Tool }): ReactNode {
   const [open, setOpen] = useState(true);
   return open
     ? (

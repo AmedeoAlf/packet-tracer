@@ -8,12 +8,12 @@ export function ToolSelector({ tool, setTool }: { tool: Tool, setTool: (t: Tool)
     <div className="h-[80%] bg-zinc-900 flex flex-wrap justify-center">
 
       {TOOL_LIST.map(it => (
-          <button 
-            key={it} 
-            onClick={ev => setTool(TOOLS[it](tool))} 
-            className={(it==tool.toolname?"bg-gray-600":"")+" w-16 border-solid border-[.1em] border-white m-[2.5%] "}>
-              {it}
-            </button>        
+        <button
+          key={it}
+          onClick={() => setTool(TOOLS[it](tool))}
+          className={(it == tool.toolname ? "bg-gray-600" : "") + " w-16 border-solid border-[.1em] border-white m-[2.5%] "}>
+          {it}
+        </button>
       ))}
 
     </div>

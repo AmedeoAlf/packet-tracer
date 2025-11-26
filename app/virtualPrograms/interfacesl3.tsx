@@ -10,7 +10,7 @@ export function interfacesL3<T extends L3InternalState<object>>() {
       ...interfaces().subcommands,
       "set-ip": {
         desc: "Sets an interface ip",
-        autocomplete: (state, _args) => state.netInterfaces.map((it, idx) => {
+        autocomplete: (state) => state.netInterfaces.map((it, idx) => {
           const ipv4 = state.l3Ifs.at(idx)?.ip;
           return { desc: `${it.type} ${it.maxMbps} Mbps ${ipv4 ? ipv4ToString(ipv4) : "No ip"}`, option: it.name }
         }),
@@ -28,9 +28,9 @@ export function interfacesL3<T extends L3InternalState<object>>() {
             then: {
               desc: "",
               run(ctx) {
-                const intfId = ctx.state.netInterfaces.findIndex(it => it.name == ctx.args!![2]);
-                const ip = parseIpv4(ctx.args!![3])!!;
-                const mask = parseIpv4(ctx.args!![4])!!;
+                const intfId = ctx.state.netInterfaces.findIndex(it => it.name == ctx.args![2]);
+                const ip = parseIpv4(ctx.args![3])!;
+                const mask = parseIpv4(ctx.args![4])!;
                 ctx.state.l3Ifs[intfId] = { ip: ip, mask: mask };
                 ctx.updateState();
               },

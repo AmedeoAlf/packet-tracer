@@ -14,10 +14,10 @@ function parseInterface(from: string, state: InternalState<object>): number | un
   }
 }
 
-export function l2send<T extends InternalState<object>>(){
+export function l2send<T extends InternalState<object>>() {
   return {
     desc: 'Sends a raw layer 2 packet',
-    autocomplete(state, _past) {
+    autocomplete(state) {
       return state.netInterfaces.flatMap((intf, idx) => {
         const desc = `${intf.type} ${intf.maxMbps} Mbps`;
         return [{ option: idx.toString(), desc: intf.name + " " + desc }, { option: intf.name, desc }]
@@ -37,20 +37,19 @@ export function l2send<T extends InternalState<object>>(){
             desc: "Payload in base64",
             validate(_, past) {
               try {
-                // NOTE: (16/11/2025) Aspettando che il prossimo update di typescript riconosca l'esistenza di questo metodo
-                (Uint8Array as any).fromBase64(past[3]);
+                Buffer.from(past[3], "base64");
                 return true;
-              } catch (e) {
+              } catch (_) {
                 return false;
               }
             },
             autocomplete() { return []; },
             run(ctx) {
-              const ifIdx = parseInterface(ctx.args!![1], ctx.state)!!;
+              const ifIdx = parseInterface(ctx.args![1], ctx.state)!;
               ctx.sendOnIf(
                 ifIdx,
                 new Layer2Packet(
-                  (Uint8Array as any).fromBase64(ctx.args!![3]), ctx.state.netInterfaces[ifIdx].mac
+                  (Uint8Array as any).fromBase64(ctx.args![3]), ctx.state.netInterfaces[ifIdx].mac
                 ).toBytes()
               );
             },

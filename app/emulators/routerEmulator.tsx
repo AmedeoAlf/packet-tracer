@@ -62,9 +62,9 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
           if (!ctx.state.ipPackets.has(packet.id)) {
             packets.set(packet.id, packet);
           } else {
-            packets.get(packet.id)!!.add(l2Packet.payload.buffer);
+            packets.get(packet.id)!.add(l2Packet.payload.buffer);
           }
-          packet = packets.get(packet.id)!!;
+          packet = packets.get(packet.id)!;
           if (packet.isPayloadFinished()) {
             packets.delete(packet.id);
           }

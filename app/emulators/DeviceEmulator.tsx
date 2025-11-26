@@ -14,7 +14,7 @@ export interface NetworkInterface {
 
 export type InternalState<Ext extends object> = {
   netInterfaces: Array<NetworkInterface>;
-  currShell?: Command<any>;
+  currShell?: Command<InternalState<object>>;
 } & Ext;
 
 interface AutoCompleteOption { option: string, desc: string };
@@ -46,7 +46,7 @@ export function runOnInterpreter<State extends InternalState<object>>(ctx: Emula
   if (!ctx.args) return;
   let cmd = ctx.interpreter.shell;
   for (const arg of ctx.args.keys()) {
-    const err = () => ctx.write(`ERROR: Invalid argument in position ${arg} "${ctx.args!![arg]}" in command`)
+    const err = () => ctx.write(`ERROR: Invalid argument in position ${arg} "${ctx.args![arg]}" in command`)
     switch (true) {
       case ("subcommands" in cmd && !!cmd.subcommands):
         if (ctx.args[arg] in cmd.subcommands) {
@@ -93,10 +93,10 @@ export function getAutoComplete<State extends InternalState<object>>(ctx: Emulat
 
   for (const arg of ctx.args.keys()) {
     const autocompleteIfLast = (desc: string, opts: AutoCompleteOption[]) => {
-      if (arg == ctx.args!!.length - 1) {
-        return writeOrComplete(desc, opts.filter(({ option }) => option.startsWith(ctx.args!![arg])))
+      if (arg == ctx.args!.length - 1) {
+        return writeOrComplete(desc, opts.filter(({ option }) => option.startsWith(ctx.args![arg])))
       } else {
-        ctx.write(`ERROR: Invalid argument in position ${arg} "${ctx.args!![arg]}" in command`)
+        ctx.write(`ERROR: Invalid argument in position ${arg} "${ctx.args![arg]}" in command`)
       }
     }
     switch (true) {
@@ -105,7 +105,7 @@ export function getAutoComplete<State extends InternalState<object>>(ctx: Emulat
           cmd = cmd.subcommands[ctx.args[arg]];
         } else return autocompleteIfLast(
           cmd.desc,
-          Object.entries(cmd.subcommands!!).map(
+          Object.entries(cmd.subcommands!).map(
             ([option, { desc }]) => ({ option, desc })
           )
         );
@@ -120,7 +120,7 @@ export function getAutoComplete<State extends InternalState<object>>(ctx: Emulat
         );
         continue;
       default:
-        ctx.write(`ERROR: Command finished with ${arg} "${ctx.args!![arg]}" in command`)
+        ctx.write(`ERROR: Command finished with ${arg} "${ctx.args![arg]}" in command`)
     }
   }
   return;
@@ -136,10 +136,11 @@ export interface DeviceEmulator<State extends InternalState<object>> {
   packetHandler: (ctx: EmulatorContext<State>, data: Uint8Array, intf: number) => void;
 }
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 export function buildEmulatorContext(device: Device, toolCtx: ToolCtx): EmulatorContext<InternalState<any>> {
   const emulator = deviceTypesDB[device.deviceType].emulator;
   return {
-    interpreter: emulator.cmdInterpreter,
+    interpreter: emulator.cmdInterpreter as Interpreter<InternalState<any>>,
     updateState: () => {
       device.internalState = { ...device.internalState };
       toolCtx.updateProject();

@@ -16,9 +16,9 @@ export function ping<T extends L3InternalState<object>>() {
     then: {
       desc: 'The ip address to ping',
       run(ctx) {
-        const addr = parseIpv4(ctx.args!![1]);
+        const addr = parseIpv4(ctx.args![1]);
         if (addr == undefined) {
-          ctx.write(`Invalid address ${ctx.args!![1]}`);
+          ctx.write(`Invalid address ${ctx.args![1]}`);
           return;
         }
         // L'interfaccia su cui inviare il pacchetto

@@ -31,7 +31,7 @@ export function Editor(p: Project): ReactNode {
     if (!pt) return;
     pt.x = x;
     pt.y = y;
-    return pt.matrixTransform(svgCanvas.current!!.getScreenCTM()!!.inverse());
+    return pt.matrixTransform(svgCanvas.current!.getScreenCTM()!.inverse());
   }
 
   const handler = buildEventHandler.bind(null, svgToDOMPoint, tool);
@@ -67,37 +67,37 @@ export function Editor(p: Project): ReactNode {
 
           <button
             className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
-              <svg viewBox="-25 -25 53 53">
-                  {ICONS["#router-icon"]}
-              </svg>
+            <svg viewBox="-25 -25 53 53">
+              {ICONS["#router-icon"]}
+            </svg>
           </button>
 
           <button
             className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
-              <svg viewBox="-25 -25 53 53">
-                  {ICONS["#switch-icon"]}
-              </svg>
+            <svg viewBox="-25 -25 53 53">
+              {ICONS["#switch-icon"]}
+            </svg>
           </button>
 
           <button
             className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
-              <svg viewBox="-27 -20 48 48">
-                  {ICONS["#server-icon"]}
-              </svg>
+            <svg viewBox="-27 -20 48 48">
+              {ICONS["#server-icon"]}
+            </svg>
           </button>
 
           <button
             className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
-              <svg viewBox="-30 -22 53 53">
-                  {ICONS["#database-icon"]}
-              </svg>
+            <svg viewBox="-30 -22 53 53">
+              {ICONS["#database-icon"]}
+            </svg>
           </button>
 
           <button
             className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
-              <svg viewBox="-29 -22.5 53 53">
-                  {ICONS["#pc-icon"]}
-              </svg>
+            <svg viewBox="-29 -22.5 53 53">
+              {ICONS["#pc-icon"]}
+            </svg>
           </button>
 
         </div>
@@ -132,6 +132,7 @@ export function Editor(p: Project): ReactNode {
 
       {useMemo(
         () => ToolSelector({ tool, setTool }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [tool.toolname]
       )}
 
@@ -152,8 +153,8 @@ export function Editor(p: Project): ReactNode {
             if (canvasSize && pt) {
               const factor = from / tool.project.viewBoxZoom;
 
-              const cursor = svgToDOMPoint(ev.clientX, ev.clientY)!!;
-              const center = svgToDOMPoint(canvasSize[0] / 2, canvasSize[1] / 2)!!;
+              const cursor = svgToDOMPoint(ev.clientX, ev.clientY)!;
+              const center = svgToDOMPoint(canvasSize[0] / 2, canvasSize[1] / 2)!;
 
               tool.project.viewBoxPos.x += (cursor.x - center.x) * (1 - factor);
               tool.project.viewBoxPos.y += (cursor.y - center.y) * (1 - factor);

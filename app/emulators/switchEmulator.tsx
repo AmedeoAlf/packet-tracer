@@ -4,7 +4,7 @@ import { interfaces } from "../virtualPrograms/interfaces";
 import { l2send } from "../virtualPrograms/l2send";
 import { DeviceEmulator, InternalState } from "./DeviceEmulator";
 
-export const switchEmulator: DeviceEmulator<InternalState<{}>> = {
+export const switchEmulator: DeviceEmulator<InternalState<object>> = {
   configPanel: {
     "pannello meme"() {
       return (<p>Questo pannello serve solo a dimostrare che gli switch hanno un pannello differente dai router</p>

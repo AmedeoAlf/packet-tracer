@@ -137,14 +137,14 @@ export class PartialIPv4Packet extends IPv4Packet {
     const offset = offsetAndFlags & ~(0b111 << 29);
 
     const startEnd = [offset, offset + packet.byteLength - 20] satisfies [number, number];
-    if (this.gotCompleteSize && startEnd[1] > this.slices.at(-1)!![1]) throw "Packet payload as finished";
+    if (this.gotCompleteSize && startEnd[1] > this.slices.at(-1)![1]) throw "Packet payload as finished";
 
     this.rebuiltPayload.set(new Uint8Array(packet.slice(20)), offset << 3);
     this.slices.push(startEnd);
     this.slices.sort((a, b) => a[0] - b[0])
     if (!morePackets) {
       this.gotCompleteSize = true
-      this.rebuiltPayload = this.rebuiltPayload.slice(0, this.slices.at(-1)!![1])
+      this.rebuiltPayload = this.rebuiltPayload.slice(0, this.slices.at(-1)![1])
       this.payload = this.rebuiltPayload.buffer;
     };
   }

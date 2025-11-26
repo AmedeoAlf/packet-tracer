@@ -7,8 +7,8 @@ export function Cables({ project, cables }: { project: Project, cables: ReturnTy
     [...cables.entries()
       .flatMap(
         ([fromTo, cables]) => {
-          const aPos = project.devices.get(fromTo >> 16)!!.pos;
-          const bPos = project.devices.get(fromTo & 0xFFFF)!!.pos;
+          const aPos = project.devices.get(fromTo >> 16)!.pos;
+          const bPos = project.devices.get(fromTo & 0xFFFF)!.pos;
 
           // C'è un solo cavo tra due dispositivi, caso facile
           if (cables.length == 1) {
