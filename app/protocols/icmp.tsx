@@ -15,15 +15,15 @@ export enum ICMPType {
 export class ICMPPacket {
   type: ICMPType; // type + code
   extraHeader: number;
-  payload: ArrayBufferLike;
+  payload: Buffer;
 
-  constructor(type: ICMPType, extraHeader: number, payload: ArrayBufferLike) {
+  constructor(type: ICMPType, extraHeader: number, payload: Buffer) {
     this.type = type;
     this.extraHeader = extraHeader;
     this.payload = payload;
   }
 
-  static echoRequest(id: number, seq: number, payload: ArrayBufferLike): ICMPPacket {
+  static echoRequest(id: number, seq: number, payload: Buffer): ICMPPacket {
     return new ICMPPacket(ICMPType.echoRequest, (id << 16) | seq, payload);
   }
 
@@ -36,17 +36,15 @@ export class ICMPPacket {
     return { id: this.extraHeader >> 16, seq: this.extraHeader & 0xFFFF };
   }
 
-  toBytes(): Uint8Array {
-    const buf = new Uint8Array(8 + this.payload.byteLength);
-    const view = new DataView(buf.buffer);
-    view.setUint16(0, this.type);
-    view.setUint32(4, this.extraHeader);
-    buf.set(new Uint8Array(this.payload), 8)
+  toBytes(): Buffer {
+    const buf = Buffer.alloc(8 + this.payload.byteLength);
+    buf.writeUInt16BE(this.type, 0);
+    buf.writeUInt32BE(4, this.extraHeader);
+    buf.set(this.payload, 8);
     return buf;
   }
 
-  static fromBytes(bytes: ArrayBufferLike): ICMPPacket {
-    const view = new DataView(bytes);
-    return new ICMPPacket(view.getUint16(0), view.getUint32(4), bytes.slice(8))
+  static fromBytes(bytes: Buffer): ICMPPacket {
+    return new ICMPPacket(bytes.readUint16BE(0), bytes.readUint32BE(4), bytes.subarray(8))
   }
 }

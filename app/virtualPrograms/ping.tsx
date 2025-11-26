@@ -31,7 +31,7 @@ export function ping<T extends L3InternalState<object>>() {
         }
         const packet = new IPv4Packet(
           ProtocolCode.icmp,
-          ICMPPacket.echoRequest(0, 0, new ArrayBuffer(0)).toBytes().buffer,
+          ICMPPacket.echoRequest(0, 0, Buffer.alloc(0)).toBytes(),
           ctx.state.l3Ifs[intf].ip,
           addr
         );
@@ -46,7 +46,7 @@ export function ping<T extends L3InternalState<object>>() {
           ctx.sendOnIf(
             intf,
             new Layer2Packet(
-              p.buffer, ctx.state.netInterfaces[intf].mac, MAC_BROADCAST
+              p, ctx.state.netInterfaces[intf].mac, MAC_BROADCAST
             ).toBytes());
         }
       },

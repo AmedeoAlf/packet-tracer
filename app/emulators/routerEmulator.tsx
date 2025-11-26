@@ -41,9 +41,9 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
     },
   },
   packetHandler(ctx, data, intf) {
-    const l2Packet = Layer2Packet.fromBytes(new Uint8Array(data).buffer);
+    const l2Packet = Layer2Packet.fromBytes(data);
     try {
-      const destination = PartialIPv4Packet.getDestination(l2Packet.payload.buffer);
+      const destination = PartialIPv4Packet.getDestination(l2Packet.payload);
       const isDestinedInterface = ctx.state.l3Ifs.findIndex(v => v && v.ip == destination);
 
       // Non è indirizzato a me?
@@ -56,13 +56,13 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
           ctx.sendOnIf(sendTo, l2Packet.toBytes());
         }
       } else {
-        let packet = new PartialIPv4Packet(l2Packet.payload.buffer);
+        let packet = new PartialIPv4Packet(l2Packet.payload);
         if (!packet.isPayloadFinished()) {
           const packets = ctx.state.ipPackets;
           if (!ctx.state.ipPackets.has(packet.id)) {
             packets.set(packet.id, packet);
           } else {
-            packets.get(packet.id)!.add(l2Packet.payload.buffer);
+            packets.get(packet.id)!.add(l2Packet.payload);
           }
           packet = packets.get(packet.id)!;
           if (packet.isPayloadFinished()) {
@@ -76,9 +76,14 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
               // Gestisci i pacchetti echo ICMP
               switch (icmpPacket.type) {
                 case ICMPType.echoRequest:
-                  const response = new IPv4Packet(ProtocolCode.icmp, ICMPPacket.echoResponse(icmpPacket).toBytes().buffer, packet.destination, packet.source);
+                  const response = new IPv4Packet(
+                    ProtocolCode.icmp,
+                    ICMPPacket.echoResponse(icmpPacket).toBytes(),
+                    packet.destination,
+                    packet.source
+                  );
                   for (const p of response.toFragmentedBytes()) {
-                    ctx.sendOnIf(intf, new Layer2Packet(p.buffer, ctx.state.netInterfaces[intf].mac, l2Packet.from).toBytes())
+                    ctx.sendOnIf(intf, new Layer2Packet(p, ctx.state.netInterfaces[intf].mac, l2Packet.from).toBytes())
                   }
                 default:
                   if (ctx.state.rawSocketFd) ctx.state.rawSocketFd(packet);

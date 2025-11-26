@@ -98,7 +98,7 @@ export class Project {
   getConnectedTo(intf: InterfaceId): InterfaceId | undefined {
     return this.connections.get(intf);
   }
-  sendOn(intf: InterfaceId, toolCtx: ToolCtx, data: Uint8Array) {
+  sendOn(intf: InterfaceId, toolCtx: ToolCtx, data: Buffer) {
     const target = this.getConnectedTo(intf);
     if (!target) return;
     const dev = this.devices.get(deviceOfIntf(target));

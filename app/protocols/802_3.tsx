@@ -10,53 +10,51 @@ export class Layer2Packet {
   to: MacAddress;
   from: MacAddress;
   vlanTag?: number; // https://en.wikipedia.org/wiki/IEEE_802.1Q#Frame_format
-  payload: Uint8Array;
-  constructor(payload: ArrayBufferLike, from: MacAddress, to: MacAddress = MAC_BROADCAST, vlanTag?: number) {
+  payload: Buffer;
+  constructor(payload: Buffer, from: MacAddress, to: MacAddress = MAC_BROADCAST, vlanTag?: number) {
     if (payload.byteLength > 1500) throw "Payload required bigger than MTU";
-    this.payload = new Uint8Array(payload);
+    this.payload = payload;
     this.from = from;
     this.to = to;
     this.vlanTag = vlanTag;
   }
-  toBytes(): Uint8Array {
-    const packetBuf = new Uint8Array(1522);
-    const view = new DataView(packetBuf.buffer);
+  toBytes(): Buffer {
+    const packetBuf = Buffer.alloc(1522);
     let cursor = 0;
     const writeMac = (mac: number) => {
-      view.setUint16(cursor, mac / (2 ** 32));
-      view.setUint32(cursor + 2, mac);
+      packetBuf.writeUint16BE(mac / (2 ** 32), cursor);
+      packetBuf.writeUint32BE(mac, cursor + 2);
       cursor += 6;
     }
 
     writeMac(this.to);
     writeMac(this.from);
     if (this.vlanTag) {
-      view.setUint32(cursor, 0x81000000 | (0xFFF & this.vlanTag))
+      packetBuf.writeUint32BE(0x81000000 | (0xFFF & this.vlanTag), cursor)
       cursor += 4;
     }
-    view.setUint16(cursor, this.payload.byteLength)
+    packetBuf.writeUint16BE(this.payload.byteLength, cursor)
     cursor += 2;
-    packetBuf.set(new Uint8Array(this.payload), cursor);
+    packetBuf.set(this.payload, cursor);
     return packetBuf
   }
-  static fromBytes(bytes: ArrayBufferLike): Layer2Packet {
-    const view = new DataView(bytes);
+  static fromBytes(bytes: Buffer): Layer2Packet {
     let cursor = 0;
     const readMac = () => {
       cursor += 6;
-      return view.getUint16(cursor - 6) * (2 ** 32) + view.getUint32(cursor - 4);
+      return bytes.readUint16BE(cursor - 6) * (2 ** 32) + bytes.readUint32BE(cursor - 4);
     }
 
     const to = readMac();
     const from = readMac();
     let vlanTag = undefined;
-    if (view.getUint16(cursor) == 0x8100) {
-      vlanTag = view.getUint16(cursor + 2) & 0xFFF;
+    if (bytes.readUInt16BE(cursor) == 0x8100) {
+      vlanTag = bytes.readUInt16BE(cursor + 2) & 0xFFF;
       cursor += 4;
     }
-    const len = view.getUint16(cursor);
+    const len = bytes.readUInt16BE(cursor);
     cursor += 2;
-    const payload = bytes.slice(cursor, cursor + len);
+    const payload = bytes.subarray(cursor, cursor + len);
     return new Layer2Packet(payload, from, to, vlanTag);
   }
 }

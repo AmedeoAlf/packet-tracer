@@ -42,11 +42,11 @@ export class IPv4Packet {
   protocol: ProtocolCode;
   source: IPv4Address;
   destination: IPv4Address;
-  payload: ArrayBufferLike;
+  payload: Buffer;
   offset: number;
   constructor(
     protocol: IPv4Packet['protocol'],
-    payload: ArrayBufferLike,
+    payload: Buffer,
     source: IPv4Address,
     destination: IPv4Address = IPV4_BROADCAST,
     ttl: number = 255,
@@ -61,36 +61,36 @@ export class IPv4Packet {
     this.payload = payload;
     this.offset = offset;
   }
-  toFragmentedBytes(maxLen: number = 576): Uint8Array[] {
-    const header = new Uint8Array(20);
-    const view = new DataView(header.buffer);
+  toFragmentedBytes(maxLen: number = 576): Buffer[] {
+    const header = Buffer.alloc(20);
     // https://en.wikipedia.org/wiki/IPv4#Header
-    view.setUint8(0, (4 << 4) | 5); // Version + IHL
-    view.setUint8(8, this.ttl);
-    view.setUint8(9, this.protocol);
-    view.setUint32(12, this.source);
-    view.setUint32(16, this.destination);
+    header.writeUInt8((4 << 4) | 5, 0); // Version + IHL
+    header.writeUInt8(this.ttl, 8);
+    header.writeUInt8(this.protocol, 9);
+    header.writeUInt32BE(this.source, 12);
+    header.writeUInt32BE(this.destination, 16);
 
     if (this.payload.byteLength + 20 < maxLen) {
-      const packet = new Uint8Array(20 + this.payload.byteLength);
-      view.setUint16(2, packet.byteLength); // Total length
+      const packet = Buffer.alloc(20 + this.payload.byteLength);
+      header.writeUInt16BE(packet.byteLength, 2); // Total length
       packet.set(header);
-      packet.set(new Uint8Array(this.payload), 20);
+      packet.set(this.payload, 20);
       return [packet];
     }
 
-    view.setUint16(4, Math.floor(Math.random() * (2 ** 16))); // Identification
+    header.writeUInt16BE(Math.floor(Math.random() * (2 ** 16)), 4); // Identification
     const packets = [];
     for (let offs = 0; offs < this.payload.byteLength; offs += ~0x7 & (maxLen - 20)) {
       const moreFragments = this.payload.byteLength - offs > maxLen - 20;
-      const packet = new Uint8Array(moreFragments ? maxLen : this.payload.byteLength - offs + 20);
-      view.setUint16(2, packet.byteLength); // Total length
-      view.setUint16(6,
+      const packet = Buffer.alloc(moreFragments ? maxLen : this.payload.byteLength - offs + 20);
+      header.writeUInt16BE(packet.byteLength, 2); // Total length
+      header.writeUInt16BE(
         (+moreFragments << 29) | // More fragments flag
-        (offs + this.offset) >> 3 // Fragment offset
+        (offs + this.offset) >> 3, // Fragment offset
+        6
       );
       packet.set(header);
-      packet.set(new Uint8Array(this.payload.slice(offs, offs + packet.byteLength - 20)), 20);
+      packet.set(this.payload.subarray(offs, offs + packet.byteLength - 20), 20);
       packets.push(packet);
     }
     return packets;
@@ -101,51 +101,49 @@ export class PartialIPv4Packet extends IPv4Packet {
   id: number = -1;
   slices: [number, number][] = [];
   gotCompleteSize: boolean = false;
-  rebuiltPayload: Uint8Array = new Uint8Array(IPV4_MAX_PAYLOAD);
+  rebuiltPayload: Buffer = Buffer.alloc(IPV4_MAX_PAYLOAD);
 
-  constructor(first: ArrayBufferLike) {
-    const view = new DataView(first);
+  constructor(first: Buffer) {
     // Not an IPv4 packet?
-    if (view.getUint8(0) >> 4 != 4) return;
+    if (first.readUInt8(0) >> 4 != 4) return;
 
-    const offsetAndFlags = view.getUint16(6);
+    const offsetAndFlags = first.readUint16BE(6);
     const morePackets = offsetAndFlags & (1 << 29);
     const offset = offsetAndFlags & ~(0b111 << 29);
-    const payloadBuf = new Uint8Array(IPV4_MAX_PAYLOAD);
-    payloadBuf.set(new Uint8Array(first.slice(20)), offset << 3);
+    const payloadBuf = Buffer.alloc(IPV4_MAX_PAYLOAD);
+    payloadBuf.set(first.subarray(20), offset << 3);
 
-    super(view.getUint8(9), payloadBuf.buffer, view.getUint32(12), view.getUint32(16), view.getUint8(8));
+    super(first.readUint8(9), payloadBuf, first.readUint32BE(12), first.readUint32BE(16), first.readUint8(8));
     this.rebuiltPayload = payloadBuf;
-    this.id = view.getUint16(4);
+    this.id = first.readUint16BE(4);
     this.slices.push([offset, offset + first.byteLength - 20]);
     if (!morePackets) {
       this.gotCompleteSize = true
-      this.rebuiltPayload = this.rebuiltPayload.slice(0, this.slices[0][1])
-      this.payload = this.rebuiltPayload.buffer;
+      this.rebuiltPayload = this.rebuiltPayload.subarray(0, this.slices[0][1]);
+      this.payload = this.rebuiltPayload;
     };
   }
 
   // assumes many values to be the same
-  add(packet: ArrayBufferLike) {
-    const view = new DataView(packet);
+  add(packet: Buffer) {
     // Not an IPv4 packet?
-    if (view.getUint8(0) >> 4 != 4) throw "Not an IPv4 Packet";
-    if (view.getUint16(4) != this.id) throw "Non-matching ids";
+    if (packet.readUint8(0) >> 4 != 4) throw "Not an IPv4 Packet";
+    if (packet.readUint16BE(4) != this.id) throw "Non-matching ids";
 
-    const offsetAndFlags = view.getUint16(6);
+    const offsetAndFlags = packet.readUint16BE(6);
     const morePackets = offsetAndFlags & (1 << 29);
     const offset = offsetAndFlags & ~(0b111 << 29);
 
     const startEnd = [offset, offset + packet.byteLength - 20] satisfies [number, number];
     if (this.gotCompleteSize && startEnd[1] > this.slices.at(-1)![1]) throw "Packet payload as finished";
 
-    this.rebuiltPayload.set(new Uint8Array(packet.slice(20)), offset << 3);
+    this.rebuiltPayload.set(packet.subarray(20), offset << 3);
     this.slices.push(startEnd);
     this.slices.sort((a, b) => a[0] - b[0])
     if (!morePackets) {
       this.gotCompleteSize = true
-      this.rebuiltPayload = this.rebuiltPayload.slice(0, this.slices.at(-1)![1])
-      this.payload = this.rebuiltPayload.buffer;
+      this.rebuiltPayload = this.rebuiltPayload.subarray(0, this.slices.at(-1)![1])
+      this.payload = this.rebuiltPayload;
     };
   }
 
@@ -160,15 +158,13 @@ export class PartialIPv4Packet extends IPv4Packet {
     return true;
   }
 
-  static getId(packet: ArrayBufferLike): number {
-    const view = new DataView(packet);
-    if (view.getUint8(0) >> 4 != 4) throw "Not an IPv4 Packet";
-    return view.getUint16(4);
+  static getId(packet: Buffer): number {
+    if (packet.readUint8(0) >> 4 != 4) throw "Not an IPv4 Packet";
+    return packet.readUint16BE(4);
   }
 
-  static getDestination(packet: ArrayBufferLike): IPv4Address {
-    const view = new DataView(packet);
-    if (view.getUint8(0) >> 4 != 4) throw "Not an IPv4 Packet";
-    return view.getUint32(16);
+  static getDestination(packet: Buffer): IPv4Address {
+    if (packet.readUint8(0) >> 4 != 4) throw "Not an IPv4 Packet";
+    return packet.readUint32BE(16);
   }
 }

@@ -44,7 +44,7 @@ export const switchEmulator: DeviceEmulator<InternalState<object>> = {
     }
   },
   packetHandler(ctx, data, from_intf) {
-    const l2Packet = Layer2Packet.fromBytes(data.buffer);
+    const l2Packet = Layer2Packet.fromBytes(data);
     const myInterface = ctx.state.netInterfaces.findIndex(v => v.mac == l2Packet.to);
     // Non facciamo nulla se il pacchetto era destinato all'interfaccia dello switch
 

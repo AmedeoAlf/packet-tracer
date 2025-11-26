@@ -35,7 +35,7 @@ export type Interpreter<State extends InternalState<object>> = {
 
 export type EmulatorContext<State extends InternalState<object>> = {
   interpreter: Interpreter<State>,
-  sendOnIf: (ifIdx: number, data: Uint8Array) => void,
+  sendOnIf: (ifIdx: number, data: Buffer) => void,
   state: State,
   updateState: () => void,
   args?: string[],
@@ -133,7 +133,7 @@ export interface DeviceEmulator<State extends InternalState<object>> {
     DevicePanel<State>
   >;
   cmdInterpreter: Interpreter<State>;
-  packetHandler: (ctx: EmulatorContext<State>, data: Uint8Array, intf: number) => void;
+  packetHandler: (ctx: EmulatorContext<State>, data: Buffer, intf: number) => void;
 }
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */

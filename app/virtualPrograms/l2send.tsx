@@ -49,7 +49,7 @@ export function l2send<T extends InternalState<object>>() {
               ctx.sendOnIf(
                 ifIdx,
                 new Layer2Packet(
-                  (Uint8Array as any).fromBase64(ctx.args![3]), ctx.state.netInterfaces[ifIdx].mac
+                  Buffer.from(ctx.args![3], "base64"), ctx.state.netInterfaces[ifIdx].mac
                 ).toBytes()
               );
             },
