@@ -64,44 +64,20 @@ export function Editor(p: Project): ReactNode {
       <div id="left-side-bar" className="fixed bottom-0 left-0 w-[35.3%] h-[150px] indent-[1,5em] border-solid border-t-[.1em] border-r-[.1em] border-sky-800">
         <div className="h-[20%] bg-sky-700"></div>
         <div className="h-[80%] bg-zinc-900 flex flex-wrap justify-center">
+          {
+            Object.values(ICONS).map(it =>
+              <button className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white" key={it.key}>
+                <svg viewBox="-25 -25 50 50">
+                  {it}
+                  {/* il bordo che devono rispettare le icone dopo l'applicazione di scale() e traslate()
+                    <rect x="-20" y="-20" width="40" height="40" stroke="red" fill="none" />*/}
+                </svg>
+              </button>
+            )
+          }
 
-          <button
-            className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
-            <svg viewBox="-25 -25 53 53">
-              {ICONS["#router-icon"]}
-            </svg>
-          </button>
-
-          <button
-            className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
-            <svg viewBox="-25 -25 53 53">
-              {ICONS["#switch-icon"]}
-            </svg>
-          </button>
-
-          <button
-            className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
-            <svg viewBox="-27 -20 48 48">
-              {ICONS["#server-icon"]}
-            </svg>
-          </button>
-
-          <button
-            className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
-            <svg viewBox="-30 -22 53 53">
-              {ICONS["#database-icon"]}
-            </svg>
-          </button>
-
-          <button
-            className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white">
-            <svg viewBox="-29 -22.5 53 53">
-              {ICONS["#pc-icon"]}
-            </svg>
-          </button>
-
-        </div>
-      </div>
+        </div >
+      </div >
 
       <div id="right-side-bar" className="fixed bottom-0 right-0 w-[35.3%] h-[150px] indent-[1,5em] border-solid border-t-[.1em] border-l-[.1em] border-sky-800">
         <div className="h-[20%] bg-sky-700"></div>
@@ -130,11 +106,13 @@ export function Editor(p: Project): ReactNode {
         </div>
       </div>
 
-      {useMemo(
-        () => ToolSelector({ tool, setTool }),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [tool.toolname]
-      )}
+      {
+        useMemo(
+          () => ToolSelector({ tool, setTool }),
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+          [tool.toolname]
+        )
+      }
 
       <svg
         onClick={handler("click")}
