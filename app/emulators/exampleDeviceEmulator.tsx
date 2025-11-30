@@ -88,7 +88,6 @@ export const exampleDeviceEmulator: DeviceEmulator<ExampleDeviceInternalState> =
               run(ctx) {
                 const prop = ctx.args![1];
                 const val = JSON.parse(ctx.args![2]);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (ctx.state as any)[prop] = val;
                 ctx.updateState();
               }

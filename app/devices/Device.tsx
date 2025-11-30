@@ -42,14 +42,3 @@ export class Device {
     this.internalState = factory.defaultState();
   }
 }
-
-export function deviceChanged(old: Device, curr: Device): boolean {
-  const changed = (p: keyof Device) => old[p] != curr[p]
-  switch (true) {
-    case changed("name"): return true;
-    case changed("deviceType"): return true;
-    case old.pos.x != curr.pos.x: return true;
-    case old.pos.y != curr.pos.y: return true;
-    default: return false;
-  }
-}

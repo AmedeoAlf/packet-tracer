@@ -1,7 +1,7 @@
 "use client"
 import { Coords } from "./common";
 import { Device } from "./devices/Device";
-import { deviceTypesDB } from "./devices/deviceTypesDB";
+import { DeviceType, deviceTypesDB } from "./devices/deviceTypesDB";
 import { buildEmulatorContext, NetworkInterface } from "./emulators/DeviceEmulator";
 import { ToolCtx } from "./tools/Tool";
 
@@ -43,7 +43,7 @@ export class Project {
       return this.devices.get(+tag.dataset.id);
     }
   }
-  createDevice(type: keyof typeof deviceTypesDB, pos: Coords, name?: string) {
+  createDevice(type: DeviceType, pos: Coords, name?: string) {
     function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); };
 
     ++this.lastId;

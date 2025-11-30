@@ -136,7 +136,6 @@ export interface DeviceEmulator<State extends InternalState<object>> {
   packetHandler: (ctx: EmulatorContext<State>, data: Buffer, intf: number) => void;
 }
 
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 export function buildEmulatorContext(device: Device, toolCtx: ToolCtx): EmulatorContext<InternalState<any>> {
   const emulator = deviceTypesDB[device.deviceType].emulator;
   return {

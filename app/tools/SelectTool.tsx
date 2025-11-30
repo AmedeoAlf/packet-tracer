@@ -33,7 +33,7 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
             this.stdout += "\n" + msg;
             this.update();
           };
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           const panels: [string, DevicePanel<any>][] = [
             ["terminal",
               TerminalEmulator(
