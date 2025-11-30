@@ -67,10 +67,10 @@ export function Editor(p: Project): ReactNode {
           {
             Object.values(ICONS).map(it =>
               <button className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white" key={it.key}>
-                <svg viewBox="-25 -25 50 50">
+                <svg viewBox="-35 -35 70 70">
                   {it}
                   {/* il bordo che devono rispettare le icone dopo l'applicazione di scale() e traslate()
-                    <rect x="-20" y="-20" width="40" height="40" stroke="red" fill="none" />*/}
+                    <rect x="-30" y="-30" width="60" height="60" stroke="red" fill="none" />*/}
                 </svg>
               </button>
             )
