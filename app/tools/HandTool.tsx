@@ -39,8 +39,8 @@ export function makeHandTool(ctx: ToolCtx): HandTool {
           break;
         case "mousemove":
           if (this.holding) {
-            this.project.viewBoxPos.x -= ev.movement.x / this.project.viewBoxZoom;
-            this.project.viewBoxPos.y -= ev.movement.y / this.project.viewBoxZoom;
+            this.project.viewBoxX -= ev.movement.x / this.project.viewBoxZoom;
+            this.project.viewBoxY -= ev.movement.y / this.project.viewBoxZoom;
             this.updateProject();
           }
           break;

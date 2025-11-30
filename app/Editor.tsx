@@ -16,11 +16,11 @@ import { clamp } from "./common";
  * cambiamento di questi.
  */
 export function Editor(p: Project): ReactNode {
-  const [project, setProject] = useState(p);
-  const [tool, setTool] = useState<Tool>(makeSelectTool({ project, updateProject: () => setProject(new Project(project)), update: () => { } }));
-  tool.update = () => {
-    setTool({ ...tool })
-  };
+  const [proj, setProject] = useState(p);
+  const [tool, setTool] = useState<Tool>(makeSelectTool({ project: proj, updateProject: () => setProject(new Project(proj)), update: () => { } }));
+  tool.project = proj;
+  tool.updateProject = () => { setProject(new Project(proj)) };
+  tool.update = () => { setTool({ ...tool }) };
 
   const svgCanvas = useRef<SVGSVGElement>(null);
   let pt = svgCanvas.current?.createSVGPoint();
@@ -32,7 +32,7 @@ export function Editor(p: Project): ReactNode {
     pt.x = x;
     pt.y = y;
     return pt.matrixTransform(svgCanvas.current!.getScreenCTM()!.inverse());
-  }
+  };
 
   const handler = buildEventHandler.bind(null, svgToDOMPoint, tool);
 
@@ -44,15 +44,15 @@ export function Editor(p: Project): ReactNode {
   }, [])
 
   const svgViewBox = useMemo(() => {
-    const vb = [project.viewBoxPos.x, project.viewBoxPos.y, 10000, 10000]
+    const vb = [proj.viewBoxX, proj.viewBoxY, 10000, 10000]
     if (canvasSize) {
-      vb[2] = canvasSize[0] / project.viewBoxZoom;
-      vb[3] = canvasSize[1] / project.viewBoxZoom;
+      vb[2] = canvasSize[0] / proj.viewBoxZoom;
+      vb[3] = canvasSize[1] / proj.viewBoxZoom;
       vb[0] -= vb[2] * 0.5;
       vb[1] -= vb[3] * 0.5;
     }
     return vb;
-  }, [canvasSize, project.viewBoxZoom, project.viewBoxPos.x, project.viewBoxPos.y]);
+  }, [canvasSize, proj.viewBoxZoom, proj.viewBoxX, proj.viewBoxY]);
 
   return (
     <>
@@ -114,18 +114,18 @@ export function Editor(p: Project): ReactNode {
               const cursor = svgToDOMPoint(ev.clientX, ev.clientY)!;
               const center = svgToDOMPoint(canvasSize[0] / 2, canvasSize[1] / 2)!;
 
-              tool.project.viewBoxPos.x += (cursor.x - center.x) * (1 - factor);
-              tool.project.viewBoxPos.y += (cursor.y - center.y) * (1 - factor);
+              tool.project.viewBoxX += (cursor.x - center.x) * (1 - factor);
+              tool.project.viewBoxY += (cursor.y - center.y) * (1 - factor);
             }
             tool.updateProject()
             tool.update()
           } else if (ev.shiftKey) {
-            tool.project.viewBoxPos.x += ev.deltaY / tool.project.viewBoxZoom;
+            tool.project.viewBoxX += ev.deltaY / tool.project.viewBoxZoom;
             tool.updateProject()
             // tool.update()
           } else {
-            tool.project.viewBoxPos.x += ev.deltaX / tool.project.viewBoxZoom;
-            tool.project.viewBoxPos.y += ev.deltaY / tool.project.viewBoxZoom;
+            tool.project.viewBoxX += ev.deltaX / tool.project.viewBoxZoom;
+            tool.project.viewBoxY += ev.deltaY / tool.project.viewBoxZoom;
             tool.updateProject()
             // tool.update()
           }
@@ -144,8 +144,8 @@ export function Editor(p: Project): ReactNode {
         }}
       >
         <defs> {Object.values(ICONS)} </defs>
-        <Cables project={project} />
-        <Devices project={project} highlighted={tool.toolname == "select" ? (tool as SelectTool).selected : undefined} />
+        <Cables devices={proj.devices} cables={proj.getCables()} />
+        <Devices devices={proj.devices} highlighted={tool.toolname == "select" ? (tool as SelectTool).selected : undefined} />
         {tool.svgElements()}
       </svg >
 
@@ -169,8 +169,8 @@ function buildEventHandler(
     return (ev: MouseEvent) => {
       if (ev.buttons == 4) {
         ev.preventDefault()
-        tool.project.viewBoxPos.x -= ev.movementX / tool.project.viewBoxZoom;
-        tool.project.viewBoxPos.y -= ev.movementY / tool.project.viewBoxZoom;
+        tool.project.viewBoxX -= ev.movementX / tool.project.viewBoxZoom;
+        tool.project.viewBoxY -= ev.movementY / tool.project.viewBoxZoom;
         tool.updateProject();
       } else {
         tool.onEvent({

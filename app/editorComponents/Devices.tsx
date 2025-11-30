@@ -4,10 +4,10 @@ import { Device } from "../devices/Device";
 
 // Utility function che disegna i dispositivi del progetto, opzionalmente
 // evidenziandoli
-export const Devices = memo(function Devices({ project, highlighted }: { project: Project, highlighted?: Set<number> }) {
+export const Devices = memo(function Devices({ devices, highlighted }: { devices: Project['devices'], highlighted?: Set<number> }) {
   return (
     <g> {
-      [...project.devices.values().map(
+      [...devices.values().map(
         highlighted
           ? (d) =>
             (<DeviceComponent device={d} key={d.id} extraClass={highlighted.has(d.id) ? " brightness-50" : undefined} />)

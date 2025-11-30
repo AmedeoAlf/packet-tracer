@@ -32,10 +32,27 @@ export class Project {
   devices: Map<number, Device>;
   // A cosa è connessa ogni interfaccia
   private connections: Map<InterfaceId, InterfaceId>;
+
+  // Proprietà non serializzate
+  private _temp: {
+    // Flag che definisce se riciclare `devices` e `connections`
+    viewBoxChange: boolean;
+    lastCables?: ReturnType<Project['getCables']>;
+  } = { viewBoxChange: false };
+
   // La posizione della telecamera
-  viewBoxPos: Coords;
+  private _viewBoxX: number;
+  private _viewBoxY: number;
+  public get viewBoxX(): number { return this._viewBoxX; };
+  public set viewBoxX(value: number) { this._viewBoxX = value; this._temp.viewBoxChange = true; };
+  public get viewBoxY(): number { return this._viewBoxY; };
+  public set viewBoxY(value: number) { this._viewBoxY = value; this._temp.viewBoxChange = true; };
+
   // Lo zoom: 1 => 100%, 1.5 => 150%
-  viewBoxZoom: number;
+  private _viewBoxZoom: number;
+  public get viewBoxZoom(): number { return this._viewBoxZoom; }
+  public set viewBoxZoom(value: number) { this._viewBoxZoom = value; this._temp.viewBoxChange = true; }
+
   // L'id dell'ultimo dispositivo creato
   lastId: number;
   deviceFromTag(tag: HTMLOrSVGElement): Device | undefined {
@@ -77,6 +94,7 @@ export class Project {
   }
   // Maps two deviceIds to the amount of connections between them
   getCables(): Map<number, Pick<NetworkInterface, "maxMbps" | "type">[]> {
+    if (this._temp.lastCables) return this._temp.lastCables;
     const cabled = new Set<number>();
     const cableToOccurencies: ReturnType<Project['getCables']> = new Map();
     for (const conn of this.connections) {
@@ -93,6 +111,7 @@ export class Project {
         maxMbps: Math.min(ifA.maxMbps, ifB.maxMbps) as NetworkInterface['maxMbps']
       });
     }
+    this._temp.lastCables = cableToOccurencies;
     return cableToOccurencies;
   }
   getConnectedTo(intf: InterfaceId): InterfaceId | undefined {
@@ -110,10 +129,22 @@ export class Project {
   // Il construttore serve a creare copie identiche del progetto
   // per scatenare un rerender
   constructor(p?: Project) {
-    this.devices = new Map(p?.devices);
-    this.connections = new Map(p?.connections);
-    this.lastId = p?.lastId || 0;
-    this.viewBoxPos = p?.viewBoxPos || { x: 0, y: 0 };
-    this.viewBoxZoom = p?.viewBoxZoom || 1;
+    // Se `viewBoxChange` è `true` allora ricicla la lista di dispositivi e connessioni
+    if (p && p._temp.viewBoxChange) {
+      this.devices = p.devices;
+      this.connections = p.connections;
+      this.lastId = p.lastId;
+      this._temp.lastCables = p._temp.lastCables;
+      this._viewBoxX = p._viewBoxX;
+      this._viewBoxY = p._viewBoxY;
+      this._viewBoxZoom = p._viewBoxZoom;
+    } else {
+      this.devices = new Map(p?.devices);
+      this.connections = new Map(p?.connections);
+      this.lastId = p?.lastId || 0;
+      this._viewBoxX = p?._viewBoxX || 0;
+      this._viewBoxY = p?._viewBoxY || 0;
+      this._viewBoxZoom = p?._viewBoxZoom || 1;
+    }
   }
 }

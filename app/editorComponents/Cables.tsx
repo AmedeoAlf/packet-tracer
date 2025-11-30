@@ -2,13 +2,13 @@ import { memo, ReactNode } from "react";
 import { Project } from "../Project";
 import { NetworkInterface } from "../emulators/DeviceEmulator";
 
-export const Cables = memo(function Cables({ project }: { project: Project }): ReactNode {
+export const Cables = memo(function Cables({ cables, devices }: { cables: ReturnType<Project['getCables']>, devices: Project['devices'] }): ReactNode {
   return (<g> {
-    [...project.getCables().entries()
+    [...cables.entries()
       .flatMap(
         ([fromTo, cables]) => {
-          const aPos = project.devices.get(fromTo >> 16)!.pos;
-          const bPos = project.devices.get(fromTo & 0xFFFF)!.pos;
+          const aPos = devices.get(fromTo >> 16)!.pos;
+          const bPos = devices.get(fromTo & 0xFFFF)!.pos;
 
           // C'è un solo cavo tra due dispositivi, caso facile
           if (cables.length == 1) {
