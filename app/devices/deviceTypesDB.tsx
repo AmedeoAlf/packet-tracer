@@ -8,10 +8,9 @@ import { Router } from "./list/Router";
 import { Server } from "./list/Server";
 
 /*
- * Quest'oggetto contiene la lista di tutte le `DeviceFactory` esistenti,
- * assegnate al loro rispettivo `deviceType`.
+ * Quest'oggetto contiene la lista di tutti `DeviceFactory` esistenti,
+ * assegnati al loro rispettivo `deviceType`.
  */
-
 export const deviceTypesDB = {
   router: Router,
   switch: Switch,
@@ -19,7 +18,6 @@ export const deviceTypesDB = {
   server: Server,
   computer: Computer,
   exampleDevice: ExampleDevice,
-
 } as const satisfies Record<string, DeviceFactory<any>>;
 
 export type DeviceType = keyof typeof deviceTypesDB

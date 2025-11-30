@@ -6,6 +6,7 @@ import { DeviceFactory } from "../Device";
 
 export type ExampleDeviceInternalState = InternalState<{ exampleProp1: number, exampleProp2: string }>
 
+// Un tipo di dispositivo non è altro che una nuova DeviceFactory
 export const ExampleDevice: DeviceFactory<ExampleDeviceInternalState> = {
   proto: {
     // L'id del tag `<g>` per l'icona del dispositivo, la lista è in `ICONS.tsx`
