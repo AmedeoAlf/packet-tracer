@@ -26,6 +26,7 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
           );
         case 1:
           const device = this.project.devices.get(this.selected.values().next().value!)!;
+          console.log(this.selected, device)
           const emulator = device.emulator;
           const ctx = buildEmulatorContext(device, this);
           ctx.write = (msg) => {
@@ -99,7 +100,7 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
               for (const dev of this.selected) {
                 this.project.devices.get(dev)!.pos.x += diffX;
                 this.project.devices.get(dev)!.pos.y += diffY;
-                this.project.devices.set(dev, { ...this.project.devices.get(dev)! })
+                this.project.devices.set(dev, cloneWithProto(this.project.devices.get(dev)!))
               }
               this.updateProject();
             }
