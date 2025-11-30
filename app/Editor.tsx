@@ -186,7 +186,7 @@ export function Editor(p: Project): ReactNode {
         }}
       >
         <defs> {Object.values(ICONS)} </defs>
-        <Cables project={project} cables={project.getCables()} />
+        <Cables project={project} />
         <Devices project={project} highlighted={tool.toolname == "select" ? (tool as SelectTool).selected : undefined} />
         {tool.svgElements()}
       </svg >

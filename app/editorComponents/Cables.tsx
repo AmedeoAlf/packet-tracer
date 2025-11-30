@@ -1,10 +1,10 @@
-import { ReactNode } from "react";
+import { memo, ReactNode } from "react";
 import { Project } from "../Project";
 import { NetworkInterface } from "../emulators/DeviceEmulator";
 
-export function Cables({ project, cables }: { project: Project, cables: ReturnType<Project['getCables']> }): ReactNode {
+export const Cables = memo(function Cables({ project }: { project: Project }): ReactNode {
   return (<g> {
-    [...cables.entries()
+    [...project.getCables().entries()
       .flatMap(
         ([fromTo, cables]) => {
           const aPos = project.devices.get(fromTo >> 16)!.pos;
@@ -44,7 +44,7 @@ export function Cables({ project, cables }: { project: Project, cables: ReturnTy
         (props, idx) => <line {...props} key={idx} strokeWidth="1pt" />
       )]
   } </g>)
-}
+})
 
 const intfColor = {
   copper: "black",
