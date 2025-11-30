@@ -1,7 +1,7 @@
 "use client";
 import { Coords } from "../common";
 import { DeviceEmulator, InternalState } from "../emulators/DeviceEmulator";
-import { DeviceType, deviceTypesDB } from "./deviceTypesDB";
+import { DeviceType } from "./deviceTypesDB";
 import { ICONS } from "./ICONS";
 
 /*
@@ -13,9 +13,11 @@ import { ICONS } from "./ICONS";
  * `deviceType` lì dentro e poi creare la Factory
  */
 export interface DeviceFactory<State extends InternalState<object>> {
-  deviceType: DeviceType;
-  iconId: keyof typeof ICONS;
-  emulator: DeviceEmulator<State>;
+  proto: {
+    deviceType: DeviceType;
+    iconId: keyof typeof ICONS;
+    emulator: DeviceEmulator<State>;
+  }
   defaultState: () => State
 }
 
@@ -28,17 +30,21 @@ export interface DeviceFactory<State extends InternalState<object>> {
  * configurazione dell'apparato; all'alto pratico le interfacce di rete sono
  * praticamente un dato fisico, quindi non è una rappresentazione perfetta.
  */
-export class Device {
+export type Device = DeviceFactory<any>['proto'] & {
   readonly id: number;
-  readonly deviceType: DeviceType;
   name: string;
   pos: Coords;
   internalState: InternalState<object>;
-  constructor(factory: typeof deviceTypesDB[keyof typeof deviceTypesDB], id: number, pos: Coords, name: string) {
-    this.id = id;
-    this.pos = pos;
-    this.name = name;
-    this.deviceType = factory.deviceType;
-    this.internalState = factory.defaultState();
-  }
+}
+
+export function makeDevice(factory: DeviceFactory<any>, id: number, pos: Coords, name: string) {
+  return Object.setPrototypeOf(
+    {
+      internalState: factory.defaultState(),
+      id,
+      pos,
+      name
+    } satisfies Omit<Device, keyof DeviceFactory<any>['proto']>,
+    factory.proto
+  )
 }

@@ -14,9 +14,11 @@ export type RouterInternalState = L3InternalState<{
 }>;
 
 export const Router: DeviceFactory<RouterInternalState> = {
-  iconId: "#router-icon",
-  emulator: routerEmulator,
-  deviceType: "router",
+  proto: {
+    iconId: "#router-icon",
+    emulator: routerEmulator,
+    deviceType: "router"
+  },
   defaultState() {
     return {
       ipPackets: new Map(),
