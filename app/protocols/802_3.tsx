@@ -1,3 +1,16 @@
+/*
+ * Nota sull'accuratezza:
+ *
+ * Presenza dei campi dell'header
+ * +----------+-----+-----+-----+-------------------+-----+---------+-----+-----+
+ * | Preamble | SFD | dst | src | 802.1Q tag (opt.) | len | payload | CRC | IPG |
+ * +----------+-----+-----+-----+-------------------+-----+---------+-----+-----+
+ * | no (perché L1) | sì  | sì  | si (opzionalmente)| sì  | sì      | no  | L1  |
+ * +----------------+-----+-----+-------------------+-----+---------+-----+-----+
+ * (per ovvie ragioni di performance non è stato implmentato alcun checksum nel
+ * simulatore)
+*/
+
 export type MacAddress = number
 
 export const MAC_BROADCAST: MacAddress = 0xFFFFFFFFFFFF;

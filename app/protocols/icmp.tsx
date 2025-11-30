@@ -1,3 +1,19 @@
+/*
+ * Nota sull'accuratezza:
+ *
+ * Presenza dei campi dell'header
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * | Type       sì | Code       sì | Checksum                vuoto |
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * | Rest of header                                             sì |
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
+ * - Le combinazioni "Type" + "Code" sono definite nell'enum `ICMPType`
+ *
+ * (per ovvie ragioni di performance non è stato implmentato alcun checksum nel
+ * simulatore)
+*/
+
 // https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages
 export enum ICMPType {
   echo = 0x0000,
@@ -8,7 +24,7 @@ export enum ICMPType {
   unfragmentablePacket = 0x0304,
   echoRequest = 0x0800,
   ttlExceeded = 0x0B00,
-  reassemblyExceeded = 0x0B01,
+  reassemblyExceeded = 0x0B01
 }
 
 // https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Header

@@ -1,3 +1,31 @@
+/*
+ * Nota sull'accuratezza:
+ *
+ * Presenza dei campi dell'header
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * |Version|  IHL  |Type of Service|          Total Length         |
+ * | sì    | si    | vuoto         | sì                            |
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * |         Identification        |Flags|      Fragment Offset    |
+ * | sì                            |- - s| sì                      |
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * |  Time to Live |    Protocol   |         Header Checksum       |
+ * | sì            | sì            | vuoto                         |
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * |                Source Address       sì                        |
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * |                Destination Address  sì                        |
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * |                    Options          no        | Padding    no |
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
+ * - IHL è sempre impostato a 5, non prevedendo l'aggiunta di campi Options
+ * - L'unica delle "Flags" implementata è "More fragments" (bit 2)
+ *
+ * (per ovvie ragioni di performance non è stato implmentato alcun checksum nel
+ * simulatore)
+*/
+
 import { InternalState } from "../emulators/DeviceEmulator";
 
 // NOTE: Implementazione parziale, ad esempio IHL è sempre uguale a 5
