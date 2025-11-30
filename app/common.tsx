@@ -17,3 +17,7 @@ export function areMapsShallowEqual<K, V>(a: Map<K, V>, b: Map<K, V>): boolean {
 export function clamp(n: number, min: number, max: number): number {
   return Math.max(Math.min(n, max), min)
 }
+
+export function cloneWithProto<T extends object>(obj: T): T {
+  return Object.setPrototypeOf({ ...obj }, Object.getPrototypeOf(obj))
+}

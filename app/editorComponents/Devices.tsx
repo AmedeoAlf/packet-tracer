@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { Project } from "../Project";
 import { Device } from "../devices/Device";
-import { deviceTypesDB } from "../devices/deviceTypesDB";
 
 // Utility function che disegna i dispositivi del progetto, opzionalmente
 // evidenziandoli
@@ -31,7 +30,7 @@ const DeviceComponent = memo(function DeviceComponent(
   return (
     <>
       <use
-        href={deviceTypesDB[device.deviceType].iconId}
+        href={device.iconId}
         className={"device " + (extraClass || "")}
         {...device.pos}
         {...dataProps}
