@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import { Editor } from "./Editor";
 import { Project } from "./Project";
-import { RouterInternalState } from "./devices/Router";
+import { RouterInternalState } from "./devices/list/Router";
 import { parseIpv4 } from "./protocols/rfc_760";
 
 export default function Home() {

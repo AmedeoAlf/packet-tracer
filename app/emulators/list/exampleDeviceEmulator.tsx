@@ -1,5 +1,5 @@
-import { ExampleDeviceInternalState } from "../devices/ExampleDevice";
-import { DeviceEmulator, runOnInterpreter } from "./DeviceEmulator";
+import { ExampleDeviceInternalState } from "../../devices/list/ExampleDevice";
+import { DeviceEmulator, runOnInterpreter } from "../DeviceEmulator";
 
 export const exampleDeviceEmulator: DeviceEmulator<ExampleDeviceInternalState> = {
   // I vari menu mostrati `SelectTool`

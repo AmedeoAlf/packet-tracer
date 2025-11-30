@@ -1,8 +1,8 @@
-import { Layer2Packet } from "../protocols/802_3";
-import { hello } from "../virtualPrograms/hello";
-import { interfaces } from "../virtualPrograms/interfaces";
-import { l2send } from "../virtualPrograms/l2send";
-import { DeviceEmulator, InternalState } from "./DeviceEmulator";
+import { Layer2Packet } from "../../protocols/802_3";
+import { hello } from "../../virtualPrograms/hello";
+import { interfaces } from "../../virtualPrograms/interfaces";
+import { l2send } from "../../virtualPrograms/l2send";
+import { DeviceEmulator, InternalState } from "../DeviceEmulator";
 
 export const switchEmulator: DeviceEmulator<InternalState<object>> = {
   configPanel: {

@@ -1,11 +1,11 @@
 "use client";
-import { Computer } from "./Computer";
-import { Database } from "./Database";
 import { DeviceFactory } from "./Device";
-import { ExampleDevice } from "./ExampleDevice";
-import { Router } from "./Router";
-import { Server } from "./Server";
-import { Switch } from "./Switch";
+import { Computer } from "./list/Computer";
+import { Database } from "./list/Database";
+import { ExampleDevice } from "./list/ExampleDevice";
+import { Switch } from "./list/Switch";
+import { Router } from "./list/Router";
+import { Server } from "./list/Server";
 
 /*
  * Quest'oggetto contiene la lista di tutte le `DeviceFactory` esistenti,
@@ -19,7 +19,7 @@ export const deviceTypesDB = {
   server: Server,
   computer: Computer,
   exampleDevice: ExampleDevice,
-   
+
 } as const satisfies Record<string, DeviceFactory<any>>;
 
 export type DeviceType = keyof typeof deviceTypesDB

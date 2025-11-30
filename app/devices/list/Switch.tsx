@@ -1,14 +1,12 @@
-import { InternalState } from "../emulators/DeviceEmulator";
-import { switchEmulator } from "../emulators/switchEmulator";
-import { randomMAC } from "../protocols/802_3";
-import { DeviceFactory } from "./Device";
+import { InternalState } from "../../emulators/DeviceEmulator";
+import { switchEmulator } from "../../emulators/list/switchEmulator";
+import { randomMAC } from "../../protocols/802_3";
+import { DeviceFactory } from "../Device";
 
-export const Database: DeviceFactory<InternalState<object>> = {
-  iconId: "#database-icon",
-  emulator: switchEmulator, //Da Cambiare
-  deviceType: "database",
-
-  // Default State Switch da Cambiare
+export const Switch: DeviceFactory<InternalState<object>> = {
+  iconId: "#switch-icon",
+  emulator: switchEmulator,
+  deviceType: "switch",
   defaultState() {
     return {
       netInterfaces: [

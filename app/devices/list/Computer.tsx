@@ -1,7 +1,7 @@
-import { InternalState } from "../emulators/DeviceEmulator";
-import { switchEmulator } from "../emulators/switchEmulator";
-import { randomMAC } from "../protocols/802_3";
-import { DeviceFactory } from "./Device";
+import { InternalState } from "../../emulators/DeviceEmulator";
+import { switchEmulator } from "../../emulators/list/switchEmulator";
+import { randomMAC } from "../../protocols/802_3";
+import { DeviceFactory } from "../Device";
 
 export const Computer: DeviceFactory<InternalState<object>> = {
   iconId: "#pc-icon",

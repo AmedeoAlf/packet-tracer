@@ -1,8 +1,8 @@
 "use client";
-import { routerEmulator } from "../emulators/routerEmulator";
-import { randomMAC } from "../protocols/802_3";
-import { IPV4_BROADCAST, IPv4Address, L3InternalState } from "../protocols/rfc_760";
-import { DeviceFactory } from "./Device";
+import { routerEmulator } from "../../emulators/list/routerEmulator";
+import { randomMAC } from "../../protocols/802_3";
+import { IPV4_BROADCAST, IPv4Address, L3InternalState } from "../../protocols/rfc_760";
+import { DeviceFactory } from "../Device";
 
 export type RoutingTableEntry = {
   netAddr: IPv4Address,

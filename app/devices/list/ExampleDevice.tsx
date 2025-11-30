@@ -1,8 +1,8 @@
 "use client";
-import { InternalState } from "../emulators/DeviceEmulator";
-import { exampleDeviceEmulator } from "../emulators/exampleDeviceEmulator";
-import { randomMAC } from "../protocols/802_3";
-import { DeviceFactory } from "./Device";
+import { InternalState } from "../../emulators/DeviceEmulator";
+import { exampleDeviceEmulator } from "../../emulators/list/exampleDeviceEmulator";
+import { randomMAC } from "../../protocols/802_3";
+import { DeviceFactory } from "../Device";
 
 export type ExampleDeviceInternalState = InternalState<{ exampleProp1: number, exampleProp2: string }>
 
