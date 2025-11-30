@@ -26,7 +26,6 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
           );
         case 1:
           const device = this.project.devices.get(this.selected.values().next().value!)!;
-          console.log(this.selected, device)
           const emulator = device.emulator;
           const ctx = buildEmulatorContext(device, this);
           ctx.write = (msg) => {
