@@ -4,9 +4,11 @@ import { randomMAC } from "../../protocols/802_3";
 import { DeviceFactory } from "../Device";
 
 export const Server: DeviceFactory<InternalState<object>> = {
-  iconId: "#server-icon",
-  emulator: switchEmulator, //Da Cambiare
-  deviceType: "server",
+  proto: {
+    iconId: "#server-icon",
+    emulator: switchEmulator, //Da Cambiare
+    deviceType: "server"
+  },
 
   // Default State Switch da Cambiare
   defaultState() {

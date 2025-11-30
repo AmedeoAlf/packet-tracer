@@ -1,6 +1,6 @@
 "use client"
 import { Coords } from "./common";
-import { Device } from "./devices/Device";
+import { Device, makeDevice } from "./devices/Device";
 import { DeviceType, deviceTypesDB } from "./devices/deviceTypesDB";
 import { buildEmulatorContext, NetworkInterface } from "./emulators/DeviceEmulator";
 import { ToolCtx } from "./tools/Tool";
@@ -47,7 +47,7 @@ export class Project {
     function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); };
 
     ++this.lastId;
-    this.devices.set(this.lastId, new Device(
+    this.devices.set(this.lastId, makeDevice(
       deviceTypesDB[type],
       this.lastId,
       pos,
@@ -105,7 +105,7 @@ export class Project {
     if (!dev) return;
     const ifIdx = idxOfIntf(intf)
     console.assert(dev.internalState.netInterfaces.length > ifIdx);
-    deviceTypesDB[dev.deviceType].emulator.packetHandler(buildEmulatorContext(dev, toolCtx), data, ifIdx);
+    dev.emulator.packetHandler(buildEmulatorContext(dev, toolCtx), data, ifIdx);
   }
   // Il construttore serve a creare copie identiche del progetto
   // per scatenare un rerender

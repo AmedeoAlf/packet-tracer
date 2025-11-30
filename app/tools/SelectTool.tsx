@@ -1,7 +1,6 @@
 import { CanvasEvent, Tool, ToolCtx } from "./Tool";
-import { deviceTypesDB } from "../devices/deviceTypesDB";
 import { buildEmulatorContext, DevicePanel, EmulatorContext, getAutoComplete, InternalState, runOnInterpreter } from "../emulators/DeviceEmulator";
-import { Coords } from "../common";
+import { cloneWithProto, Coords } from "../common";
 
 export type SelectTool = Tool & {
   selected: Set<number>;
@@ -27,13 +26,13 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
           );
         case 1:
           const device = this.project.devices.get(this.selected.values().next().value!)!;
-          const emulator = deviceTypesDB[device.deviceType].emulator;
+          const emulator = device.emulator;
           const ctx = buildEmulatorContext(device, this);
           ctx.write = (msg) => {
             this.stdout += "\n" + msg;
             this.update();
           };
-           
+
           const panels: [string, DevicePanel<any>][] = [
             ["terminal",
               TerminalEmulator(
@@ -86,7 +85,7 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
             for (const dev of this.selected) {
               this.project.devices.get(dev)!.pos.x += ev.pos.x - this.lastCursorPos.x;
               this.project.devices.get(dev)!.pos.y += ev.pos.y - this.lastCursorPos.y;
-              this.project.devices.set(dev, { ...this.project.devices.get(dev)! })
+              this.project.devices.set(dev, cloneWithProto(this.project.devices.get(dev)!))
             }
             this.updateProject();
             this.lastCursorPos = ev.pos;

@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { Device } from "../devices/Device";
-import { deviceTypesDB } from "../devices/deviceTypesDB";
 import { ToolCtx } from "../tools/Tool";
 import { toInterfaceId } from "../Project";
 import { MacAddress } from "../protocols/802_3";
@@ -137,7 +136,7 @@ export interface DeviceEmulator<State extends InternalState<object>> {
 }
 
 export function buildEmulatorContext(device: Device, toolCtx: ToolCtx): EmulatorContext<InternalState<any>> {
-  const emulator = deviceTypesDB[device.deviceType].emulator;
+  const emulator = device.emulator;
   return {
     interpreter: emulator.cmdInterpreter as Interpreter<InternalState<any>>,
     updateState: () => {

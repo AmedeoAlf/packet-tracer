@@ -40,7 +40,7 @@ export function makeAddTool(ctx: ToolCtx): AddTool {
     svgElements() {
       return (
         <use
-          href={deviceTypesDB[this.deviceType].iconId}
+          href={deviceTypesDB[this.deviceType].proto.iconId}
           className="opacity-50"
           {...this.cursorPos}
         />
