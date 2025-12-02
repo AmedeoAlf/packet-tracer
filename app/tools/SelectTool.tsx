@@ -1,6 +1,6 @@
 import { CanvasEvent, Tool, ToolCtx } from "./Tool";
 import { buildEmulatorContext, DevicePanel, EmulatorContext, getAutoComplete, InternalState, runOnInterpreter } from "../emulators/DeviceEmulator";
-import { cloneWithProto, Coords } from "../common";
+import { Coords } from "../common";
 
 export type SelectTool = Tool & {
   selected: Set<number>;
@@ -88,14 +88,12 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
         case "mousemove":
           if (this.lastCursorPos) {
             for (const dev of this.selected) {
-              this.project.devices.get(dev)!.pos.x += ev.pos.x - this.lastCursorPos.x;
-              this.project.devices.get(dev)!.pos.y += ev.pos.y - this.lastCursorPos.y;
-              this.project.devices.set(dev, cloneWithProto(this.project.devices.get(dev)!))
+              this.project.mutDevice(dev)!.pos.x += ev.pos.x - this.lastCursorPos.x;
+              this.project.mutDevice(dev)!.pos.y += ev.pos.y - this.lastCursorPos.y;
             }
             for (const dec of this.selectedDecals) {
-              this.project.decals[dec]!.pos.x += ev.pos.x - this.lastCursorPos.x;
-              this.project.decals[dec]!.pos.y += ev.pos.y - this.lastCursorPos.y;
-              this.project.decals[dec]! = cloneWithProto(this.project.decals[dec]!)
+              this.project.mutDecal(dec)!.pos.x += ev.pos.x - this.lastCursorPos.x;
+              this.project.mutDecal(dec)!.pos.y += ev.pos.y - this.lastCursorPos.y;
             }
             this.updateProject();
             this.lastCursorPos = ev.pos;
@@ -107,14 +105,12 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
             const diffY = ev.pos.y - this.lastCursorPos.y;
             if (diffX || diffY) {
               for (const dev of this.selected) {
-                this.project.devices.get(dev)!.pos.x += diffX;
-                this.project.devices.get(dev)!.pos.y += diffY;
-                this.project.devices.set(dev, cloneWithProto(this.project.devices.get(dev)!))
+                this.project.mutDevice(dev)!.pos.x += diffX;
+                this.project.mutDevice(dev)!.pos.y += diffY;
               }
               for (const dec of this.selectedDecals) {
-                this.project.decals[dec]!.pos.x += diffX;
-                this.project.decals[dec]!.pos.y += diffY;
-                this.project.decals[dec]! = cloneWithProto(this.project.decals[dec]!)
+                this.project.mutDecal(dec)!.pos.x += diffX;
+                this.project.mutDecal(dec)!.pos.y += diffY;
               }
               this.updateProject();
             }

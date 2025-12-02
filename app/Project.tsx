@@ -1,5 +1,5 @@
 "use client"
-import { Coords } from "./common";
+import { cloneWithProto, Coords } from "./common";
 import { Device, makeDevice } from "./devices/Device";
 import { DeviceType, deviceTypesDB } from "./devices/deviceTypesDB";
 import { buildEmulatorContext, NetworkInterface } from "./emulators/DeviceEmulator";
@@ -50,10 +50,14 @@ export class Project {
     // Flag che definisce se riciclare `devices` e `connections`
     viewBoxChange: boolean;
     cantRecycle: boolean;
+    mutatedDevices: number[];
+    mutatedDecals: number[];
     lastCables?: ReturnType<Project['getCables']>;
   } = {
       viewBoxChange: false,
-      cantRecycle: false
+      cantRecycle: false,
+      mutatedDevices: [],
+      mutatedDecals: []
     };
 
   // La posizione della telecamera
@@ -75,6 +79,14 @@ export class Project {
     if (tag.dataset.id) {
       return this.devices.get(+tag.dataset.id);
     }
+  }
+  mutDevice(id: number): Device | undefined {
+    if (this.devices.has(id) && !this._temp.mutatedDevices.includes(id)) this._temp.mutatedDevices.push(id)
+    return this.devices.get(id);
+  }
+  mutDecal(id: number): Decal | undefined {
+    if (this.decals.at(id) && !this._temp.mutatedDecals.includes(id)) this._temp.mutatedDecals.push(id)
+    return this.decals.at(id);
   }
   decalFromTag(tag: HTMLOrSVGElement): Decal | undefined {
     if (tag.dataset.decalid) {
@@ -165,27 +177,54 @@ export class Project {
   removeDecal(id: number) {
     this.decals[id] = undefined;
   }
+  recyclable(): boolean {
+    return !this._temp.cantRecycle
+      && this._temp.viewBoxChange
+      && this._temp.mutatedDevices.length == 0
+      && this._temp.mutatedDecals.length == 0;
+  }
+  applyMutations() {
+    for (const id of this._temp.mutatedDevices) {
+      this.devices.set(id, cloneWithProto(this.devices.get(id)!));
+    }
+    if (this._temp.mutatedDevices.length != 0) this.devices = new Map(this.devices);
+    for (const id of this._temp.mutatedDecals) {
+      this.decals[id] = { ...this.decals[id]! };
+    }
+    if (this._temp.mutatedDecals.length != 0) this.decals = [...this.decals];
+  }
   // Il construttore serve a creare copie identiche del progetto
   // per scatenare un rerender
   constructor(p?: Project) {
-    // Se `viewBoxChange` è `true` allora ricicla la lista di dispositivi e connessioni
-    if (p && !p._temp.cantRecycle && p._temp.viewBoxChange) {
-      this.devices = p.devices;
-      this.connections = p.connections;
-      this.lastId = p.lastId;
-      this.decals = p.decals;
-      this._temp.lastCables = p._temp.lastCables;
-      this._viewBoxX = p._viewBoxX;
-      this._viewBoxY = p._viewBoxY;
-      this._viewBoxZoom = p._viewBoxZoom;
-    } else {
-      this.devices = new Map(p?.devices);
-      this.connections = new Map(p?.connections);
-      this.decals = p ? [...p.decals] : [];
-      this.lastId = p?.lastId || 0;
-      this._viewBoxX = p?._viewBoxX || 0;
-      this._viewBoxY = p?._viewBoxY || 0;
-      this._viewBoxZoom = p?._viewBoxZoom || 1;
+    if (p) {
+      if (!p.recyclable()) {
+        p.applyMutations();
+      } else {
+        this.devices = p.devices;
+        this.decals = p.decals;
+        this.connections = p.connections;
+        this.lastId = p.lastId;
+        this._temp = {
+          ...p._temp,
+          viewBoxChange: false
+        }
+        this._viewBoxX = p._viewBoxX;
+        this._viewBoxY = p._viewBoxY;
+        this._viewBoxZoom = p._viewBoxZoom;
+        return;
+      }
     }
+    if (p) {
+      this.devices = p.devices;
+      this.decals = p.decals;
+    } else {
+      this.devices = new Map();
+      this.decals = [];
+    }
+    this.connections = new Map(p?.connections);
+    this.lastId = p?.lastId || 0;
+    this._viewBoxX = p?._viewBoxX || 0;
+    this._viewBoxY = p?._viewBoxY || 0;
+    this._viewBoxZoom = p?._viewBoxZoom || 1;
   }
 }

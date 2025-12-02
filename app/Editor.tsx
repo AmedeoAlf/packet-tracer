@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, MouseEvent, useEffect, ReactNode, useMemo } from "react";
+import { useState, useRef, MouseEvent, useEffect, ReactNode, useMemo, memo } from "react";
 import { Decal, MAX_ZOOM_FACTOR, MIN_ZOOM_FACTOR, Project } from "./Project";
 import { CanvasEvent, Tool } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
@@ -153,7 +153,10 @@ export function Editor(p: Project): ReactNode {
         <Cables devices={proj.devices} cables={proj.getCables()} />
         <Devices devices={proj.devices} highlighted={tool.toolname == "select" ? (tool as SelectTool).selected : undefined} />
         {tool.svgElements()}
-        {Decals(proj.decals, tool.toolname == 'select' ? (tool as SelectTool).selectedDecals : undefined)}
+        <Decals
+          decals={proj.decals}
+          highlighted={tool.toolname == 'select' ? (tool as SelectTool).selectedDecals : undefined}
+        />
       </svg >
 
     </>
@@ -205,7 +208,7 @@ function buildEventHandler(
 };
 
 
-function Decals(decals: (Decal | undefined)[], highlighted?: Set<number>): ReactNode {
+const Decals = memo(function Decals({ decals, highlighted }: { decals: (Decal | undefined)[], highlighted?: Set<number> }): ReactNode {
   return decals.map((d, idx) => {
     if (!d) return;
     const data = { 'data-decalid': idx }
@@ -215,4 +218,4 @@ function Decals(decals: (Decal | undefined)[], highlighted?: Set<number>): React
         return <text key={idx} {...d.pos} {...data} fill={highlighted && highlighted.has(idx) ? '#555' : '#000'}>{d.text}</text>;
     }
   })
-}
+})
