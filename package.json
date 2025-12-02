@@ -7,10 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
+    "format": "prettier app --write"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.17",
     "next": "16.0.0",
+    "prettier": "^3.7.3",
     "react": "19.2.0",
     "react-dom": "19.2.0"
   },

@@ -5,7 +5,7 @@ import { Coords } from "../common";
 export type AddTool = Tool & {
   deviceType: keyof typeof deviceTypesDB;
   cursorPos: Coords;
-}
+};
 
 export function makeAddTool(ctx: ToolCtx): AddTool {
   return {
@@ -19,11 +19,19 @@ export function makeAddTool(ctx: ToolCtx): AddTool {
           Device type:
           <select
             defaultValue={this.deviceType}
-            onChange={ev => { this.deviceType = ev.target.value as DeviceType; this.update() }} >
-            {Object.keys(deviceTypesDB).map(it => (<option className="bg-sky-700" key={it} value={it}>{it}</option>))}
+            onChange={(ev) => {
+              this.deviceType = ev.target.value as DeviceType;
+              this.update();
+            }}
+          >
+            {Object.keys(deviceTypesDB).map((it) => (
+              <option className="bg-sky-700" key={it} value={it}>
+                {it}
+              </option>
+            ))}
           </select>
         </div>
-      )
+      );
     },
     onEvent(ev): void {
       switch (ev.type) {
@@ -44,7 +52,7 @@ export function makeAddTool(ctx: ToolCtx): AddTool {
           className="opacity-50"
           {...this.cursorPos}
         />
-      )
+      );
     },
-  }
+  };
 }

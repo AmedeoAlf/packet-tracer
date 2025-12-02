@@ -1,6 +1,6 @@
 "use client";
 
-export type Coords = { x: number; y: number; };
+export type Coords = { x: number; y: number };
 
 export function areArraysShallowEqual<T>(a: T[], b: T[]): boolean {
   if (a.length != b.length) return false;
@@ -15,9 +15,9 @@ export function areMapsShallowEqual<K, V>(a: Map<K, V>, b: Map<K, V>): boolean {
 }
 
 export function clamp(n: number, min: number, max: number): number {
-  return Math.max(Math.min(n, max), min)
+  return Math.max(Math.min(n, max), min);
 }
 
 export function cloneWithProto<T extends object>(obj: T): T {
-  return Object.setPrototypeOf({ ...obj }, Object.getPrototypeOf(obj))
+  return Object.setPrototypeOf({ ...obj }, Object.getPrototypeOf(obj));
 }

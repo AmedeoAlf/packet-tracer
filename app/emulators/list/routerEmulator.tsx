@@ -1,7 +1,13 @@
 import { RouterInternalState } from "../../devices/list/Router";
 import { Layer2Packet, MAC_BROADCAST } from "../../protocols/802_3";
 import { ICMPPacket, ICMPType } from "../../protocols/icmp";
-import { getMatchingInterface, IPv4Packet, ipv4ToString, PartialIPv4Packet, ProtocolCode } from "../../protocols/rfc_760";
+import {
+  getMatchingInterface,
+  IPv4Packet,
+  ipv4ToString,
+  PartialIPv4Packet,
+  ProtocolCode,
+} from "../../protocols/rfc_760";
 import { dumpState } from "../../virtualPrograms/dumpstate";
 import { hello } from "../../virtualPrograms/hello";
 import { interfacesL3 } from "../../virtualPrograms/interfacesl3";
@@ -32,9 +38,8 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
                   <td>{l3if ? ipv4ToString(l3if.ip) : "No ip"}</td>
                   <td>{l3if ? ipv4ToString(l3if.mask) : "No mask"}</td>
                 </tr>
-              )
-            }
-            )}
+              );
+            })}
           </tbody>
         </table>
       );
@@ -44,7 +49,9 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
     const l2Packet = Layer2Packet.fromBytes(data);
     try {
       const destination = PartialIPv4Packet.getDestination(l2Packet.payload);
-      const isDestinedInterface = ctx.state.l3Ifs.findIndex(v => v && v.ip == destination);
+      const isDestinedInterface = ctx.state.l3Ifs.findIndex(
+        (v) => v && v.ip == destination,
+      );
 
       // Non è indirizzato a me?
       if (isDestinedInterface == -1) {
@@ -72,7 +79,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         if (packet.isPayloadFinished()) {
           switch (packet.protocol) {
             case ProtocolCode.icmp:
-              const icmpPacket = ICMPPacket.fromBytes(packet.payload)
+              const icmpPacket = ICMPPacket.fromBytes(packet.payload);
               // Gestisci i pacchetti echo ICMP
               switch (icmpPacket.type) {
                 case ICMPType.echoRequest:
@@ -80,10 +87,17 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
                     ProtocolCode.icmp,
                     ICMPPacket.echoResponse(icmpPacket).toBytes(),
                     packet.destination,
-                    packet.source
+                    packet.source,
                   );
                   for (const p of response.toFragmentedBytes()) {
-                    ctx.sendOnIf(intf, new Layer2Packet(p, ctx.state.netInterfaces[intf].mac, l2Packet.from).toBytes())
+                    ctx.sendOnIf(
+                      intf,
+                      new Layer2Packet(
+                        p,
+                        ctx.state.netInterfaces[intf].mac,
+                        l2Packet.from,
+                      ).toBytes(),
+                    );
                   }
                 default:
                   if (ctx.state.rawSocketFd) ctx.state.rawSocketFd(packet);
@@ -92,8 +106,9 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         }
       }
       ctx.updateState();
-
-    } catch (e) { console.log(e) }
+    } catch (e) {
+      console.log(e);
+    }
   },
   cmdInterpreter: {
     shell: {
@@ -103,9 +118,8 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         interfaces: interfacesL3(),
         l2send: l2send(),
         ping: ping(),
-        dumpState: dumpState()
-      }
-    }
-  }
+        dumpState: dumpState(),
+      },
+    },
+  },
 };
-

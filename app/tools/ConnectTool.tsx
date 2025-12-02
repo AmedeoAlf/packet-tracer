@@ -5,12 +5,12 @@ import { toInterfaceId } from "../Project";
 import { NetworkInterface } from "../emulators/DeviceEmulator";
 
 export type ConnectTool = Tool & {
-  deviceA?: Device,
-  idxA: number,
-  deviceB?: Device,
-  idxB: number
-  errorMsg?: string
-}
+  deviceA?: Device;
+  idxA: number;
+  deviceB?: Device;
+  idxB: number;
+  errorMsg?: string;
+};
 
 function clearSelection(c: ConnectTool) {
   c.deviceA = undefined;
@@ -31,15 +31,17 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
     ...ctx,
     toolname: "connect",
     panel() {
-      return <></>
+      return <></>;
     },
     onEvent(ev) {
       const firstEmptyInterface = (device: Device): number => {
         const res = device.internalState.netInterfaces.findIndex(
-          (_, idx) => this.project.getConnectedTo(toInterfaceId(device.id, idx)) == undefined
-        )
+          (_, idx) =>
+            this.project.getConnectedTo(toInterfaceId(device.id, idx)) ==
+            undefined,
+        );
         return res == -1 ? 0 : res;
-      }
+      };
       switch (ev.type) {
         case "click":
           switch (true) {
@@ -58,8 +60,9 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
               return;
           }
       }
-
     },
-    svgElements() { return <></> },
-  }
+    svgElements() {
+      return <></>;
+    },
+  };
 }

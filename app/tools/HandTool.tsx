@@ -1,8 +1,8 @@
 import { Tool, ToolCtx } from "./Tool";
 
 export type HandTool = Tool & {
-  holding: boolean
-}
+  holding: boolean;
+};
 
 export function makeHandTool(ctx: ToolCtx): HandTool {
   return {
@@ -19,7 +19,7 @@ export function makeHandTool(ctx: ToolCtx): HandTool {
             max={500}
             step={10}
             value={Math.round(this.project.viewBoxZoom * 100)}
-            onChange={ev => {
+            onChange={(ev) => {
               this.project.viewBoxZoom = +ev.target.value / 100;
               this.updateProject();
               this.update();
@@ -27,7 +27,7 @@ export function makeHandTool(ctx: ToolCtx): HandTool {
           />
           %
         </div>
-      )
+      );
     },
     onEvent(ev) {
       switch (ev.type) {
@@ -46,6 +46,8 @@ export function makeHandTool(ctx: ToolCtx): HandTool {
           break;
       }
     },
-    svgElements() { return <></> },
-  }
+    svgElements() {
+      return <></>;
+    },
+  };
 }

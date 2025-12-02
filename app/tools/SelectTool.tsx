@@ -1,5 +1,12 @@
 import { CanvasEvent, Tool, ToolCtx } from "./Tool";
-import { buildEmulatorContext, DevicePanel, EmulatorContext, getAutoComplete, InternalState, runOnInterpreter } from "../emulators/DeviceEmulator";
+import {
+  buildEmulatorContext,
+  DevicePanel,
+  EmulatorContext,
+  getAutoComplete,
+  InternalState,
+  runOnInterpreter,
+} from "../emulators/DeviceEmulator";
 import { Coords } from "../common";
 
 export type SelectTool = Tool & {
@@ -8,7 +15,7 @@ export type SelectTool = Tool & {
   lastCursorPos?: Coords;
   stdout: string;
   stdin: string;
-}
+};
 
 export function makeSelectTool(ctx: ToolCtx): SelectTool {
   return {
@@ -19,15 +26,15 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
     ...ctx,
     lastCursorPos: undefined,
     toolname: "select",
-    svgElements: () => (<></>),
+    svgElements: () => <></>,
     panel() {
       switch (this.selected.size) {
         case 0:
-          return (
-            <p>Seleziona un dispositivo per vedere le proprietà</p>
-          );
+          return <p>Seleziona un dispositivo per vedere le proprietà</p>;
         case 1:
-          const device = this.project.devices.get(this.selected.values().next().value!)!;
+          const device = this.project.devices.get(
+            this.selected.values().next().value!,
+          )!;
           const emulator = device.emulator;
           const ctx = buildEmulatorContext(device, this);
           ctx.write = (msg) => {
@@ -36,13 +43,18 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
           };
 
           const panels: [string, DevicePanel<any>][] = [
-            ["terminal",
+            [
+              "terminal",
               TerminalEmulator(
                 this.stdin,
-                (stdin) => { this.stdin = stdin; this.update(); },
-                this.stdout
-              )],
-            ...Object.entries(emulator.configPanel)
+                (stdin) => {
+                  this.stdin = stdin;
+                  this.update();
+                },
+                this.stdout,
+              ),
+            ],
+            ...Object.entries(emulator.configPanel),
           ];
           return (
             <div>
@@ -56,9 +68,7 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
             </div>
           );
         default:
-          return (
-            <p>Non ancora implementato</p>
-          );
+          return <p>Non ancora implementato</p>;
       }
     },
     onEvent(ev: CanvasEvent): void {
@@ -88,12 +98,16 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
         case "mousemove":
           if (this.lastCursorPos) {
             for (const dev of this.selected) {
-              this.project.mutDevice(dev)!.pos.x += ev.pos.x - this.lastCursorPos.x;
-              this.project.mutDevice(dev)!.pos.y += ev.pos.y - this.lastCursorPos.y;
+              this.project.mutDevice(dev)!.pos.x +=
+                ev.pos.x - this.lastCursorPos.x;
+              this.project.mutDevice(dev)!.pos.y +=
+                ev.pos.y - this.lastCursorPos.y;
             }
             for (const dec of this.selectedDecals) {
-              this.project.mutDecal(dec)!.pos.x += ev.pos.x - this.lastCursorPos.x;
-              this.project.mutDecal(dec)!.pos.y += ev.pos.y - this.lastCursorPos.y;
+              this.project.mutDecal(dec)!.pos.x +=
+                ev.pos.x - this.lastCursorPos.x;
+              this.project.mutDecal(dec)!.pos.y +=
+                ev.pos.y - this.lastCursorPos.y;
             }
             this.updateProject();
             this.lastCursorPos = ev.pos;
@@ -127,9 +141,8 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
         this.update();
       }
     },
-  }
+  };
 }
-
 
 // TODO: separate correctly args
 function TerminalEmulator<State extends InternalState<object>>(
@@ -149,42 +162,51 @@ function TerminalEmulator<State extends InternalState<object>>(
         args[args.length - 1] = lastArg;
         setInputBar(args.join(" ") + " ");
       }
-    }
+    };
     return (
       <div className="font-mono">
         <textarea
-          ref={area => { if (area) area.scrollTop = area.scrollHeight }}
+          ref={(area) => {
+            if (area) area.scrollTop = area.scrollHeight;
+          }}
           value={content}
-          rows={8} cols={50}
-          readOnly />
-        <form onSubmit={(ev) => {
-          ev.preventDefault();
-          ctx.write("> " + inputBar);
-          runOnInterpreter({
-            args: inputBar.split(" "),
-            ...ctx
-          });
-          setInput("");
-        }
-        }>
+          rows={8}
+          cols={50}
+          readOnly
+        />
+        <form
+          onSubmit={(ev) => {
+            ev.preventDefault();
+            ctx.write("> " + inputBar);
+            runOnInterpreter({
+              args: inputBar.split(" "),
+              ...ctx,
+            });
+            setInput("");
+          }}
+        >
           <input
             type="text"
             value={inputBar}
             placeholder=">"
             className="w-full bg-gray-700"
-            onKeyDown={ev => {
+            onKeyDown={(ev) => {
               if (ev.key != "Tab") return;
               ev.preventDefault();
-              const lastArg = getAutoComplete({ ...ctx, args: inputBar.split(" ") });
+              const lastArg = getAutoComplete({
+                ...ctx,
+                args: inputBar.split(" "),
+              });
               if (lastArg) {
                 const args = inputBar.split(" ");
                 args[args.length - 1] = lastArg;
                 setInput(args.join(" "));
               }
             }}
-            onChange={ev => setInput(ev.target.value)} />
+            onChange={(ev) => setInput(ev.target.value)}
+          />
         </form>
-      </div >
-    )
-  }
+      </div>
+    );
+  };
 }

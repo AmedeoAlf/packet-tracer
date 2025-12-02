@@ -20,4 +20,4 @@ export const deviceTypesDB = {
   exampleDevice: ExampleDevice,
 } as const satisfies Record<string, DeviceFactory<any>>;
 
-export type DeviceType = keyof typeof deviceTypesDB
+export type DeviceType = keyof typeof deviceTypesDB;

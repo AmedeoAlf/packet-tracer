@@ -7,8 +7,12 @@ import { DeviceEmulator, InternalState } from "../DeviceEmulator";
 export const switchEmulator: DeviceEmulator<InternalState<object>> = {
   configPanel: {
     "pannello meme"() {
-      return (<p>Questo pannello serve solo a dimostrare che gli switch hanno un pannello differente dai router</p>
-      )
+      return (
+        <p>
+          Questo pannello serve solo a dimostrare che gli switch hanno un
+          pannello differente dai router
+        </p>
+      );
     },
     interfacce(ctx) {
       return (
@@ -21,13 +25,13 @@ export const switchEmulator: DeviceEmulator<InternalState<object>> = {
             </tr>
           </thead>
           <tbody>
-            {ctx.state.netInterfaces.map((val, idx) =>
+            {ctx.state.netInterfaces.map((val, idx) => (
               <tr key={idx}>
                 <td>{val.name}</td>
                 <td>{val.type}</td>
                 <td>{val.maxMbps} Mbps</td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
       );
@@ -39,13 +43,15 @@ export const switchEmulator: DeviceEmulator<InternalState<object>> = {
       subcommands: {
         hello: hello(),
         interfaces: interfaces(),
-        l2send: l2send()
-      }
-    }
+        l2send: l2send(),
+      },
+    },
   },
   packetHandler(ctx, data, from_intf) {
     const l2Packet = Layer2Packet.fromBytes(data);
-    const myInterface = ctx.state.netInterfaces.findIndex(v => v.mac == l2Packet.to);
+    const myInterface = ctx.state.netInterfaces.findIndex(
+      (v) => v.mac == l2Packet.to,
+    );
     // Non facciamo nulla se il pacchetto era destinato all'interfaccia dello switch
 
     if (myInterface == -1) {
@@ -56,4 +62,3 @@ export const switchEmulator: DeviceEmulator<InternalState<object>> = {
     }
   },
 };
-

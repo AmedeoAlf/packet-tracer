@@ -24,45 +24,54 @@
  *
  * (per ovvie ragioni di performance non è stato implmentato alcun checksum nel
  * simulatore)
-*/
+ */
 
 import { InternalState } from "../emulators/DeviceEmulator";
 
 // NOTE: Implementazione parziale, ad esempio IHL è sempre uguale a 5
 export type IPv4Address = number;
-export const IPV4_BROADCAST: IPv4Address = 0xFFFFFFFF;
+export const IPV4_BROADCAST: IPv4Address = 0xffffffff;
 export const IPV4_MAX_PAYLOAD = 65535 - 20;
 
 export function ipv4ToString(ip: IPv4Address): string {
   return [
-    (ip >> 24) & 0xFF,
-    (ip >> 16) & 0xFF,
-    (ip >> 8) & 0xFF,
-    ip & 0xFF
+    (ip >> 24) & 0xff,
+    (ip >> 16) & 0xff,
+    (ip >> 8) & 0xff,
+    ip & 0xff,
   ].join(".");
 }
 
 export function parseIpv4(s: string): IPv4Address | undefined {
-  return s.split(".").slice(0, 4).map(it => +it).reduce((acc, val) => (acc << 8) + val);
+  return s
+    .split(".")
+    .slice(0, 4)
+    .map((it) => +it)
+    .reduce((acc, val) => (acc << 8) + val);
 }
 
-export type L3Interface = { ip: IPv4Address, mask: IPv4Address };
+export type L3Interface = { ip: IPv4Address; mask: IPv4Address };
 
-export function getMatchingInterface(interfaces: L3Interface[], ip: IPv4Address): number {
-  return interfaces.findIndex((v) => v && (v.ip & v.mask) == (ip & v.mask))
+export function getMatchingInterface(
+  interfaces: L3Interface[],
+  ip: IPv4Address,
+): number {
+  return interfaces.findIndex((v) => v && (v.ip & v.mask) == (ip & v.mask));
 }
 
-export type L3InternalState<T extends object> = InternalState<T & {
-  ipPackets: Map<number, PartialIPv4Packet>,
-  l3Ifs: L3Interface[],
-  gateway: IPv4Address,
-  rawSocketFd?: (packet: IPv4Packet) => void
-}>
+export type L3InternalState<T extends object> = InternalState<
+  T & {
+    ipPackets: Map<number, PartialIPv4Packet>;
+    l3Ifs: L3Interface[];
+    gateway: IPv4Address;
+    rawSocketFd?: (packet: IPv4Packet) => void;
+  }
+>;
 
 export enum ProtocolCode {
   "icmp" = 1,
   "tcp" = 6,
-  "udp" = 17
+  "udp" = 17,
 }
 
 export class IPv4Packet {
@@ -73,14 +82,15 @@ export class IPv4Packet {
   payload: Buffer;
   offset: number;
   constructor(
-    protocol: IPv4Packet['protocol'],
+    protocol: IPv4Packet["protocol"],
     payload: Buffer,
     source: IPv4Address,
     destination: IPv4Address = IPV4_BROADCAST,
     ttl: number = 255,
-    offset: number = 0
+    offset: number = 0,
   ) {
-    if (payload.byteLength > IPV4_MAX_PAYLOAD) throw "IPv4 packet payload too large";
+    if (payload.byteLength > IPV4_MAX_PAYLOAD)
+      throw "IPv4 packet payload too large";
     if (offset % 8) throw "Offset must be multiple of 8";
     this.ttl = ttl;
     this.protocol = protocol;
@@ -106,19 +116,28 @@ export class IPv4Packet {
       return [packet];
     }
 
-    header.writeUInt16BE(Math.floor(Math.random() * (2 ** 16)), 4); // Identification
+    header.writeUInt16BE(Math.floor(Math.random() * 2 ** 16), 4); // Identification
     const packets = [];
-    for (let offs = 0; offs < this.payload.byteLength; offs += ~0x7 & (maxLen - 20)) {
+    for (
+      let offs = 0;
+      offs < this.payload.byteLength;
+      offs += ~0x7 & (maxLen - 20)
+    ) {
       const moreFragments = this.payload.byteLength - offs > maxLen - 20;
-      const packet = Buffer.alloc(moreFragments ? maxLen : this.payload.byteLength - offs + 20);
+      const packet = Buffer.alloc(
+        moreFragments ? maxLen : this.payload.byteLength - offs + 20,
+      );
       header.writeUInt16BE(packet.byteLength, 2); // Total length
       header.writeUInt16BE(
         (+moreFragments << 29) | // More fragments flag
-        (offs + this.offset) >> 3, // Fragment offset
-        6
+          ((offs + this.offset) >> 3), // Fragment offset
+        6,
       );
       packet.set(header);
-      packet.set(this.payload.subarray(offs, offs + packet.byteLength - 20), 20);
+      packet.set(
+        this.payload.subarray(offs, offs + packet.byteLength - 20),
+        20,
+      );
       packets.push(packet);
     }
     return packets;
@@ -141,15 +160,21 @@ export class PartialIPv4Packet extends IPv4Packet {
     const payloadBuf = Buffer.alloc(IPV4_MAX_PAYLOAD);
     payloadBuf.set(first.subarray(20), offset << 3);
 
-    super(first.readUint8(9), payloadBuf, first.readUint32BE(12), first.readUint32BE(16), first.readUint8(8));
+    super(
+      first.readUint8(9),
+      payloadBuf,
+      first.readUint32BE(12),
+      first.readUint32BE(16),
+      first.readUint8(8),
+    );
     this.rebuiltPayload = payloadBuf;
     this.id = first.readUint16BE(4);
     this.slices.push([offset, offset + first.byteLength - 20]);
     if (!morePackets) {
-      this.gotCompleteSize = true
+      this.gotCompleteSize = true;
       this.rebuiltPayload = this.rebuiltPayload.subarray(0, this.slices[0][1]);
       this.payload = this.rebuiltPayload;
-    };
+    }
   }
 
   // assumes many values to be the same
@@ -162,17 +187,24 @@ export class PartialIPv4Packet extends IPv4Packet {
     const morePackets = offsetAndFlags & (1 << 29);
     const offset = offsetAndFlags & ~(0b111 << 29);
 
-    const startEnd = [offset, offset + packet.byteLength - 20] satisfies [number, number];
-    if (this.gotCompleteSize && startEnd[1] > this.slices.at(-1)![1]) throw "Packet payload as finished";
+    const startEnd = [offset, offset + packet.byteLength - 20] satisfies [
+      number,
+      number,
+    ];
+    if (this.gotCompleteSize && startEnd[1] > this.slices.at(-1)![1])
+      throw "Packet payload as finished";
 
     this.rebuiltPayload.set(packet.subarray(20), offset << 3);
     this.slices.push(startEnd);
-    this.slices.sort((a, b) => a[0] - b[0])
+    this.slices.sort((a, b) => a[0] - b[0]);
     if (!morePackets) {
-      this.gotCompleteSize = true
-      this.rebuiltPayload = this.rebuiltPayload.subarray(0, this.slices.at(-1)![1])
+      this.gotCompleteSize = true;
+      this.rebuiltPayload = this.rebuiltPayload.subarray(
+        0,
+        this.slices.at(-1)![1],
+      );
       this.payload = this.rebuiltPayload;
-    };
+    }
   }
 
   // Il pacchetto è completo?

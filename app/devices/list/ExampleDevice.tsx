@@ -4,7 +4,10 @@ import { exampleDeviceEmulator } from "../../emulators/list/exampleDeviceEmulato
 import { randomMAC } from "../../protocols/802_3";
 import { DeviceFactory } from "../Device";
 
-export type ExampleDeviceInternalState = InternalState<{ exampleProp1: number, exampleProp2: string }>
+export type ExampleDeviceInternalState = InternalState<{
+  exampleProp1: number;
+  exampleProp2: string;
+}>;
 
 // Un tipo di dispositivo non è altro che una nuova DeviceFactory
 export const ExampleDevice: DeviceFactory<ExampleDeviceInternalState> = {
@@ -14,7 +17,7 @@ export const ExampleDevice: DeviceFactory<ExampleDeviceInternalState> = {
     // Il `DeviceEmulator` (l'oggetto che gestisce `InternalState`)
     emulator: exampleDeviceEmulator,
     // Il tipo di dispositivo (deve essere presente in `deviceTypeDB.tsx`)
-    deviceType: "exampleDevice"
+    deviceType: "exampleDevice",
   },
   // Funzione chiamata per impostare l'`internalState` di default
   defaultState(): ExampleDeviceInternalState {
@@ -24,8 +27,7 @@ export const ExampleDevice: DeviceFactory<ExampleDeviceInternalState> = {
         { name: "if1", maxMbps: 100, type: "copper", mac: randomMAC() },
       ],
       exampleProp1: 42,
-      exampleProp2: "Some string to be assigned to this prop"
-    }
-  }
-}
-
+      exampleProp2: "Some string to be assigned to this prop",
+    };
+  },
+};

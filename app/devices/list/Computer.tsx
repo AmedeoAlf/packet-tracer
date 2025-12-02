@@ -7,7 +7,7 @@ export const Computer: DeviceFactory<InternalState<object>> = {
   proto: {
     iconId: "#pc-icon",
     emulator: switchEmulator, //Da Cambiare
-    deviceType: "computer"
+    deviceType: "computer",
   },
 
   // Default State Switch da Cambiare
@@ -22,7 +22,7 @@ export const Computer: DeviceFactory<InternalState<object>> = {
         { name: "if5", maxMbps: 100, type: "copper", mac: randomMAC() },
         { name: "if6", maxMbps: 100, type: "copper", mac: randomMAC() },
         { name: "if7", maxMbps: 100, type: "copper", mac: randomMAC() },
-      ]
-    }
-  }
-}
+      ],
+    };
+  },
+};

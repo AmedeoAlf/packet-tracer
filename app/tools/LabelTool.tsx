@@ -3,10 +3,10 @@ import { Tool, ToolCtx } from "./Tool";
 
 export type LabelTool = Tool & {
   currInput?: {
-    text: string,
-    pos: Coords
-  }
-}
+    text: string;
+    pos: Coords;
+  };
+};
 
 export function makeLabelTool(ctx: ToolCtx): LabelTool {
   return {
@@ -15,13 +15,20 @@ export function makeLabelTool(ctx: ToolCtx): LabelTool {
     panel() {
       if (!this.currInput)
         return <p>Clicca sullo scenario per aggiungere testo</p>;
-      return <>
-        Contenuto:
-        <input type="text" value={this.currInput.text} onChange={(ev) => {
-          this.currInput!.text = ev.target.value;
-          this.update();
-        }} autoFocus />
-      </>
+      return (
+        <>
+          Contenuto:
+          <input
+            type="text"
+            value={this.currInput.text}
+            onChange={(ev) => {
+              this.currInput!.text = ev.target.value;
+              this.update();
+            }}
+            autoFocus
+          />
+        </>
+      );
     },
     onEvent(ev) {
       switch (ev.type) {
@@ -39,8 +46,8 @@ export function makeLabelTool(ctx: ToolCtx): LabelTool {
           } else {
             this.currInput = {
               text: "",
-              pos: ev.pos
-            }
+              pos: ev.pos,
+            };
           }
           this.update();
           break;
@@ -48,8 +55,8 @@ export function makeLabelTool(ctx: ToolCtx): LabelTool {
     },
     svgElements() {
       if (this.currInput) {
-        return <text {...this.currInput.pos}>{this.currInput.text}</text>
+        return <text {...this.currInput.pos}>{this.currInput.text}</text>;
       }
     },
-  }
+  };
 }

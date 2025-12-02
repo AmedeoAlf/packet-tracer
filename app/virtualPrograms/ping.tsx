@@ -1,20 +1,30 @@
 import { Command } from "../emulators/DeviceEmulator";
 import { Layer2Packet, MAC_BROADCAST } from "../protocols/802_3";
 import { ICMPPacket } from "../protocols/icmp";
-import { getMatchingInterface, parseIpv4, IPv4Packet, ipv4ToString, L3InternalState, ProtocolCode } from "../protocols/rfc_760";
+import {
+  getMatchingInterface,
+  parseIpv4,
+  IPv4Packet,
+  ipv4ToString,
+  L3InternalState,
+  ProtocolCode,
+} from "../protocols/rfc_760";
 
 export function ping<T extends L3InternalState<object>>() {
   return {
-    desc: 'Sends an echo request',
+    desc: "Sends an echo request",
     autocomplete() {
-      return []
+      return [];
     },
     validate(_, past) {
       // TODO: "." è un ip valido
-      return past[1].split(".").map(n => +n).every(it => 0 <= it && it < 256);
+      return past[1]
+        .split(".")
+        .map((n) => +n)
+        .every((it) => 0 <= it && it < 256);
     },
     then: {
-      desc: 'The ip address to ping',
+      desc: "The ip address to ping",
       run(ctx) {
         const addr = parseIpv4(ctx.args![1]);
         if (addr == undefined) {
@@ -33,23 +43,26 @@ export function ping<T extends L3InternalState<object>>() {
           ProtocolCode.icmp,
           ICMPPacket.echoRequest(0, 0, Buffer.alloc(0)).toBytes(),
           ctx.state.l3Ifs[intf].ip,
-          addr
+          addr,
         );
         const start = Date.now();
         ctx.state.rawSocketFd = (packet) => {
           ctx.write(
-            `From ${ipv4ToString(packet.source)}: icmp_seq=${ICMPPacket.fromBytes(packet.payload).echoResponseHeader().seq} ttl=${packet.ttl} time=${Date.now() - start} ms`
+            `From ${ipv4ToString(packet.source)}: icmp_seq=${ICMPPacket.fromBytes(packet.payload).echoResponseHeader().seq} ttl=${packet.ttl} time=${Date.now() - start} ms`,
           );
           ctx.state.rawSocketFd = undefined;
-        }
+        };
         for (const p of packet.toFragmentedBytes()) {
           ctx.sendOnIf(
             intf,
             new Layer2Packet(
-              p, ctx.state.netInterfaces[intf].mac, MAC_BROADCAST
-            ).toBytes());
+              p,
+              ctx.state.netInterfaces[intf].mac,
+              MAC_BROADCAST,
+            ).toBytes(),
+          );
         }
       },
-    }
+    },
   } satisfies Command<T>;
 }

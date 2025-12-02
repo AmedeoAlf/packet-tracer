@@ -9,39 +9,53 @@ import { makeHandTool } from "./HandTool";
 import { makeConnectTool } from "./ConnectTool";
 import { makeLabelTool } from "./LabelTool";
 
-export type CanvasEvent = ({
-  type: "mousemove";
-  movement: Coords;
-} | {
-  type: "click" | "mousedown" | "mouseup" | "doubleclick" | "mouseenter" | "mouseleave";
-}) & {
+export type CanvasEvent = (
+  | {
+      type: "mousemove";
+      movement: Coords;
+    }
+  | {
+      type:
+        | "click"
+        | "mousedown"
+        | "mouseup"
+        | "doubleclick"
+        | "mouseenter"
+        | "mouseleave";
+    }
+) & {
   shiftKey: boolean;
   pos: Coords;
-  device?: Device
+  device?: Device;
   decal?: Decal;
-}
+};
 
 export type Tool = ToolCtx & {
   readonly toolname: keyof typeof TOOLS;
   readonly onEvent: (ev: CanvasEvent) => void;
   readonly panel: () => ReactNode;
   readonly svgElements: () => ReactNode;
-}
+};
 
 export type ToolCtx = {
-  project: Project,
+  project: Project;
   // Triggers a React rerender with changes applied to project
-  updateProject: () => void,
+  updateProject: () => void;
   // Triggers a React rerender with changes applied to the ctx, any further edit won't be applied
-  update: () => void
-}
+  update: () => void;
+};
 export const TOOLS = {
   select: makeSelectTool,
   add: makeAddTool,
   hand: makeHandTool,
   connect: makeConnectTool,
-  label: makeLabelTool
+  label: makeLabelTool,
 } satisfies Record<string, (ctx: ToolCtx) => Tool>;
 
-export const TOOL_LIST = ['select', 'add', 'hand', 'connect', 'label'] as const satisfies (keyof typeof TOOLS)[];
-
+export const TOOL_LIST = [
+  "select",
+  "add",
+  "hand",
+  "connect",
+  "label",
+] as const satisfies (keyof typeof TOOLS)[];

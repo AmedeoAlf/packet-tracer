@@ -33,19 +33,26 @@ export interface DeviceFactory<State extends InternalState<object>> {
  * configurazione dell'apparato; ma in realtà comprende lo stato del sistema
  * operativo e lo stato delle interfacce.
  */
-export type Device = DeviceFactory<any>['proto'] & {
+export type Device = DeviceFactory<any>["proto"] & {
   readonly id: number;
   name: string;
   pos: Coords;
   internalState: InternalState<object>;
-}
+};
 
-export function makeDevice(factory: DeviceFactory<any>, id: number, pos: Coords, name: string) {
+export function makeDevice(
+  factory: DeviceFactory<any>,
+  id: number,
+  pos: Coords,
+  name: string,
+) {
   return Object.setPrototypeOf(
     {
       internalState: factory.defaultState(),
-      id, pos, name
-    } satisfies Omit<Device, keyof DeviceFactory<any>['proto']>,
-    factory.proto
-  )
+      id,
+      pos,
+      name,
+    } satisfies Omit<Device, keyof DeviceFactory<any>["proto"]>,
+    factory.proto,
+  );
 }

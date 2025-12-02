@@ -12,7 +12,7 @@
  *
  * (per ovvie ragioni di performance non è stato implmentato alcun checksum nel
  * simulatore)
-*/
+ */
 
 // https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages
 export enum ICMPType {
@@ -23,8 +23,8 @@ export enum ICMPType {
   portUnreachable = 0x0303,
   unfragmentablePacket = 0x0304,
   echoRequest = 0x0800,
-  ttlExceeded = 0x0B00,
-  reassemblyExceeded = 0x0B01
+  ttlExceeded = 0x0b00,
+  reassemblyExceeded = 0x0b01,
 }
 
 // https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Header
@@ -45,11 +45,15 @@ export class ICMPPacket {
 
   static echoResponse(echoRequest: ICMPPacket): ICMPPacket {
     if (echoRequest.type != ICMPType.echoRequest) throw "Not an echo request";
-    return new ICMPPacket(ICMPType.echo, echoRequest.extraHeader, echoRequest.payload);
+    return new ICMPPacket(
+      ICMPType.echo,
+      echoRequest.extraHeader,
+      echoRequest.payload,
+    );
   }
 
-  echoResponseHeader(): { id: number, seq: number } {
-    return { id: this.extraHeader >> 16, seq: this.extraHeader & 0xFFFF };
+  echoResponseHeader(): { id: number; seq: number } {
+    return { id: this.extraHeader >> 16, seq: this.extraHeader & 0xffff };
   }
 
   toBytes(): Buffer {
@@ -61,6 +65,10 @@ export class ICMPPacket {
   }
 
   static fromBytes(bytes: Buffer): ICMPPacket {
-    return new ICMPPacket(bytes.readUint16BE(0), bytes.readUint32BE(4), bytes.subarray(8))
+    return new ICMPPacket(
+      bytes.readUint16BE(0),
+      bytes.readUint32BE(4),
+      bytes.subarray(8),
+    );
   }
 }

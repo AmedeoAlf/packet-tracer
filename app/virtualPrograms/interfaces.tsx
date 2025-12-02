@@ -2,13 +2,16 @@ import { Command, InternalState } from "../emulators/DeviceEmulator";
 
 export function interfaces<T extends InternalState<object>>() {
   return {
-    desc: 'Manages interfaces',
-    run: ctx => ctx.write(ctx.state.netInterfaces.join("\n")),
+    desc: "Manages interfaces",
+    run: (ctx) => ctx.write(ctx.state.netInterfaces.join("\n")),
     subcommands: {
       rename: {
-        autocomplete: (state) => state.netInterfaces.map(it => { return { desc: `${it.type} ${it.maxMbps} Mbps`, option: it.name } }),
+        autocomplete: (state) =>
+          state.netInterfaces.map((it) => {
+            return { desc: `${it.type} ${it.maxMbps} Mbps`, option: it.name };
+          }),
         validate(state, args) {
-          return state.netInterfaces.some(it => it.name == args[2])
+          return state.netInterfaces.some((it) => it.name == args[2]);
         },
         desc: "Renames an interface",
         then: {
@@ -19,13 +22,15 @@ export function interfaces<T extends InternalState<object>>() {
             desc: "Finished",
             run(ctx) {
               const [, , currName, newName] = ctx.args!;
-              const intf = ctx.state.netInterfaces.find(it => it.name == currName);
-              if (intf) intf.name = newName
+              const intf = ctx.state.netInterfaces.find(
+                (it) => it.name == currName,
+              );
+              if (intf) intf.name = newName;
               ctx.updateState();
             },
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   } satisfies Command<T>;
 }
