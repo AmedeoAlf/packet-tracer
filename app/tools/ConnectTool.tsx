@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Device } from "../devices/Device";
 import { Tool, ToolCtx } from "./Tool";
 import { toInterfaceId } from "../Project";
+import { NetworkInterface } from "../emulators/DeviceEmulator";
 
 export type ConnectTool = Tool & {
   deviceA?: Device,
@@ -30,43 +31,7 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
     ...ctx,
     toolname: "connect",
     panel() {
-      const SelectIntfComponent = (device: Device, setIntf: (i: number) => void, intfIdx: number): ReactNode => {
-        return (
-          <>
-            <p>{device.name}</p>
-            <select value={intfIdx} onChange={ev => { setIntf(+ev.target.value); this.update() }}>
-              {[...device.internalState.netInterfaces.entries()
-                .map(([idx, val]) => <option key={idx} value={idx}>{val.name} ({val.type} {val.maxMbps})</option>)]}
-            </select>
-          </>
-        )
-      }
-      return (
-        <div>
-          {this.errorMsg ? <p>Errore {this.errorMsg}</p> : undefined}
-          {!this.deviceA
-            ? <p>Seleziona il primo dispositivo</p>
-            : <>
-              {SelectIntfComponent(this.deviceA, (n) => this.idxA = n, this.idxA)}
-              {!this.deviceB
-                ? <p>Seleziona il secondo dispositivo</p>
-                : <>
-                  {SelectIntfComponent(this.deviceB, (n) => this.idxB = n, this.idxB)}
-                  <button onClick={() => {
-                    this.errorMsg = this.project.connect(
-                      // Gli operatori ternari garantiscono che i valori non siano undefined
-                      this.deviceA!.id, this.idxA!,
-                      this.deviceB!.id, this.idxB!,
-                    );
-                    this.updateProject();
-                    if (!this.errorMsg) clearSelection(this);
-                  }}>Connetti</button>
-                </>
-              }
-            </>
-          }
-        </div>
-      )
+      return <></>
     },
     onEvent(ev) {
       const firstEmptyInterface = (device: Device): number => {

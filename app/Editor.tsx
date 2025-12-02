@@ -9,6 +9,7 @@ import { SideBar } from "./editorComponents/SideBar";
 import { ToolSelector } from "./editorComponents/ToolSelector";
 import { Devices } from "./editorComponents/Devices";
 import { clamp } from "./common";
+import { deviceTypesDB } from "./devices/deviceTypesDB";
 
 /*
  * Questo componente è tutta l'interfaccia del sito. Crea gli hook sia per il
@@ -64,10 +65,15 @@ export function Editor(p: Project): ReactNode {
       <div id="left-side-bar" className="fixed bottom-0 left-0 w-[35.3%] h-[150px] indent-[1,5em] border-solid border-t-[.1em] border-r-[.1em] border-sky-800">
         <div className="h-[20%] bg-sky-700"></div>
         <div className="h-[80%] bg-zinc-900 flex flex-wrap justify-center">
-          {Object.values(ICONS).map(it =>
-            <button className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white" key={it.key}>
-              <svg viewBox="-35 -35 70 70">
-                {it}
+          {Object.values(deviceTypesDB).map(it =>
+            <button className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white" key={it.proto.deviceType}>
+              <svg viewBox="-35 -35 70 70" onClick={() => {
+                proj.createDevice(it.proto.deviceType, { x: (proj.lastId%5)*100-600, y: Math.floor(proj.lastId/5)*100-350 })
+                tool.updateProject()
+              }
+
+              }>
+                {ICONS[it.proto.iconId]}
                 {/* il bordo che devono rispettare le icone dopo l'applicazione di scale() e traslate()
                     <rect x="-30" y="-30" width="60" height="60" stroke="red" fill="none" />*/}
               </svg>

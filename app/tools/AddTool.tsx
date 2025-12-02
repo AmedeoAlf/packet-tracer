@@ -20,7 +20,7 @@ export function makeAddTool(ctx: ToolCtx): AddTool {
           <select
             defaultValue={this.deviceType}
             onChange={ev => { this.deviceType = ev.target.value as DeviceType; this.update() }} >
-            {Object.keys(deviceTypesDB).map(it => (<option key={it} value={it}>{it}</option>))}
+            {Object.keys(deviceTypesDB).map(it => (<option className="bg-sky-700" key={it} value={it}>{it}</option>))}
           </select>
         </div>
       )
