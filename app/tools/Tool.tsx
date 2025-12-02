@@ -1,12 +1,13 @@
 "use client";
 import { Device } from "../devices/Device";
 import { Coords } from "../common";
-import { Project } from "../Project";
+import { Decal, Project } from "../Project";
 import { ReactNode } from "react";
 import { makeSelectTool } from "./SelectTool";
 import { makeAddTool } from "./AddTool";
 import { makeHandTool } from "./HandTool";
 import { makeConnectTool } from "./ConnectTool";
+import { makeLabelTool } from "./LabelTool";
 
 export type CanvasEvent = ({
   type: "mousemove";
@@ -16,7 +17,8 @@ export type CanvasEvent = ({
 }) & {
   shiftKey: boolean;
   pos: Coords;
-  device?: Device;
+  device?: Device
+  decal?: Decal;
 }
 
 export type Tool = ToolCtx & {
@@ -37,8 +39,9 @@ export const TOOLS = {
   select: makeSelectTool,
   add: makeAddTool,
   hand: makeHandTool,
-  connect: makeConnectTool
+  connect: makeConnectTool,
+  label: makeLabelTool
 } satisfies Record<string, (ctx: ToolCtx) => Tool>;
 
-export const TOOL_LIST = ['select', 'add', 'hand', 'connect'] as const satisfies (keyof typeof TOOLS)[];
+export const TOOL_LIST = ['select', 'add', 'hand', 'connect', 'label'] as const satisfies (keyof typeof TOOLS)[];
 

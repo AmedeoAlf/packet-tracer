@@ -23,6 +23,16 @@ export function idxOfIntf(i: InterfaceId): number {
 export const MAX_ZOOM_FACTOR = 3;
 export const MIN_ZOOM_FACTOR = 0.2;
 
+export type Decal = {
+  pos: Coords,
+  id: number
+} & (
+    {
+      type: "text",
+      text: string
+    }
+  )
+
 /*
  * La classe che contiene tutti i dati del progetto attuale.
  * È l'unico oggetto da serializzare per salvare un progetto.
@@ -30,6 +40,8 @@ export const MIN_ZOOM_FACTOR = 0.2;
 export class Project {
   // Tutti i dispositivi presenti
   devices: Map<number, Device>;
+  // Tutti gli elementi decorativi sullo scenario
+  decals: (Decal | undefined)[];
   // A cosa è connessa ogni interfaccia
   private connections: Map<InterfaceId, InterfaceId>;
 
@@ -37,8 +49,12 @@ export class Project {
   private _temp: {
     // Flag che definisce se riciclare `devices` e `connections`
     viewBoxChange: boolean;
+    cantRecycle: boolean;
     lastCables?: ReturnType<Project['getCables']>;
-  } = { viewBoxChange: false };
+  } = {
+      viewBoxChange: false,
+      cantRecycle: false
+    };
 
   // La posizione della telecamera
   private _viewBoxX: number;
@@ -58,6 +74,11 @@ export class Project {
   deviceFromTag(tag: HTMLOrSVGElement): Device | undefined {
     if (tag.dataset.id) {
       return this.devices.get(+tag.dataset.id);
+    }
+  }
+  decalFromTag(tag: HTMLOrSVGElement): Decal | undefined {
+    if (tag.dataset.decalid) {
+      return this.decals[+tag.dataset.decalid];
     }
   }
   createDevice(type: DeviceType, pos: Coords, name?: string) {
@@ -137,14 +158,22 @@ export class Project {
     console.assert(dev.internalState.netInterfaces.length > ifIdx);
     dev.emulator.packetHandler(buildEmulatorContext(dev, toolCtx), data, ifIdx);
   }
+  addDecal(d: Omit<Decal, "id">): number {
+    this.decals.push({ ...d, id: this.decals.length });
+    return this.decals.length - 1;
+  }
+  removeDecal(id: number) {
+    this.decals[id] = undefined;
+  }
   // Il construttore serve a creare copie identiche del progetto
   // per scatenare un rerender
   constructor(p?: Project) {
     // Se `viewBoxChange` è `true` allora ricicla la lista di dispositivi e connessioni
-    if (p && p._temp.viewBoxChange) {
+    if (p && !p._temp.cantRecycle && p._temp.viewBoxChange) {
       this.devices = p.devices;
       this.connections = p.connections;
       this.lastId = p.lastId;
+      this.decals = p.decals;
       this._temp.lastCables = p._temp.lastCables;
       this._viewBoxX = p._viewBoxX;
       this._viewBoxY = p._viewBoxY;
@@ -152,6 +181,7 @@ export class Project {
     } else {
       this.devices = new Map(p?.devices);
       this.connections = new Map(p?.connections);
+      this.decals = p ? [...p.decals] : [];
       this.lastId = p?.lastId || 0;
       this._viewBoxX = p?._viewBoxX || 0;
       this._viewBoxY = p?._viewBoxY || 0;

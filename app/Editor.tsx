@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, MouseEvent, useEffect, ReactNode, useMemo } from "react";
-import { MAX_ZOOM_FACTOR, MIN_ZOOM_FACTOR, Project } from "./Project";
+import { Decal, MAX_ZOOM_FACTOR, MIN_ZOOM_FACTOR, Project } from "./Project";
 import { CanvasEvent, Tool } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
@@ -68,7 +68,7 @@ export function Editor(p: Project): ReactNode {
           {Object.values(deviceTypesDB).map(it =>
             <button className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white" key={it.proto.deviceType}>
               <svg viewBox="-35 -35 70 70" onClick={() => {
-                proj.createDevice(it.proto.deviceType, { x: (proj.lastId%5)*100-600, y: Math.floor(proj.lastId/5)*100-350 })
+                proj.createDevice(it.proto.deviceType, { x: (proj.lastId % 5) * 100 - 600, y: Math.floor(proj.lastId / 5) * 100 - 350 })
                 tool.updateProject()
               }
 
@@ -153,6 +153,7 @@ export function Editor(p: Project): ReactNode {
         <Cables devices={proj.devices} cables={proj.getCables()} />
         <Devices devices={proj.devices} highlighted={tool.toolname == "select" ? (tool as SelectTool).selected : undefined} />
         {tool.svgElements()}
+        {Decals(proj.decals, tool.toolname == 'select' ? (tool as SelectTool).selectedDecals : undefined)}
       </svg >
 
     </>
@@ -184,6 +185,7 @@ function buildEventHandler(
           movement: { x: ev.movementX, y: ev.movementY },
           pos: getPos(ev),
           device: tool.project.deviceFromTag(ev.target as SVGUseElement),
+          decal: tool.project.decalFromTag(ev.target as SVGUseElement),
           shiftKey: ev.shiftKey,
         })
       }
@@ -194,6 +196,7 @@ function buildEventHandler(
         type,
         pos: getPos(ev),
         device: tool.project.deviceFromTag(ev.target as SVGUseElement),
+        decal: tool.project.decalFromTag(ev.target as SVGUseElement),
         shiftKey: ev.shiftKey,
       })
       return false;
@@ -201,3 +204,15 @@ function buildEventHandler(
   }
 };
 
+
+function Decals(decals: (Decal | undefined)[], highlighted?: Set<number>): ReactNode {
+  return decals.map((d, idx) => {
+    if (!d) return;
+    const data = { 'data-decalid': idx }
+    console.log(highlighted)
+    switch (d.type) {
+      case "text":
+        return <text key={idx} {...d.pos} {...data} fill={highlighted && highlighted.has(idx) ? '#555' : '#000'}>{d.text}</text>;
+    }
+  })
+}

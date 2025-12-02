@@ -4,6 +4,7 @@ import { cloneWithProto, Coords } from "../common";
 
 export type SelectTool = Tool & {
   selected: Set<number>;
+  selectedDecals: Set<number>;
   lastCursorPos?: Coords;
   stdout: string;
   stdin: string;
@@ -12,6 +13,7 @@ export type SelectTool = Tool & {
 export function makeSelectTool(ctx: ToolCtx): SelectTool {
   return {
     selected: new Set<number>(),
+    selectedDecals: new Set<number>(),
     stdin: "",
     stdout: "= Terminal emulator =",
     ...ctx,
@@ -61,24 +63,27 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
     },
     onEvent(ev: CanvasEvent): void {
       const originalDevices = new Set(this.selected);
+      const originalDecals = new Set(this.selectedDecals);
       switch (ev.type) {
-        case "click":
+        case "mousedown":
           if (ev.device) {
-            if (!ev.shiftKey) this.selected.clear();
+            if (!ev.shiftKey && !this.selected.has(ev.device.id)) {
+              this.selected.clear();
+              this.selectedDecals.clear();
+            }
             this.selected.add(ev.device.id);
+            this.lastCursorPos = ev.pos;
+          } else if (ev.decal) {
+            if (!ev.shiftKey && !this.selectedDecals.has(ev.decal.id)) {
+              this.selected.clear();
+              this.selectedDecals.clear();
+            }
+            this.selectedDecals.add(ev.decal.id);
+            this.lastCursorPos = ev.pos;
           } else {
             this.selected.clear();
+            this.selectedDecals.clear();
           }
-          break;
-        case "mousedown":
-          if (!ev.device) {
-            return;
-          }
-          if (!ev.shiftKey && !this.selected.has(ev.device.id)) {
-            this.selected.clear();
-          }
-          this.selected.add(ev.device.id);
-          this.lastCursorPos = this.selected.size != 0 ? ev.pos : undefined;
           break;
         case "mousemove":
           if (this.lastCursorPos) {
@@ -86,6 +91,11 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
               this.project.devices.get(dev)!.pos.x += ev.pos.x - this.lastCursorPos.x;
               this.project.devices.get(dev)!.pos.y += ev.pos.y - this.lastCursorPos.y;
               this.project.devices.set(dev, cloneWithProto(this.project.devices.get(dev)!))
+            }
+            for (const dec of this.selectedDecals) {
+              this.project.decals[dec]!.pos.x += ev.pos.x - this.lastCursorPos.x;
+              this.project.decals[dec]!.pos.y += ev.pos.y - this.lastCursorPos.y;
+              this.project.decals[dec]! = cloneWithProto(this.project.decals[dec]!)
             }
             this.updateProject();
             this.lastCursorPos = ev.pos;
@@ -101,14 +111,23 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
                 this.project.devices.get(dev)!.pos.y += diffY;
                 this.project.devices.set(dev, cloneWithProto(this.project.devices.get(dev)!))
               }
+              for (const dec of this.selectedDecals) {
+                this.project.decals[dec]!.pos.x += diffX;
+                this.project.decals[dec]!.pos.y += diffY;
+                this.project.decals[dec]! = cloneWithProto(this.project.decals[dec]!)
+              }
               this.updateProject();
             }
             this.lastCursorPos = undefined;
           }
           break;
       }
-      if (originalDevices.symmetricDifference(this.selected).size > 0) {
+      if (
+        originalDevices.symmetricDifference(this.selected).size > 0 ||
+        originalDecals.symmetricDifference(this.selectedDecals).size > 0
+      ) {
         this.selected = new Set(this.selected);
+        this.selectedDecals = new Set(this.selectedDecals);
         this.update();
       }
     },

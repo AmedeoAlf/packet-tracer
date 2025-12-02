@@ -8,6 +8,7 @@ import { parseIpv4 } from "./protocols/rfc_760";
 export default function Home() {
   const proj = useMemo(() => {
     const p = new Project();
+    p.addDecal({ type: "text", text: "This is an example project", pos: { x: -300, y: -250 } })
     p.createDevice("switch", { x: -300, y: -100 }, "Rete A");
     p.createDevice("router", { x: -150, y: -100 }, "Router A");
 
