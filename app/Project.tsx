@@ -71,6 +71,11 @@ export class Project {
       name || `${capitalize(type)} ${this.lastId}`
     ));
   }
+  deleteDevice(id: number) {
+    const dev = this.devices.get(id)!;
+    dev.internalState.netInterfaces.forEach((_, idx) => this.disconnect(id, idx));
+    this.devices.delete(id);
+  }
   getInterface(devId: number, ifId: number): NetworkInterface | undefined {
     return this.devices.get(devId)?.internalState.netInterfaces.at(ifId)
   }
@@ -91,6 +96,12 @@ export class Project {
     this.connections.set(intfA, intfB);
     this.connections.set(intfB, intfA);
     return;
+  }
+  disconnect(devId: number, ifId: number) {
+    const intf = toInterfaceId(devId, ifId);
+    if (!this.connections.has(intf)) return;
+    this.connections.delete(this.connections.get(intf)!);
+    this.connections.delete(intf);
   }
   // Maps two deviceIds to the amount of connections between them
   getCables(): Map<number, Pick<NetworkInterface, "maxMbps" | "type">[]> {
