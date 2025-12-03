@@ -51,14 +51,12 @@ export class Project {
     // Flag che definisce se riciclare `devices` e `connections`
     viewBoxChange: boolean;
     cantRecycle: boolean;
-    mutatedDevices: number[];
-    mutatedDecals: number[];
+    mutatedDevices?: number[];
+    mutatedDecals?: number[];
     lastCables?: ReturnType<Project["getCables"]>;
   } = {
     viewBoxChange: false,
     cantRecycle: false,
-    mutatedDevices: [],
-    mutatedDecals: [],
   };
 
   // La posizione della telecamera
@@ -97,12 +95,16 @@ export class Project {
     }
   }
   mutDevice(id: number): Device | undefined {
-    if (this.devices.has(id) && !this._temp.mutatedDevices.includes(id))
+    if (!this.devices.has(id)) return;
+    this._temp.mutatedDevices ||= [];
+    if (!this._temp.mutatedDevices.includes(id))
       this._temp.mutatedDevices.push(id);
     return this.devices.get(id);
   }
   mutDecal(id: number): Decal | undefined {
-    if (this.decals.at(id) && !this._temp.mutatedDecals.includes(id))
+    if (!this.decals.at(id)) return;
+    this._temp.mutatedDecals ||= [];
+    if (!this._temp.mutatedDecals.includes(id))
       this._temp.mutatedDecals.push(id);
     return this.decals.at(id);
   }
@@ -115,6 +117,8 @@ export class Project {
     function capitalize(s: string) {
       return s.charAt(0).toUpperCase() + s.slice(1);
     }
+
+    this._temp.mutatedDevices ||= [];
 
     ++this.lastId;
     this.devices.set(
@@ -133,6 +137,7 @@ export class Project {
       this.disconnect(id, idx),
     );
     this.devices.delete(id);
+    this._temp.mutatedDecals ||= [];
   }
   getInterface(devId: number, ifId: number): NetworkInterface | undefined {
     return this.devices.get(devId)?.internalState.netInterfaces.at(ifId);
@@ -201,30 +206,35 @@ export class Project {
     dev.emulator.packetHandler(buildEmulatorContext(dev, toolCtx), data, ifIdx);
   }
   addDecal(d: Omit<Decal, "id">): number {
+    this._temp.mutatedDecals ||= [];
     this.decals.push({ ...d, id: this.decals.length });
     return this.decals.length - 1;
   }
   removeDecal(id: number) {
+    this._temp.mutatedDecals ||= [];
     this.decals[id] = undefined;
   }
   recyclable(): boolean {
     return (
       !this._temp.cantRecycle &&
       this._temp.viewBoxChange &&
-      this._temp.mutatedDevices.length == 0 &&
-      this._temp.mutatedDecals.length == 0
+      !this._temp.mutatedDevices &&
+      !this._temp.mutatedDecals
     );
   }
   applyMutations() {
-    for (const id of this._temp.mutatedDevices) {
-      this.devices.set(id, cloneWithProto(this.devices.get(id)!));
-    }
-    if (this._temp.mutatedDevices.length != 0)
+    if (this._temp.mutatedDevices) {
+      for (const id of this._temp.mutatedDevices) {
+        this.devices.set(id, cloneWithProto(this.devices.get(id)!));
+      }
       this.devices = new Map(this.devices);
-    for (const id of this._temp.mutatedDecals) {
-      this.decals[id] = { ...this.decals[id]! };
     }
-    if (this._temp.mutatedDecals.length != 0) this.decals = [...this.decals];
+    if (this._temp.mutatedDecals) {
+      for (const id of this._temp.mutatedDecals) {
+        this.decals[id] = { ...this.decals[id]! };
+      }
+      this.decals = [...this.decals];
+    }
   }
   // Il construttore serve a creare copie identiche del progetto
   // per scatenare un rerender
