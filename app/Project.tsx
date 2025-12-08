@@ -55,9 +55,9 @@ export class Project {
     mutatedDecals?: number[];
     lastCables?: ReturnType<Project["getCables"]>;
   } = {
-    viewBoxChange: false,
-    cantRecycle: false,
-  };
+      viewBoxChange: false,
+      cantRecycle: false,
+    };
 
   // La posizione della telecamera
   private _viewBoxX: number;
@@ -96,14 +96,14 @@ export class Project {
   }
   mutDevice(id: number): Device | undefined {
     if (!this.devices.has(id)) return;
-    this._temp.mutatedDevices ||= [];
+    this._temp.mutatedDevices ??= [];
     if (!this._temp.mutatedDevices.includes(id))
       this._temp.mutatedDevices.push(id);
     return this.devices.get(id);
   }
   mutDecal(id: number): Decal | undefined {
     if (!this.decals.at(id)) return;
-    this._temp.mutatedDecals ||= [];
+    this._temp.mutatedDecals ??= [];
     if (!this._temp.mutatedDecals.includes(id))
       this._temp.mutatedDecals.push(id);
     return this.decals.at(id);
@@ -118,7 +118,7 @@ export class Project {
       return s.charAt(0).toUpperCase() + s.slice(1);
     }
 
-    this._temp.mutatedDevices ||= [];
+    this._temp.mutatedDevices ??= [];
 
     ++this.lastId;
     this.devices.set(
@@ -127,7 +127,7 @@ export class Project {
         deviceTypesDB[type],
         this.lastId,
         pos,
-        name || `${capitalize(type)} ${this.lastId}`,
+        name ?? `${capitalize(type)} ${this.lastId}`,
       ),
     );
   }
@@ -137,7 +137,7 @@ export class Project {
       this.disconnect(id, idx),
     );
     this.devices.delete(id);
-    this._temp.mutatedDecals ||= [];
+    this._temp.mutatedDecals ??= [];
   }
   getInterface(devId: number, ifId: number): NetworkInterface | undefined {
     return this.devices.get(devId)?.internalState.netInterfaces.at(ifId);
@@ -206,12 +206,12 @@ export class Project {
     dev.emulator.packetHandler(buildEmulatorContext(dev, toolCtx), data, ifIdx);
   }
   addDecal(d: Omit<Decal, "id">): number {
-    this._temp.mutatedDecals ||= [];
+    this._temp.mutatedDecals ??= [];
     this.decals.push({ ...d, id: this.decals.length });
     return this.decals.length - 1;
   }
   removeDecal(id: number) {
-    this._temp.mutatedDecals ||= [];
+    this._temp.mutatedDecals ??= [];
     this.decals[id] = undefined;
   }
   recyclable(): boolean {
@@ -265,9 +265,9 @@ export class Project {
       this.decals = [];
     }
     this.connections = new Map(p?.connections);
-    this.lastId = p?.lastId || 0;
-    this._viewBoxX = p?._viewBoxX || 0;
-    this._viewBoxY = p?._viewBoxY || 0;
-    this._viewBoxZoom = p?._viewBoxZoom || 1;
+    this.lastId = p?.lastId ?? 0;
+    this._viewBoxX = p?._viewBoxX ?? 0;
+    this._viewBoxY = p?._viewBoxY ?? 0;
+    this._viewBoxZoom = p?._viewBoxZoom ?? 1;
   }
 }
