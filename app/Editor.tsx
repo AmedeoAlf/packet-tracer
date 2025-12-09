@@ -275,7 +275,6 @@ const Decals = memo(function Decals({
   return decals.map((d, idx) => {
     if (!d) return;
     const data = { "data-decalid": idx };
-    console.log(highlighted);
     switch (d.type) {
       case "text":
         return (

@@ -11,7 +11,6 @@ export const Cables = memo(function Cables({
 }): ReactNode {
   return (
     <g>
-      {" "}
       {[
         ...cables
           .entries()
@@ -52,7 +51,7 @@ export const Cables = memo(function Cables({
             });
           })
           .map((props, idx) => <line {...props} key={idx} strokeWidth="1pt" />),
-      ]}{" "}
+      ]}
     </g>
   );
 });
