@@ -55,9 +55,9 @@ export class Project {
     mutatedDecals?: number[];
     lastCables?: ReturnType<Project["getCables"]>;
   } = {
-      viewBoxChange: false,
-      cantRecycle: false,
-    };
+    viewBoxChange: false,
+    cantRecycle: false,
+  };
 
   // La posizione della telecamera
   private _viewBoxX: number;
@@ -270,6 +270,8 @@ export class Project {
     this.devices = p.devices;
     this.decals = p.decals;
     this.connections = new Map(p.connections);
+    // FIXME: Non funziona nel momento in cui cambiano le connessioni
+    this._temp.lastCables = p._temp.lastCables;
     this.lastId = p.lastId;
     this._viewBoxX = p._viewBoxX;
     this._viewBoxY = p._viewBoxY;
