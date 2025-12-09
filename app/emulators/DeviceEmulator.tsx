@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 import { Device } from "../devices/Device";
 import { ToolCtx } from "../tools/Tool";
-import { toInterfaceId } from "../Project";
 import { MacAddress } from "../protocols/802_3";
+import { toInterfaceId } from "../ProjectManager";
 
 export interface NetworkInterface {
   type: "serial" | "copper" | "fiber";
@@ -22,14 +22,14 @@ interface AutoCompleteOption {
 }
 export type Command<State extends InternalState<object>> = (
   | {
-      autocomplete: (state: State, past: string[]) => AutoCompleteOption[];
-      validate: (state: State, past: string[]) => boolean;
-      then: Command<State>;
-    }
+    autocomplete: (state: State, past: string[]) => AutoCompleteOption[];
+    validate: (state: State, past: string[]) => boolean;
+    then: Command<State>;
+  }
   | {
-      subcommands?: Record<string, Command<State>>;
-      run?: (ctx: EmulatorContext<State>) => void;
-    }
+    subcommands?: Record<string, Command<State>>;
+    run?: (ctx: EmulatorContext<State>) => void;
+  }
 ) & {
   desc: string;
 };
@@ -93,7 +93,7 @@ export function getAutoComplete<State extends InternalState<object>>(
       default:
         ctx.write(
           `<${desc}>\n` +
-            opts.map(({ option, desc }) => `${option} - ${desc}`).join("\n"),
+          opts.map(({ option, desc }) => `${option} - ${desc}`).join("\n"),
         );
         const equalUntil = (a: string, b: string) => {
           if (a.length < b.length) [a, b] = [b, a];
@@ -183,6 +183,6 @@ export function buildEmulatorContext(
       toolCtx.project.sendOn(toInterfaceId(device.id, ifIdx), toolCtx, data);
     },
     state: device.internalState,
-    write() {},
+    write() { },
   };
 }

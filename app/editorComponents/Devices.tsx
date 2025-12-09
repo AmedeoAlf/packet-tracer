@@ -19,14 +19,14 @@ export const Devices = memo(function Devices({
           .map(
             highlighted
               ? (d) => (
-                  <DeviceComponent
-                    device={d}
-                    key={d.id}
-                    extraClass={
-                      highlighted.has(d.id) ? " brightness-50" : undefined
-                    }
-                  />
-                )
+                <DeviceComponent
+                  device={d}
+                  key={d.id}
+                  extraClass={
+                    highlighted.has(d.id) ? " brightness-50" : undefined
+                  }
+                />
+              )
               : (d) => <DeviceComponent device={d} key={d.id} />,
           ),
       ]}

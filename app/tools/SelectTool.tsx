@@ -32,7 +32,7 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
         case 0:
           return <p>Seleziona un dispositivo per vedere le proprietà</p>;
         case 1:
-          const device = this.project.devices.get(
+          const device = this.project.immutableDevices.get(
             this.selected.values().next().value!,
           )!;
           const emulator = device.emulator;

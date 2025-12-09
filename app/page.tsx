@@ -1,13 +1,13 @@
 "use client";
 import { useMemo } from "react";
 import { Editor } from "./Editor";
-import { Project } from "./Project";
 import { RouterInternalState } from "./devices/list/Router";
 import { parseIpv4 } from "./protocols/rfc_760";
+import { ProjectManager } from "./ProjectManager";
 
 export default function Home() {
   const proj = useMemo(() => {
-    const p = new Project();
+    const p = new ProjectManager();
     p.addDecal({
       type: "text",
       text: "This is an example project",
@@ -17,19 +17,19 @@ export default function Home() {
     p.createDevice("router", { x: -150, y: -100 }, "Router A");
 
     p.createDevice("router", { x: -50, y: -200 }, "Internet A");
-    (p.devices.get(p.lastId)?.internalState as RouterInternalState).l3Ifs[3] = {
+    (p.mutDevice(p.lastId)?.internalState as RouterInternalState).l3Ifs[3] = {
       ip: parseIpv4("1.1.1.1")!,
       mask: parseIpv4("255.255.255.0")!,
     };
 
     p.createDevice("router", { x: -50, y: -100 }, "Internet B");
-    p.devices.get(p.lastId)?.internalState.netInterfaces.push({
+    p.mutDevice(p.lastId)?.internalState.netInterfaces.push({
       name: "se2",
       maxMbps: 100,
       type: "serial",
       mac: 0x102030405060,
     });
-    (p.devices.get(p.lastId)?.internalState as RouterInternalState).l3Ifs[3] = {
+    (p.mutDevice(p.lastId)?.internalState as RouterInternalState).l3Ifs[3] = {
       ip: parseIpv4("1.1.1.2")!,
       mask: parseIpv4("255.255.255.0")!,
     };
