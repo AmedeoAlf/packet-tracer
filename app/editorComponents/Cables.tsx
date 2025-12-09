@@ -56,7 +56,7 @@ export const Cables = memo(function Cables({
   );
 });
 
-const intfColor = {
+export const intfColor = {
   copper: "black",
   serial: "orange",
   fiber: "red",

@@ -199,6 +199,7 @@ export function Editor(p: Project): ReactNode {
       >
         <defs> {Object.values(ICONS)} </defs>
         <Cables devices={proj.devices} cables={proj.getCables()} />
+        {tool.svgElements()}
         <Devices
           devices={proj.devices}
           highlighted={
@@ -207,7 +208,6 @@ export function Editor(p: Project): ReactNode {
               : undefined
           }
         />
-        {tool.svgElements()}
         <Decals
           decals={proj.decals}
           highlighted={

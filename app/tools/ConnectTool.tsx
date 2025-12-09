@@ -3,20 +3,21 @@ import { Device } from "../devices/Device";
 import { Tool, ToolCtx } from "./Tool";
 import { toInterfaceId } from "../Project";
 import { NetworkInterface } from "../emulators/DeviceEmulator";
+import { Coords } from "../common";
+import { intfColor } from "../editorComponents/Cables";
 
 export type ConnectTool = Tool & {
   deviceA?: Device;
-  idxA: number;
+  idxA?: number;
   deviceB?: Device;
-  idxB: number;
   errorMsg?: string;
+  cursorPos?: Coords;
 };
 
 function clearSelection(c: ConnectTool) {
   c.deviceA = undefined;
-  c.idxA = 0;
+  c.idxA = undefined;
   c.deviceB = undefined;
-  c.idxB = 0;
   c.errorMsg = undefined;
   c.update();
 }
@@ -24,14 +25,22 @@ function clearSelection(c: ConnectTool) {
 export function makeConnectTool(ctx: ToolCtx): ConnectTool {
   return {
     deviceA: undefined,
-    idxA: 0,
+    idxA: undefined,
     deviceB: undefined,
-    idxB: 0,
     errorMsg: undefined,
     ...ctx,
     toolname: "connect",
     panel() {
-      return <></>;
+      switch (true) {
+        case !this.deviceA:
+          return <>Seleziona un dispositivo</>
+        case this.idxA === undefined:
+          return <>Seleziona un interfaccia (TODO)</>
+        case !this.deviceB:
+          return <>Seleziona il secondo dispositivo</>
+        default:
+          return <>Qui sarebbe da implementare la selezione interfaccia</>
+      }
     },
     onEvent(ev) {
       const firstEmptyInterface = (device: Device): number => {
@@ -51,17 +60,31 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
             case !this.deviceA:
               this.deviceA = ev.device;
               this.idxA = firstEmptyInterface(this.deviceA);
+              this.cursorPos = ev.pos;
               this.update();
               return;
             case !this.deviceB:
               this.deviceB = ev.device;
-              this.idxB = firstEmptyInterface(this.deviceB);
-              this.update();
+              const res = this.project.connect(this.deviceA.id, this.idxA!, this.deviceB.id, firstEmptyInterface(this.deviceB))
+              if (res) console.log(res)
+              this.updateProject();
+              this.update()
               return;
           }
+          break;
+        case "mousemove":
+          if (this.deviceA) {
+            this.cursorPos = ev.pos;
+            this.update();
+          }
+          break;
       }
     },
     svgElements() {
+      if (this.deviceA && this.idxA !== undefined && this.cursorPos) {
+        const interfaceType = this.deviceA.internalState.netInterfaces[this.idxA].type;
+        return <line x1={this.deviceA.pos.x} y1={this.deviceA.pos.y} x2={this.cursorPos.x} y2={this.cursorPos.y} stroke={intfColor[interfaceType]} />
+      }
       return <></>;
     },
   };
