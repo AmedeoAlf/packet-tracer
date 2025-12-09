@@ -30,7 +30,7 @@ export function Editor(p: ProjectManager): ReactNode {
     makeSelectTool({
       project: proj,
       updateProject: () => setProject(new ProjectManager(proj)),
-      update: () => { },
+      update: () => {},
     }),
   );
   tool.project = proj;
@@ -125,9 +125,7 @@ export function Editor(p: ProjectManager): ReactNode {
             <button
               className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] "
               key={k}
-            >
-              {" "}
-            </button>
+            ></button>
           ))}
         </div>
       </div>

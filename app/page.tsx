@@ -44,7 +44,7 @@ export default function Home() {
     console.assert(p.connect(4, 4, 5, 2) == undefined); // "Internet B" -> "Internet C"
     console.assert(p.connect(5, 3, 6, 2) == undefined); // "Internet C" -> "Router B"
     console.assert(p.connect(6, 0, 7, 0) == undefined); // "Router B" -> "Rete B"
-    return p;
+    return new ProjectManager(p);
   }, []);
   return Editor(proj);
 }

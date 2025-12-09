@@ -6,7 +6,7 @@ import {
   buildEmulatorContext,
   NetworkInterface,
 } from "./emulators/DeviceEmulator";
-import { Decal, EMPTY_PROJECT, Project } from "./Project";
+import { Decal, emptyProject, Project } from "./Project";
 import { ToolCtx } from "./tools/Tool";
 
 export type InterfaceId = number;
@@ -51,21 +51,19 @@ export class ProjectManager {
 
     this.mutatedDevices ??= [];
 
-    if (!this.mutatedDevices.includes(id))
-      this.mutatedDevices.push(id);
+    if (!this.mutatedDevices.includes(id)) this.mutatedDevices.push(id);
     return this.project.devices.get(id);
   }
-  get immutableDevices(): Project['devices'] {
+  get immutableDevices(): Project["devices"] {
     return this.project.devices;
   }
-  get immutableDecals(): Project['decals'] {
+  get immutableDecals(): Project["decals"] {
     return this.project.decals;
   }
   mutDecal(id: number): Decal | undefined {
     if (!this.project.decals.at(id)) return;
     this.mutatedDecals ??= [];
-    if (!this.mutatedDecals.includes(id))
-      this.mutatedDecals.push(id);
+    if (!this.mutatedDecals.includes(id)) this.mutatedDecals.push(id);
     return this.project.decals.at(id);
   }
   decalFromTag(tag: HTMLOrSVGElement): Decal | undefined {
@@ -100,7 +98,9 @@ export class ProjectManager {
     this.mutatedDecals ??= [];
   }
   getInterface(devId: number, ifId: number): NetworkInterface | undefined {
-    return this.project.devices.get(devId)?.internalState.netInterfaces.at(ifId);
+    return this.project.devices
+      .get(devId)
+      ?.internalState.netInterfaces.at(ifId);
   }
   getInterfaceFromId(intf: InterfaceId): NetworkInterface | undefined {
     return this.getInterface(deviceOfIntf(intf), idxOfIntf(intf));
@@ -130,7 +130,8 @@ export class ProjectManager {
   getCables(): Map<number, Pick<NetworkInterface, "maxMbps" | "type">[]> {
     if (this.lastCables) return this.lastCables;
     const cabled = new Set<number>();
-    const cableToOccurencies: ReturnType<ProjectManager["getCables"]> = new Map();
+    const cableToOccurencies: ReturnType<ProjectManager["getCables"]> =
+      new Map();
     for (const conn of this.project.connections) {
       if (cabled.has(conn[0])) continue;
       cabled.add(conn[1]);
@@ -185,7 +186,10 @@ export class ProjectManager {
   applyMutations() {
     if (this.mutatedDevices) {
       for (const id of this.mutatedDevices) {
-        this.project.devices.set(id, cloneWithProto(this.project.devices.get(id)!));
+        this.project.devices.set(
+          id,
+          cloneWithProto(this.project.devices.get(id)!),
+        );
       }
       this.project.devices = new Map(this.project.devices);
     }
@@ -197,23 +201,37 @@ export class ProjectManager {
     }
   }
 
-  get lastId() { return this.project.lastId; }
+  get lastId() {
+    return this.project.lastId;
+  }
 
   // TODO: logica per il riciclo decente
-  get viewBoxX() { return this.project.viewBoxX; }
-  set viewBoxX(val) { this.project.viewBoxX = val; }
+  get viewBoxX() {
+    return this.project.viewBoxX;
+  }
+  set viewBoxX(val) {
+    this.project.viewBoxX = val;
+  }
 
-  get viewBoxY() { return this.project.viewBoxY; }
-  set viewBoxY(val) { this.project.viewBoxY = val; }
+  get viewBoxY() {
+    return this.project.viewBoxY;
+  }
+  set viewBoxY(val) {
+    this.project.viewBoxY = val;
+  }
 
-  get viewBoxZoom() { return this.project.viewBoxZoom; }
-  set viewBoxZoom(val: number) { this.project.viewBoxZoom = clamp(val, MIN_ZOOM_FACTOR, MAX_ZOOM_FACTOR); }
+  get viewBoxZoom() {
+    return this.project.viewBoxZoom;
+  }
+  set viewBoxZoom(val: number) {
+    this.project.viewBoxZoom = clamp(val, MIN_ZOOM_FACTOR, MAX_ZOOM_FACTOR);
+  }
 
   // Il costruttore serve a creare copie identiche del progetto
   // per scatenare un rerender
   constructor(old?: ProjectManager) {
     if (!old) {
-      this.project = EMPTY_PROJECT;
+      this.project = emptyProject();
       return;
     }
 

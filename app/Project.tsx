@@ -18,29 +18,31 @@ export type Decal = {
  */
 export type Project = {
   // Tutti i dispositivi presenti
-  devices: Map<number, Device>,
+  devices: Map<number, Device>;
   // Tutti gli elementi decorativi sullo scenario
-  decals: (Decal | undefined)[],
+  decals: (Decal | undefined)[];
   // A cosa è connessa ogni interfaccia
-  connections: Map<InterfaceId, InterfaceId>,
+  connections: Map<InterfaceId, InterfaceId>;
 
   // La posizione della telecamera
-  viewBoxX: number,
-  viewBoxY: number,
+  viewBoxX: number;
+  viewBoxY: number;
 
   // Lo zoom: 1 => 100%, 1.5 => 150%
-  viewBoxZoom: number,
+  viewBoxZoom: number;
 
   // L'id dell'ultimo dispositivo creato
-  lastId: number
-}
+  lastId: number;
+};
 
-export const EMPTY_PROJECT: Project = {
-  devices: new Map(),
-  decals: [],
-  connections: new Map(),
-  viewBoxX: 0,
-  viewBoxY: 0,
-  viewBoxZoom: 1,
-  lastId: 0
+export function emptyProject(): Project {
+  return {
+    devices: new Map(),
+    decals: [],
+    connections: new Map(),
+    viewBoxX: 0,
+    viewBoxY: 0,
+    viewBoxZoom: 1,
+    lastId: 0,
+  };
 }
