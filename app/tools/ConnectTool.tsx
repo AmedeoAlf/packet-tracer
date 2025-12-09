@@ -1,8 +1,6 @@
-import { ReactNode } from "react";
 import { Device } from "../devices/Device";
 import { Tool, ToolCtx } from "./Tool";
 import { toInterfaceId } from "../Project";
-import { NetworkInterface } from "../emulators/DeviceEmulator";
 import { Coords } from "../common";
 import { intfColor } from "../editorComponents/Cables";
 
@@ -33,13 +31,13 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
     panel() {
       switch (true) {
         case !this.deviceA:
-          return <>Seleziona un dispositivo</>
+          return <>Seleziona un dispositivo</>;
         case this.idxA === undefined:
-          return <>Seleziona un interfaccia (TODO)</>
+          return <>Seleziona un interfaccia (TODO)</>;
         case !this.deviceB:
-          return <>Seleziona il secondo dispositivo</>
+          return <>Seleziona il secondo dispositivo</>;
         default:
-          return <>Qui sarebbe da implementare la selezione interfaccia</>
+          return <>Qui sarebbe da implementare la selezione interfaccia</>;
       }
     },
     onEvent(ev) {
@@ -65,10 +63,15 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
               return;
             case !this.deviceB:
               this.deviceB = ev.device;
-              const res = this.project.connect(this.deviceA.id, this.idxA!, this.deviceB.id, firstEmptyInterface(this.deviceB))
-              if (res) console.log(res)
+              const res = this.project.connect(
+                this.deviceA.id,
+                this.idxA!,
+                this.deviceB.id,
+                firstEmptyInterface(this.deviceB),
+              );
+              if (res) console.log(res);
               this.updateProject();
-              this.update()
+              this.update();
               return;
           }
           break;
@@ -82,8 +85,17 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
     },
     svgElements() {
       if (this.deviceA && this.idxA !== undefined && this.cursorPos) {
-        const interfaceType = this.deviceA.internalState.netInterfaces[this.idxA].type;
-        return <line x1={this.deviceA.pos.x} y1={this.deviceA.pos.y} x2={this.cursorPos.x} y2={this.cursorPos.y} stroke={intfColor[interfaceType]} />
+        const interfaceType =
+          this.deviceA.internalState.netInterfaces[this.idxA].type;
+        return (
+          <line
+            x1={this.deviceA.pos.x}
+            y1={this.deviceA.pos.y}
+            x2={this.cursorPos.x}
+            y2={this.cursorPos.y}
+            stroke={intfColor[interfaceType]}
+          />
+        );
       }
       return <></>;
     },
