@@ -175,6 +175,7 @@ export function buildEmulatorContext(
     interpreter: emulator.cmdInterpreter as Interpreter<InternalState<any>>,
     updateState: () => {
       device.internalState = { ...device.internalState };
+      toolCtx.project.mutDevice(device.id);
       toolCtx.updateProject();
       toolCtx.update();
     },

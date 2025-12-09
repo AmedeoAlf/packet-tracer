@@ -58,7 +58,10 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
           ];
           return (
             <div>
-              <h1 className="text-xl font-bold">{device.name}</h1>
+              <input className="text-xl font-bold" type="text" value={device.name} onChange={(ev) => {
+                device.name = ev.target.value;
+                ctx.updateState();
+              }} />
               {panels.map(([k, v]) => (
                 <div key={k} className="mb-2">
                   <h2 className="text-lg font-bold">{k}</h2> <hr />

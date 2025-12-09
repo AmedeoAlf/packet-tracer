@@ -239,35 +239,40 @@ export class Project {
   // Il construttore serve a creare copie identiche del progetto
   // per scatenare un rerender
   constructor(p?: Project) {
-    if (p) {
-      if (!p.recyclable()) {
-        p.applyMutations();
-      } else {
-        this.devices = p.devices;
-        this.decals = p.decals;
-        this.connections = p.connections;
-        this.lastId = p.lastId;
-        this._temp = {
-          ...p._temp,
-          viewBoxChange: false,
-        };
-        this._viewBoxX = p._viewBoxX;
-        this._viewBoxY = p._viewBoxY;
-        this._viewBoxZoom = p._viewBoxZoom;
-        return;
-      }
-    }
-    if (p) {
-      this.devices = p.devices;
-      this.decals = p.decals;
-    } else {
+    if (!p) {
       this.devices = new Map();
       this.decals = [];
+      this.connections = new Map();
+      this.lastId = 0;
+      this._viewBoxX = 0;
+      this._viewBoxY = 0;
+      this._viewBoxZoom = 1;
+      return;
     }
-    this.connections = new Map(p?.connections);
-    this.lastId = p?.lastId ?? 0;
-    this._viewBoxX = p?._viewBoxX ?? 0;
-    this._viewBoxY = p?._viewBoxY ?? 0;
-    this._viewBoxZoom = p?._viewBoxZoom ?? 1;
+
+    if (!p.recyclable()) {
+      p.applyMutations();
+    } else {
+      this.devices = p.devices;
+      this.decals = p.decals;
+      this.connections = p.connections;
+      this.lastId = p.lastId;
+      this._temp = {
+        ...p._temp,
+        viewBoxChange: false,
+      };
+      this._viewBoxX = p._viewBoxX;
+      this._viewBoxY = p._viewBoxY;
+      this._viewBoxZoom = p._viewBoxZoom;
+      return;
+    }
+
+    this.devices = p.devices;
+    this.decals = p.decals;
+    this.connections = new Map(p.connections);
+    this.lastId = p.lastId;
+    this._viewBoxX = p._viewBoxX;
+    this._viewBoxY = p._viewBoxY;
+    this._viewBoxZoom = p._viewBoxZoom;
   }
 }

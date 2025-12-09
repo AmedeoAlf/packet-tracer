@@ -13,7 +13,6 @@ export const Devices = memo(function Devices({
 }) {
   return (
     <g>
-      {" "}
       {[
         ...devices
           .values()
