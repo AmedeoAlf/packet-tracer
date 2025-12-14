@@ -28,53 +28,59 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
     toolname: "select",
     svgElements: () => <></>,
     panel() {
-      switch (this.selected.size) {
+      switch (this.selected.size + this.selectedDecals.size) {
         case 0:
           return <p>Seleziona un dispositivo per vedere le proprietà</p>;
         case 1:
-          const device = this.project.immutableDevices.get(
-            this.selected.values().next().value!,
-          )!;
-          const emulator = device.emulator;
-          const ctx = buildEmulatorContext(device, this);
-          ctx.write = (msg) => {
-            this.stdout += "\n" + msg;
-            this.update();
-          };
+          if (this.selected.size === 1) {
+            const device = this.project.immutableDevices.get(
+              this.selected.values().next().value!,
+            )!;
+            const emulator = device.emulator;
+            const ctx = buildEmulatorContext(device, this);
+            ctx.write = (msg) => {
+              this.stdout += "\n" + msg;
+              this.update();
+            };
 
-          const panels: [string, DevicePanel<any>][] = [
-            [
-              "terminal",
-              TerminalEmulator(
-                this.stdin,
-                (stdin) => {
-                  this.stdin = stdin;
-                  this.update();
-                },
-                this.stdout,
-              ),
-            ],
-            ...Object.entries(emulator.configPanel),
-          ];
-          return (
-            <div>
-              <input
-                className="text-xl font-bold"
-                type="text"
-                value={device.name}
-                onChange={(ev) => {
-                  device.name = ev.target.value;
-                  ctx.updateState();
-                }}
-              />
-              {panels.map(([k, v]) => (
-                <div key={k} className="mb-2">
-                  <h2 className="text-lg font-bold">{k}</h2> <hr />
-                  {v(ctx)}
-                </div>
-              ))}
+            const panels: [string, DevicePanel<any>][] = [
+              [
+                "terminal",
+                TerminalEmulator(
+                  this.stdin,
+                  (stdin) => {
+                    this.stdin = stdin;
+                    this.update();
+                  },
+                  this.stdout,
+                ),
+              ],
+              ...Object.entries(emulator.configPanel),
+            ];
+            return (
+              <div>
+                <input
+                  className="text-xl font-bold"
+                  type="text"
+                  value={device.name}
+                  onChange={(ev) => {
+                    device.name = ev.target.value;
+                    ctx.updateState();
+                  }}
+                /> ✏️
+                {panels.map(([k, v]) => (
+                  <div key={k} className="mb-2">
+                    <h2 className="text-lg font-bold">{k}</h2> <hr />
+                    {v(ctx)}
+                  </div>
+                ))}
+              </div>
+            );
+          } else {
+            return <div>
+              Modifica di un decal
             </div>
-          );
+          }
         default:
           return <p>Non ancora implementato</p>;
       }
