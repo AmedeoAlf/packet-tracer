@@ -118,6 +118,7 @@ export class ProjectManager {
     this.project.connections.delete(this.project.connections.get(intfB) || -1);
     this.project.connections.set(intfA, intfB);
     this.project.connections.set(intfB, intfA);
+    this.lastCables = undefined;
     return;
   }
   disconnect(devId: number, ifId: number) {
@@ -125,6 +126,7 @@ export class ProjectManager {
     if (!this.project.connections.has(intf)) return;
     this.project.connections.delete(this.project.connections.get(intf)!);
     this.project.connections.delete(intf);
+    this.lastCables = undefined;
   }
   // Maps two deviceIds to the amount of connections between them
   getCables(): Map<number, Pick<NetworkInterface, "maxMbps" | "type">[]> {
@@ -235,19 +237,8 @@ export class ProjectManager {
       return;
     }
 
-    if (!old.recyclable()) {
-      old.applyMutations();
-    } else {
-      this.project = { ...old.project };
-      this.viewBoxChange = false;
-      // TODO: Copiare tutte le proprietà del manager
-      return;
-    }
-
+    old.applyMutations();
+    if (old.mutatedDevices === undefined) this.lastCables = old.lastCables;
     this.project = { ...old.project };
-
-    // NOTE: dovrei probabilmente implementare una cosa simile: this.project.connections = new Map(old.project.connections);
-    // FIXME: Non funziona nel momento in cui cambiano le connessioni
-    // this.lastCables = old.project._temold.project.lastCables;
   }
 }
