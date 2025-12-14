@@ -21,7 +21,7 @@ import { Decal } from "./Project";
 
 /*
  * Questo componente è tutta l'interfaccia del sito. Crea gli hook sia per il
- * `Project` che il `Tool` in uso, pertanto viene rirenderizzato ad ogni
+ * `ProjectManager` che il `Tool` in uso, pertanto viene rirenderizzato ad ogni
  * cambiamento di questi.
  */
 export function Editor(p: ProjectManager): ReactNode {
