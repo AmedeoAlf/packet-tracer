@@ -9,21 +9,22 @@ import { makeHandTool } from "./HandTool";
 import { makeConnectTool } from "./ConnectTool";
 import { makeLabelTool } from "./LabelTool";
 import { ProjectManager } from "../ProjectManager";
+import { makeRectTool } from "./RectTool";
 
 export type CanvasEvent = (
   | {
-      type: "mousemove";
-      movement: Coords;
-    }
+    type: "mousemove";
+    movement: Coords;
+  }
   | {
-      type:
-        | "click"
-        | "mousedown"
-        | "mouseup"
-        | "doubleclick"
-        | "mouseenter"
-        | "mouseleave";
-    }
+    type:
+    | "click"
+    | "mousedown"
+    | "mouseup"
+    | "doubleclick"
+    | "mouseenter"
+    | "mouseleave";
+  }
 ) & {
   shiftKey: boolean;
   pos: Coords;
@@ -51,6 +52,7 @@ export const TOOLS = {
   hand: makeHandTool,
   connect: makeConnectTool,
   label: makeLabelTool,
+  rect: makeRectTool,
 } satisfies Record<string, (ctx: ToolCtx) => Tool>;
 
 export const TOOL_LIST = [
@@ -59,4 +61,5 @@ export const TOOL_LIST = [
   "hand",
   "connect",
   "label",
+  "rect",
 ] as const satisfies (keyof typeof TOOLS)[];

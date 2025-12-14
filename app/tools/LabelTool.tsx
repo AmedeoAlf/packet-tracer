@@ -39,7 +39,7 @@ export function makeLabelTool(ctx: ToolCtx): LabelTool {
               this.updateProject();
             }
             this.currInput = undefined;
-          } else if (ev.decal) {
+          } else if (ev.decal && ev.decal.type == "text") {
             this.currInput = { text: ev.decal.text, pos: ev.decal.pos };
             this.project.removeDecal(ev.decal.id);
             this.updateProject();

@@ -30,7 +30,7 @@ export function Editor(p: ProjectManager): ReactNode {
     makeSelectTool({
       project: proj,
       updateProject: () => setProject(new ProjectManager(proj)),
-      update: () => {},
+      update: () => { },
     }),
   );
   tool.project = proj;
@@ -191,6 +191,14 @@ export function Editor(p: ProjectManager): ReactNode {
         }}
       >
         <defs> {Object.values(ICONS)} </defs>
+        <Decals
+          decals={proj.immutableDecals}
+          highlighted={
+            tool.toolname == "select"
+              ? (tool as SelectTool).selectedDecals
+              : undefined
+          }
+        />
         <Cables devices={proj.immutableDevices} cables={proj.getCables()} />
         {tool.svgElements()}
         <Devices
@@ -198,14 +206,6 @@ export function Editor(p: ProjectManager): ReactNode {
           highlighted={
             tool.toolname == "select"
               ? (tool as SelectTool).selected
-              : undefined
-          }
-        />
-        <Decals
-          decals={proj.immutableDecals}
-          highlighted={
-            tool.toolname == "select"
-              ? (tool as SelectTool).selectedDecals
               : undefined
           }
         />
@@ -270,16 +270,16 @@ const Decals = memo(function Decals({
     const data = { "data-decalid": idx };
     switch (d.type) {
       case "text":
-        return (
-          <text
-            key={idx}
-            {...d.pos}
-            {...data}
-            fill={highlighted && highlighted.has(idx) ? "#555" : "#000"}
-          >
-            {d.text}
-          </text>
-        );
+        return <text
+          key={idx}
+          {...d.pos}
+          {...data}
+          fill={highlighted && highlighted.has(idx) ? "#555" : "#000"}
+        >
+          {d.text}
+        </text>;
+      case "rect":
+        return <rect key={idx} {...d.pos} {...d.size} {...data} />
     }
   });
 });

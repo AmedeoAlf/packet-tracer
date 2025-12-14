@@ -6,7 +6,7 @@ import {
   buildEmulatorContext,
   NetworkInterface,
 } from "./emulators/DeviceEmulator";
-import { Decal, emptyProject, Project } from "./Project";
+import { Decal, DecalData, emptyProject, Project } from "./Project";
 import { ToolCtx } from "./tools/Tool";
 
 export type InterfaceId = number;
@@ -168,7 +168,7 @@ export class ProjectManager {
     console.assert(dev.internalState.netInterfaces.length > ifIdx);
     dev.emulator.packetHandler(buildEmulatorContext(dev, toolCtx), data, ifIdx);
   }
-  addDecal(d: Omit<Decal, "id">): number {
+  addDecal(d: DecalData): number {
     this.mutatedDecals ??= [];
     this.project.decals.push({ ...d, id: this.project.decals.length });
     return this.project.decals.length - 1;

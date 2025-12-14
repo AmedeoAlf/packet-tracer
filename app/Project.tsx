@@ -4,13 +4,21 @@ import { Device } from "./devices/Device";
 
 export type InterfaceId = number;
 
-export type Decal = {
+export type DecalData = {
   pos: Coords;
+} & (
+    {
+      type: "text";
+      text: string;
+    } | {
+      type: "rect";
+      size: { width: number, height: number };
+    }
+  );
+
+export type Decal = DecalData & {
   id: number;
-} & {
-  type: "text";
-  text: string;
-};
+}
 
 /*
  * La classe che contiene tutti i dati del progetto attuale.
