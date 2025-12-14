@@ -8,7 +8,6 @@ import {
   useMemo,
   memo,
 } from "react";
-import { Decal, MAX_ZOOM_FACTOR, MIN_ZOOM_FACTOR, Project } from "./Project";
 import { CanvasEvent, Tool } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
@@ -16,26 +15,27 @@ import { Cables } from "./editorComponents/Cables";
 import { SideBar } from "./editorComponents/SideBar";
 import { ToolSelector } from "./editorComponents/ToolSelector";
 import { Devices } from "./editorComponents/Devices";
-import { clamp } from "./common";
 import { deviceTypesDB } from "./devices/deviceTypesDB";
+import { ProjectManager } from "./ProjectManager";
+import { Decal } from "./Project";
 
 /*
  * Questo componente è tutta l'interfaccia del sito. Crea gli hook sia per il
  * `Project` che il `Tool` in uso, pertanto viene rirenderizzato ad ogni
  * cambiamento di questi.
  */
-export function Editor(p: Project): ReactNode {
+export function Editor(p: ProjectManager): ReactNode {
   const [proj, setProject] = useState(p);
   const [tool, setTool] = useState<Tool>(
     makeSelectTool({
       project: proj,
-      updateProject: () => setProject(new Project(proj)),
-      update: () => {},
+      updateProject: () => setProject(new ProjectManager(proj)),
+      update: () => { },
     }),
   );
   tool.project = proj;
   tool.updateProject = () => {
-    setProject(new Project(proj));
+    setProject(new ProjectManager(proj));
   };
   tool.update = () => {
     setTool({ ...tool });
@@ -125,9 +125,7 @@ export function Editor(p: Project): ReactNode {
             <button
               className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] "
               key={k}
-            >
-              {" "}
-            </button>
+            ></button>
           ))}
         </div>
       </div>
@@ -150,11 +148,6 @@ export function Editor(p: Project): ReactNode {
           if (ev.ctrlKey) {
             const from = tool.project.viewBoxZoom;
             tool.project.viewBoxZoom *= 1 + ev.deltaY * -0.0005;
-            tool.project.viewBoxZoom = clamp(
-              tool.project.viewBoxZoom,
-              MIN_ZOOM_FACTOR,
-              MAX_ZOOM_FACTOR,
-            );
             // devono entrambe non essere undefined per chiamare svgToDOMPoint
             if (canvasSize && pt) {
               const factor = from / tool.project.viewBoxZoom;
@@ -198,10 +191,10 @@ export function Editor(p: Project): ReactNode {
         }}
       >
         <defs> {Object.values(ICONS)} </defs>
-        <Cables devices={proj.devices} cables={proj.getCables()} />
+        <Cables devices={proj.immutableDevices} cables={proj.getCables()} />
         {tool.svgElements()}
         <Devices
-          devices={proj.devices}
+          devices={proj.immutableDevices}
           highlighted={
             tool.toolname == "select"
               ? (tool as SelectTool).selected
@@ -209,7 +202,7 @@ export function Editor(p: Project): ReactNode {
           }
         />
         <Decals
-          decals={proj.decals}
+          decals={proj.immutableDecals}
           highlighted={
             tool.toolname == "select"
               ? (tool as SelectTool).selectedDecals

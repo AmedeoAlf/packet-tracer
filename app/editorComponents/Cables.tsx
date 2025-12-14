@@ -1,12 +1,13 @@
 import { memo, ReactNode } from "react";
 import { Project } from "../Project";
 import { NetworkInterface } from "../emulators/DeviceEmulator";
+import { ProjectManager } from "../ProjectManager";
 
 export const Cables = memo(function Cables({
   cables,
   devices,
 }: {
-  cables: ReturnType<Project["getCables"]>;
+  cables: ReturnType<ProjectManager["getCables"]>;
   devices: Project["devices"];
 }): ReactNode {
   return (

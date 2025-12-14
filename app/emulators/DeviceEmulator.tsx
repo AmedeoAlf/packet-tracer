@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 import { Device } from "../devices/Device";
 import { ToolCtx } from "../tools/Tool";
-import { toInterfaceId } from "../Project";
 import { MacAddress } from "../protocols/802_3";
+import { toInterfaceId } from "../ProjectManager";
 
 export interface NetworkInterface {
   type: "serial" | "copper" | "fiber";

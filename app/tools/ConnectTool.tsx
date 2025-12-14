@@ -1,8 +1,8 @@
 import { Device } from "../devices/Device";
 import { Tool, ToolCtx } from "./Tool";
-import { toInterfaceId } from "../Project";
 import { Coords } from "../common";
 import { intfColor } from "../editorComponents/Cables";
+import { toInterfaceId } from "../ProjectManager";
 
 export type ConnectTool = Tool & {
   deviceA?: Device;
