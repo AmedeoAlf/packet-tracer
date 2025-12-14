@@ -177,6 +177,21 @@ export class ProjectManager {
     this.mutatedDecals ??= [];
     this.project.decals[id] = undefined;
   }
+  moveDecalIdx(id: number, offset: number): number {
+    id = Math.max(id, 0);
+    const to = Math.max(0, Math.min(id + offset, this.project.decals.length - 1));
+    if (this.project.decals.at(id)) {
+      const toMove = this.project.decals.splice(id, 1)[0];
+      this.project.decals.splice(to, 0, toMove);
+      for (let i = Math.min(id, to); i <= Math.max(id, to); i++) {
+        if (this.project.decals[i] !== undefined) this.project.decals[i]!.id = i;
+      }
+      this.mutatedDecals ??= [];
+      return to;
+      // this.mutatedDecals.push(...intRange(id, id + offset))
+    }
+    return 0;
+  }
   recyclable(): boolean {
     return (
       !this.cantRecycle &&

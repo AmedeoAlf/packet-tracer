@@ -21,3 +21,7 @@ export function clamp(n: number, min: number, max: number): number {
 export function cloneWithProto<T extends object>(obj: T): T {
   return Object.setPrototypeOf({ ...obj }, Object.getPrototypeOf(obj));
 }
+
+export function intRange(from: number, to: number): number[] {
+  return new Array(to - from).fill(1).map((_, i) => i + from)
+}
