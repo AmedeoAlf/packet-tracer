@@ -8,6 +8,7 @@ export type Decal = {
   pos: Coords;
   id: number;
 } & {
+
   type: "text";
   text: string;
 };
