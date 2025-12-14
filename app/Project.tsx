@@ -7,18 +7,21 @@ export type InterfaceId = number;
 export type DecalData = {
   pos: Coords;
 } & (
-    {
+  | {
       type: "text";
       text: string;
-    } | {
-      type: "rect";
-      size: { width: number, height: number };
     }
-  );
+  | {
+      type: "rect";
+      size: { width: number; height: number };
+      fill: string;
+      stroke: string;
+    }
+);
 
 export type Decal = DecalData & {
   id: number;
-}
+};
 
 /*
  * La classe che contiene tutti i dati del progetto attuale.

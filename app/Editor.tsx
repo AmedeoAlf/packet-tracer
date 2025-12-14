@@ -30,7 +30,7 @@ export function Editor(p: ProjectManager): ReactNode {
     makeSelectTool({
       project: proj,
       updateProject: () => setProject(new ProjectManager(proj)),
-      update: () => { },
+      update: () => {},
     }),
   );
   tool.project = proj;
@@ -270,16 +270,27 @@ const Decals = memo(function Decals({
     const data = { "data-decalid": idx };
     switch (d.type) {
       case "text":
-        return <text
-          key={idx}
-          {...d.pos}
-          {...data}
-          fill={highlighted && highlighted.has(idx) ? "#555" : "#000"}
-        >
-          {d.text}
-        </text>;
+        return (
+          <text
+            key={idx}
+            {...d.pos}
+            {...data}
+            fill={highlighted && highlighted.has(idx) ? "#555" : "#000"}
+          >
+            {d.text}
+          </text>
+        );
       case "rect":
-        return <rect key={idx} {...d.pos} {...d.size} {...data} />
+        return (
+          <rect
+            key={idx}
+            {...d.pos}
+            {...d.size}
+            stroke={d.stroke}
+            fill={d.fill}
+            {...data}
+          />
+        );
     }
   });
 });

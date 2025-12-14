@@ -67,7 +67,8 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
                     device.name = ev.target.value;
                     ctx.updateState();
                   }}
-                /> ✏️
+                />{" "}
+                ✏️
                 {panels.map(([k, v]) => (
                   <div key={k} className="mb-2">
                     <h2 className="text-lg font-bold">{k}</h2> <hr />
@@ -77,9 +78,7 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
               </div>
             );
           } else {
-            return <div>
-              Modifica di un decal
-            </div>
+            return <div>Modifica di un decal</div>;
           }
         default:
           return <p>Non ancora implementato</p>;
