@@ -30,7 +30,7 @@ export function Editor(p: ProjectManager): ReactNode {
     makeSelectTool({
       project: proj,
       updateProject: () => setProject(new ProjectManager(proj)),
-      update: () => { },
+      update: () => {},
     }),
   );
   tool.project = proj;

@@ -6,7 +6,7 @@ export type InterfaceId = number;
 
 export type Decal = {
   pos: Coords;
-  id: number
+  id: number;
 } & {
   type: "text";
   text: string;
