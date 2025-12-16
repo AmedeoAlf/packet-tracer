@@ -31,7 +31,7 @@ export function Editor(p: ProjectManager): ReactNode {
     makeSelectTool({
       project: proj,
       updateProject: () => setProject(new ProjectManager(proj)),
-      update: () => { },
+      update: () => {},
     }),
   );
   tool.project = proj;
@@ -222,10 +222,16 @@ export function Editor(p: ProjectManager): ReactNode {
 // buildEventHandler per eventi "keydown" e "keyup"
 function buildKeyboardEventHandler(
   tool: Tool,
-  type: Extract<CanvasEvent['type'], "keydown" | "keyup">,
+  type: Extract<CanvasEvent["type"], "keydown" | "keyup">,
 ) {
   return (ev: KeyboardEvent<HTMLDivElement>) =>
-    tool.onEvent({ type, key: ev.key, ctrl: ev.ctrlKey, shift: ev.shiftKey, consumed: false })
+    tool.onEvent({
+      type,
+      key: ev.key,
+      ctrl: ev.ctrlKey,
+      shift: ev.shiftKey,
+      consumed: false,
+    });
 }
 
 // Ritorna una funzione che chiama `tool.onEvent(event)` con un oggetto

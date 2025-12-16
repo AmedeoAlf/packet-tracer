@@ -80,14 +80,28 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
           } else {
             const decal = this.selectedDecals.values().next().value!;
             const offsetSelection = (of: number) => () => {
-              this.selectedDecals = new Set([this.project.moveDecalIdx(decal, of)]);
-              console.log(decal, this.selectedDecals.values().next().value)
+              this.selectedDecals = new Set([
+                this.project.moveDecalIdx(decal, of),
+              ]);
+              console.log(decal, this.selectedDecals.values().next().value);
               this.updateProject();
               this.update();
-            }
-            return <div><input type="button" value="Sposta su" onClick={offsetSelection(1)} /> <br />
-              <input type="button" value="Sposta giù" onClick={offsetSelection(-1)} />
-            </div>;
+            };
+            return (
+              <div>
+                <input
+                  type="button"
+                  value="Sposta su"
+                  onClick={offsetSelection(1)}
+                />{" "}
+                <br />
+                <input
+                  type="button"
+                  value="Sposta giù"
+                  onClick={offsetSelection(-1)}
+                />
+              </div>
+            );
           }
         default:
           return <p>Non ancora implementato</p>;
@@ -164,10 +178,9 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
             this.selected = new Set();
             this.selectedDecals = new Set();
             this.update();
-            this.updateProject()
+            this.updateProject();
             return;
           }
-
       }
       if (
         originalDevices.symmetricDifference(this.selected).size > 0 ||
