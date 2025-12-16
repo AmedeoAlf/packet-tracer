@@ -7,6 +7,7 @@ import {
   ReactNode,
   useMemo,
   memo,
+  KeyboardEvent,
 } from "react";
 import { CanvasEvent, Tool } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
@@ -30,7 +31,7 @@ export function Editor(p: ProjectManager): ReactNode {
     makeSelectTool({
       project: proj,
       updateProject: () => setProject(new ProjectManager(proj)),
-      update: () => {},
+      update: () => { },
     }),
   );
   tool.project = proj;
@@ -55,7 +56,7 @@ export function Editor(p: ProjectManager): ReactNode {
     return pt.matrixTransform(svgCanvas.current!.getScreenCTM()!.inverse());
   }
 
-  const handler = buildEventHandler.bind(null, svgToDOMPoint, tool);
+  const mouseHandler = buildMouseEventHandler.bind(null, svgToDOMPoint, tool);
 
   useEffect(() => {
     window.onresize = () => setCanvasSize(undefined);
@@ -80,7 +81,11 @@ export function Editor(p: ProjectManager): ReactNode {
   }, [canvasSize, proj.viewBoxZoom, proj.viewBoxX, proj.viewBoxY]);
 
   return (
-    <>
+    <div
+      onKeyDown={buildKeyboardEventHandler(tool, "keydown")}
+      onKeyUp={buildKeyboardEventHandler(tool, "keyup")}
+      tabIndex={0}
+    >
       <div className="bg-sky-700 fixed top-0 w-full h-[50px] indent-1.5em border-b-[.1em] border-solid border-sky-800"></div>
 
       <SideBar tool={tool} />
@@ -137,13 +142,13 @@ export function Editor(p: ProjectManager): ReactNode {
       )}
 
       <svg
-        onClick={handler("click")}
-        onDoubleClick={handler("doubleclick")}
-        onMouseUp={handler("mouseup")}
-        onMouseDown={handler("mousedown")}
-        onMouseMove={handler("mousemove")}
-        onMouseEnter={handler("mouseenter")}
-        onMouseLeave={handler("mouseleave")}
+        onClick={mouseHandler("click")}
+        onDoubleClick={mouseHandler("doubleclick")}
+        onMouseUp={mouseHandler("mouseup")}
+        onMouseDown={mouseHandler("mousedown")}
+        onMouseMove={mouseHandler("mousemove")}
+        onMouseEnter={mouseHandler("mouseenter")}
+        onMouseLeave={mouseHandler("mouseleave")}
         onWheel={(ev) => {
           if (ev.ctrlKey) {
             const from = tool.project.viewBoxZoom;
@@ -210,16 +215,25 @@ export function Editor(p: ProjectManager): ReactNode {
           }
         />
       </svg>
-    </>
+    </div>
   );
+}
+
+// buildEventHandler per eventi "keydown" e "keyup"
+function buildKeyboardEventHandler(
+  tool: Tool,
+  type: Extract<CanvasEvent['type'], "keydown" | "keyup">,
+) {
+  return (ev: KeyboardEvent<HTMLDivElement>) =>
+    tool.onEvent({ type, key: ev.key, ctrl: ev.ctrlKey, shift: ev.shiftKey, consumed: false })
 }
 
 // Ritorna una funzione che chiama `tool.onEvent(event)` con un oggetto
 // `CanvasEvent`, costruito a partire dal tipo di evento DOM specificato
-function buildEventHandler(
+function buildMouseEventHandler(
   toDOMPoint: (x: number, y: number) => DOMPoint | undefined,
   tool: Tool,
-  type: CanvasEvent["type"],
+  type: Exclude<CanvasEvent["type"], "keydown" | "keyup">,
 ): (ev: MouseEvent) => void {
   const getPos = (ev: MouseEvent) => {
     const result = toDOMPoint(ev.clientX, ev.clientY);

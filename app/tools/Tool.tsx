@@ -11,26 +11,36 @@ import { makeLabelTool } from "./LabelTool";
 import { ProjectManager } from "../ProjectManager";
 import { makeRectTool } from "./RectTool";
 
-export type CanvasEvent = (
+export type CanvasEvent = ((
   | {
-      type: "mousemove";
-      movement: Coords;
-    }
+    type: "mousemove";
+    movement: Coords;
+  }
   | {
-      type:
-        | "click"
-        | "mousedown"
-        | "mouseup"
-        | "doubleclick"
-        | "mouseenter"
-        | "mouseleave";
-    }
+    type:
+    | "click"
+    | "mousedown"
+    | "mouseup"
+    | "doubleclick"
+    | "mouseenter"
+    | "mouseleave";
+  }
 ) & {
   shiftKey: boolean;
   pos: Coords;
   device?: Device;
   decal?: Decal;
-};
+}) | (
+    {
+      key: string;
+      shift: boolean;
+      ctrl: boolean;
+      consumed: boolean;
+    } & (
+      { type: "keydown" } | { type: "keyup" }
+    )
+  );
+
 
 export type Tool = ToolCtx & {
   readonly toolname: keyof typeof TOOLS;

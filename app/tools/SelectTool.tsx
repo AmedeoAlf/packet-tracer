@@ -153,6 +153,21 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
             this.lastCursorPos = undefined;
           }
           break;
+        case "keydown":
+          if (ev.key == "Delete") {
+            for (const s of this.selected) {
+              this.project.deleteDevice(s);
+            }
+            for (const s of this.selectedDecals) {
+              this.project.removeDecal(s);
+            }
+            this.selected = new Set();
+            this.selectedDecals = new Set();
+            this.update();
+            this.updateProject()
+            return;
+          }
+
       }
       if (
         originalDevices.symmetricDifference(this.selected).size > 0 ||
