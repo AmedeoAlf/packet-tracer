@@ -37,7 +37,7 @@ export type CanvasEvent =
       shift: boolean;
       ctrl: boolean;
       consumed: boolean;
-    } & ({ type: "keydown" } | { type: "keyup" }));
+    } & { type: "keydown" | "keyup" });
 
 export type Tool = ToolCtx & {
   readonly toolname: keyof typeof TOOLS;

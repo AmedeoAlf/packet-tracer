@@ -43,6 +43,9 @@ export function Editor(p: ProjectManager): ReactNode {
     setTool({ ...tool });
   };
 
+  const toolRef = useRef(tool);
+  toolRef.current = tool;
+
   const svgCanvas = useRef<SVGSVGElement>(null);
   let pt = svgCanvas.current?.createSVGPoint();
 
@@ -137,8 +140,8 @@ export function Editor(p: ProjectManager): ReactNode {
       </div>
 
       <ToolSelector
-        tool={tool}
-        setToolTo={(name) => setTool(TOOLS[name](tool))}
+        toolname={tool.toolname}
+        setToolTo={(t) => setTool(TOOLS[t](toolRef.current))}
       />
 
       <svg
