@@ -24,6 +24,7 @@ export class Layer2Packet {
   from: MacAddress;
   vlanTag?: number; // https://en.wikipedia.org/wiki/IEEE_802.1Q#Frame_format
   payload: Buffer;
+  _arpPacket: boolean = false;
   constructor(
     payload: Buffer,
     from: MacAddress,
@@ -51,7 +52,10 @@ export class Layer2Packet {
       packetBuf.writeUint32BE(0x81000000 | (0xfff & this.vlanTag), cursor);
       cursor += 4;
     }
-    packetBuf.writeUint16BE(this.payload.byteLength, cursor);
+    packetBuf.writeUint16BE(
+      this._arpPacket ? 0x0806 : this.payload.byteLength,
+      cursor,
+    );
     cursor += 2;
     packetBuf.set(this.payload, cursor);
     return packetBuf;
@@ -72,6 +76,18 @@ export class Layer2Packet {
     if (bytes.readUInt16BE(cursor) == 0x8100) {
       vlanTag = bytes.readUInt16BE(cursor + 2) & 0xfff;
       cursor += 4;
+    }
+    if (bytes.readUint16BE(cursor) == 0x0806) {
+      // ARP packet
+      cursor += 2;
+      const pkt = new Layer2Packet(
+        bytes.subarray(cursor, cursor + 28),
+        from,
+        to,
+        vlanTag,
+      );
+      pkt._arpPacket = true;
+      return pkt;
     }
     const len = bytes.readUInt16BE(cursor);
     cursor += 2;
