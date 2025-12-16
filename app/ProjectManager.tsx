@@ -90,12 +90,13 @@ export class ProjectManager {
     );
   }
   deleteDevice(id: number) {
-    const dev = this.project.devices.get(id)!;
+    const dev = this.project.devices.get(id);
+    if (dev === undefined) return;
     dev.internalState.netInterfaces.forEach((_, idx) =>
       this.disconnect(id, idx),
     );
     this.project.devices.delete(id);
-    this.mutatedDecals ??= [];
+    this.mutatedDevices ??= [];
   }
   getInterface(devId: number, ifId: number): NetworkInterface | undefined {
     return this.project.devices

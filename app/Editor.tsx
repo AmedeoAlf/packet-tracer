@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/immutability */
 "use client";
 import {
   useState,
@@ -9,7 +10,7 @@ import {
   memo,
   KeyboardEvent,
 } from "react";
-import { CanvasEvent, Tool } from "./tools/Tool";
+import { CanvasEvent, Tool, TOOLS } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { Cables } from "./editorComponents/Cables";
@@ -135,11 +136,10 @@ export function Editor(p: ProjectManager): ReactNode {
         </div>
       </div>
 
-      {useMemo(
-        () => ToolSelector({ tool, setTool }),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [tool.toolname],
-      )}
+      <ToolSelector
+        tool={tool}
+        setToolTo={(name) => setTool(TOOLS[name](tool))}
+      />
 
       <svg
         onClick={mouseHandler("click")}
@@ -224,14 +224,17 @@ function buildKeyboardEventHandler(
   tool: Tool,
   type: Extract<CanvasEvent["type"], "keydown" | "keyup">,
 ) {
-  return (ev: KeyboardEvent<HTMLDivElement>) =>
-    tool.onEvent({
+  return (ev: KeyboardEvent<HTMLDivElement>) => {
+    const evObj = {
       type,
       key: ev.key,
       ctrl: ev.ctrlKey,
       shift: ev.shiftKey,
       consumed: false,
-    });
+    };
+    tool.onEvent(evObj);
+    if (evObj.consumed) ev.preventDefault();
+  };
 }
 
 // Ritorna una funzione che chiama `tool.onEvent(event)` con un oggetto

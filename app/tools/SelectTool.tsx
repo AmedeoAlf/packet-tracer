@@ -175,10 +175,11 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
             for (const s of this.selectedDecals) {
               this.project.removeDecal(s);
             }
-            this.selected = new Set();
-            this.selectedDecals = new Set();
+            this.selected.clear();
+            this.selectedDecals.clear();
             this.update();
             this.updateProject();
+            ev.consumed = true;
             return;
           }
       }

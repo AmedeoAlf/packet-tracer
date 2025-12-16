@@ -1,13 +1,13 @@
 import { ReactNode } from "react";
-import { Tool, TOOL_LIST, TOOLS } from "../tools/Tool";
+import { Tool, TOOL_LIST } from "../tools/Tool";
 
 // Il selettore del tool in uso
-export function ToolSelector({
+export const ToolSelector = function ToolSelector({
   tool,
-  setTool,
+  setToolTo,
 }: {
   tool: Tool;
-  setTool: (t: Tool) => void;
+  setToolTo: (toolname: (typeof TOOL_LIST)[number]) => void;
 }): ReactNode {
   return (
     <div className="fixed bottom-0 left-[35.3%] w-[29.4%] h-[90px] indent-[1,5em] z-0 border-solid border-sky-800 border-t-[.1em]">
@@ -16,7 +16,7 @@ export function ToolSelector({
         {TOOL_LIST.map((it) => (
           <button
             key={it}
-            onClick={() => setTool(TOOLS[it](tool))}
+            onClick={() => setToolTo(it)}
             className={
               (it == tool.toolname ? "bg-gray-600" : "") +
               " w-16 border-solid border-[.1em] border-white m-[2.5%] "
@@ -28,4 +28,4 @@ export function ToolSelector({
       </div>
     </div>
   );
-}
+};
