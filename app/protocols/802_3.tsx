@@ -94,4 +94,7 @@ export class Layer2Packet {
     const payload = bytes.subarray(cursor, cursor + len);
     return new Layer2Packet(payload, from, to, vlanTag);
   }
+  type(): "ip" | "arp" {
+    return this._arpPacket ? "arp" : "ip";
+  }
 }

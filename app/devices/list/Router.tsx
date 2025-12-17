@@ -35,6 +35,7 @@ export const Router: DeviceFactory<RouterInternalState> = {
         { name: "se0", maxMbps: 100, type: "serial", mac: randomMAC() },
         { name: "se1", maxMbps: 100, type: "serial", mac: randomMAC() },
       ],
+      macTable: new Map(),
     };
   },
 };

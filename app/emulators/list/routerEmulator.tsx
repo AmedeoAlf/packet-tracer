@@ -1,3 +1,4 @@
+import { ARPPacket } from "@/app/protocols/rfc_826";
 import { RouterInternalState } from "../../devices/list/Router";
 import { Layer2Packet, MAC_BROADCAST } from "../../protocols/802_3";
 import { ICMPPacket, ICMPType } from "../../protocols/icmp";
@@ -47,6 +48,25 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   },
   packetHandler(ctx, data, intf) {
     const l2Packet = Layer2Packet.fromBytes(data);
+    if (l2Packet.type() == "arp") {
+      const arpPacket = ARPPacket.fromL2(l2Packet);
+      if (arpPacket.response) return;
+
+      const intfIdx = ctx.state.l3Ifs.findIndex(
+        (intf) => intf.ip == arpPacket.targetIP,
+      );
+      if (intfIdx == -1) return;
+
+      ctx.sendOnIf(
+        intfIdx,
+        arpPacket
+          .respondWith(ctx.state.netInterfaces[intfIdx].mac)
+          .toL2()
+          .toBytes(),
+      );
+
+      return;
+    }
     try {
       const destination = PartialIPv4Packet.getDestination(l2Packet.payload);
       const isDestinedInterface = ctx.state.l3Ifs.findIndex(

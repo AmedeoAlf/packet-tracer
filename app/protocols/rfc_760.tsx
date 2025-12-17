@@ -27,6 +27,7 @@
  */
 
 import { InternalState } from "../emulators/DeviceEmulator";
+import { MacAddress } from "./802_3";
 
 // NOTE: Implementazione parziale, ad esempio IHL è sempre uguale a 5
 export type IPv4Address = number;
@@ -64,6 +65,7 @@ export type L3InternalState<T extends object> = InternalState<
     ipPackets: Map<number, PartialIPv4Packet>;
     l3Ifs: L3Interface[];
     gateway: IPv4Address;
+    macTable: Map<IPv4Address, MacAddress>;
     rawSocketFd?: (packet: IPv4Packet) => void;
   }
 >;

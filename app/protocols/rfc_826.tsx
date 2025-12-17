@@ -47,13 +47,13 @@ export class ARPPacket {
     this.targetMAC = targetMAC;
   }
 
-  static respondTo(packet: ARPPacket, myMAC: MacAddress): ARPPacket {
-    if (packet.response) throw "Tried to respond to ARP response";
+  respondWith(myMAC: MacAddress): ARPPacket {
+    if (this.response) throw "Tried to respond to ARP response";
     return new ARPPacket(
       myMAC,
-      packet.targetIP,
-      packet.senderIP,
-      packet.senderMAC,
+      this.targetIP,
+      this.senderIP,
+      this.senderMAC,
       true,
     );
   }
