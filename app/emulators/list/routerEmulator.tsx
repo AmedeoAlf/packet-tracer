@@ -109,13 +109,10 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         if (packet.isPayloadFinished()) {
           switch (packet.protocol) {
             case ProtocolCode.icmp:
-              console.log("Sending response!!");
               const icmpPacket = ICMPPacket.fromBytes(packet.payload);
-              console.log(icmpPacket, packet.payload);
               // Gestisci i pacchetti echo ICMP
               switch (icmpPacket.type) {
                 case ICMPType.echoRequest:
-                  console.log("Got echorequest");
                   const response = new IPv4Packet(
                     ProtocolCode.icmp,
                     ICMPPacket.echoResponse(icmpPacket).toBytes(),

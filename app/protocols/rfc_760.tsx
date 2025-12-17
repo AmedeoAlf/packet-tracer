@@ -27,7 +27,7 @@
  */
 
 import { InternalState } from "../emulators/DeviceEmulator";
-import { Layer2Packet, MacAddress, MACToString } from "./802_3";
+import { Layer2Packet, MacAddress } from "./802_3";
 import { ARPPacket } from "./rfc_826";
 
 // NOTE: Implementazione parziale, ad esempio IHL è sempre uguale a 5
@@ -273,11 +273,6 @@ export function sendIPv4Packet(
     destination,
     ttl,
   ).toFragmentedBytes();
-  console.log(
-    "Sending a packet to",
-    ipv4ToString(destination),
-    MACToString(state.macTable.get(targetIp)!),
-  );
   for (const p of payloads) {
     sendOnIf(
       intf,
