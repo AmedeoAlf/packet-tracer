@@ -27,7 +27,7 @@
  */
 
 import { InternalState } from "../emulators/DeviceEmulator";
-import { MacAddress } from "./802_3";
+import { Layer2Packet, MAC_BROADCAST, MacAddress } from "./802_3";
 
 // NOTE: Implementazione parziale, ad esempio IHL è sempre uguale a 5
 export type IPv4Address = number;
@@ -53,6 +53,7 @@ export function parseIpv4(s: string): IPv4Address | undefined {
 
 export type L3Interface = { ip: IPv4Address; mask: IPv4Address };
 
+// -1 on no interface
 export function getMatchingInterface(
   interfaces: L3Interface[],
   ip: IPv4Address,
@@ -229,4 +230,42 @@ export class PartialIPv4Packet extends IPv4Packet {
     if (packet.readUint8(0) >> 4 != 4) throw "Not an IPv4 Packet";
     return packet.readUint32BE(16);
   }
+}
+
+export function sendIPv4Packet(
+  state: L3InternalState<object>,
+  sendOnIf: (id: number, data: Buffer) => void,
+  destination: IPv4Address,
+  protocol: ProtocolCode,
+  data: Buffer,
+  ttl: number = 255,
+  vlanTag?: number,
+): boolean {
+  // L'interfaccia su cui inviare il pacchetto
+  let intf = getMatchingInterface(state.l3Ifs, destination);
+  // Il pacchetto non è su una rete disponibile -> invia al gateway
+  if (intf == -1) {
+    intf = getMatchingInterface(state.l3Ifs, state.gateway);
+    // Il gateway è invalido
+    if (intf == -1) return false;
+  }
+  const payloads = new IPv4Packet(
+    protocol,
+    data,
+    state.l3Ifs[intf].ip,
+    destination,
+    ttl,
+  ).toFragmentedBytes();
+  for (const p of payloads) {
+    sendOnIf(
+      intf,
+      new Layer2Packet(
+        p,
+        state.netInterfaces[intf].mac,
+        MAC_BROADCAST,
+        vlanTag,
+      ).toBytes(),
+    );
+  }
+  return true;
 }
