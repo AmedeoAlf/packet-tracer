@@ -27,7 +27,8 @@
  */
 
 import { InternalState } from "../emulators/DeviceEmulator";
-import { Layer2Packet, MAC_BROADCAST, MacAddress } from "./802_3";
+import { Layer2Packet, MacAddress, MACToString } from "./802_3";
+import { ARPPacket } from "./rfc_826";
 
 // NOTE: Implementazione parziale, ad esempio IHL è sempre uguale a 5
 export type IPv4Address = number;
@@ -48,7 +49,7 @@ export function parseIpv4(s: string): IPv4Address | undefined {
     .split(".")
     .slice(0, 4)
     .map((it) => +it)
-    .reduce((acc, val) => (acc << 8) + val);
+    .reduce((acc, val) => acc * 256 + val);
 }
 
 export type L3Interface = { ip: IPv4Address; mask: IPv4Address };
@@ -157,21 +158,21 @@ export class PartialIPv4Packet extends IPv4Packet {
     // Not an IPv4 packet?
     if (first.readUInt8(0) >> 4 != 4) return;
 
-    const offsetAndFlags = first.readUint16BE(6);
+    const offsetAndFlags = first.readUInt16BE(6);
     const morePackets = offsetAndFlags & (1 << 29);
     const offset = offsetAndFlags & ~(0b111 << 29);
     const payloadBuf = Buffer.alloc(IPV4_MAX_PAYLOAD);
     payloadBuf.set(first.subarray(20), offset << 3);
 
     super(
-      first.readUint8(9),
+      first.readUInt8(9),
       payloadBuf,
-      first.readUint32BE(12),
-      first.readUint32BE(16),
-      first.readUint8(8),
+      first.readUInt32BE(12),
+      first.readUInt32BE(16),
+      first.readUInt8(8),
     );
     this.rebuiltPayload = payloadBuf;
-    this.id = first.readUint16BE(4);
+    this.id = first.readUInt16BE(4);
     this.slices.push([offset, offset + first.byteLength - 20]);
     if (!morePackets) {
       this.gotCompleteSize = true;
@@ -183,10 +184,10 @@ export class PartialIPv4Packet extends IPv4Packet {
   // assumes many values to be the same
   add(packet: Buffer) {
     // Not an IPv4 packet?
-    if (packet.readUint8(0) >> 4 != 4) throw "Not an IPv4 Packet";
-    if (packet.readUint16BE(4) != this.id) throw "Non-matching ids";
+    if (packet.readUInt8(0) >> 4 != 4) throw "Not an IPv4 Packet";
+    if (packet.readUInt16BE(4) != this.id) throw "Non-matching ids";
 
-    const offsetAndFlags = packet.readUint16BE(6);
+    const offsetAndFlags = packet.readUInt16BE(6);
     const morePackets = offsetAndFlags & (1 << 29);
     const offset = offsetAndFlags & ~(0b111 << 29);
 
@@ -222,13 +223,13 @@ export class PartialIPv4Packet extends IPv4Packet {
   }
 
   static getId(packet: Buffer): number {
-    if (packet.readUint8(0) >> 4 != 4) throw "Not an IPv4 Packet";
-    return packet.readUint16BE(4);
+    if (packet.readUInt8(0) >> 4 != 4) throw "Not an IPv4 Packet";
+    return packet.readUInt16BE(4);
   }
 
   static getDestination(packet: Buffer): IPv4Address {
-    if (packet.readUint8(0) >> 4 != 4) throw "Not an IPv4 Packet";
-    return packet.readUint32BE(16);
+    if (packet.readUInt8(0) >> 4 != 4) throw "Not an IPv4 Packet";
+    return packet.readUInt32BE(16);
   }
 }
 
@@ -241,13 +242,29 @@ export function sendIPv4Packet(
   ttl: number = 255,
   vlanTag?: number,
 ): boolean {
+  let targetIp = destination;
   // L'interfaccia su cui inviare il pacchetto
   let intf = getMatchingInterface(state.l3Ifs, destination);
   // Il pacchetto non è su una rete disponibile -> invia al gateway
   if (intf == -1) {
+    targetIp = state.gateway;
     intf = getMatchingInterface(state.l3Ifs, state.gateway);
     // Il gateway è invalido
     if (intf == -1) return false;
+  }
+
+  if (!state.macTable.has(targetIp)) {
+    sendOnIf(
+      intf,
+      new ARPPacket(
+        state.netInterfaces[intf].mac,
+        state.l3Ifs[intf].ip,
+        targetIp,
+      )
+        .toL2()
+        .toBytes(),
+    );
+    return false;
   }
   const payloads = new IPv4Packet(
     protocol,
@@ -256,13 +273,18 @@ export function sendIPv4Packet(
     destination,
     ttl,
   ).toFragmentedBytes();
+  console.log(
+    "Sending a packet to",
+    ipv4ToString(destination),
+    MACToString(state.macTable.get(targetIp)!),
+  );
   for (const p of payloads) {
     sendOnIf(
       intf,
       new Layer2Packet(
         p,
         state.netInterfaces[intf].mac,
-        MAC_BROADCAST,
+        state.macTable.get(targetIp),
         vlanTag,
       ).toBytes(),
     );

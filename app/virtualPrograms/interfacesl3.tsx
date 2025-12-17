@@ -5,7 +5,7 @@ import { interfaces } from "./interfaces";
 export function interfacesL3<T extends L3InternalState<object>>() {
   return {
     desc: "Manages interfaces",
-    run: (ctx) => ctx.write(ctx.state.netInterfaces.join("\n")),
+    run: interfaces<T>().run,
     subcommands: {
       ...interfaces().subcommands,
       "set-ip": {

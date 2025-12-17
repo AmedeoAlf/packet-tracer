@@ -1,9 +1,18 @@
 import { Command, InternalState } from "../emulators/DeviceEmulator";
+import { MACToString } from "../protocols/802_3";
 
 export function interfaces<T extends InternalState<object>>() {
   return {
     desc: "Manages interfaces",
-    run: (ctx) => ctx.write(ctx.state.netInterfaces.join("\n")),
+    run: (ctx) =>
+      ctx.write(
+        ctx.state.netInterfaces
+          .map(
+            (it) =>
+              `${it.name} ${it.type} ${it.maxMbps}Mbps ${MACToString(it.mac)}`,
+          )
+          .join("\n"),
+      ),
     subcommands: {
       rename: {
         autocomplete: (state) =>

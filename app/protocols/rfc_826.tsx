@@ -24,6 +24,7 @@
 
 import { Layer2Packet, MAC_BROADCAST, MacAddress } from "./802_3";
 import { IPv4Address } from "./rfc_760";
+import { Buffer } from "node:buffer";
 
 export class ARPPacket {
   response: boolean;
@@ -60,19 +61,19 @@ export class ARPPacket {
 
   toL2(): Layer2Packet {
     const buf = Buffer.alloc(28);
-    buf.writeUint32BE(0x00010800); // HW type (ethernet) + Protocol type (IPv4)
-    buf.writeUint16BE(0x0604, 4); // HW len (6 = sizeof MAC) + Protocl len (4 = sizeof IPv4)
-    buf.writeUint16BE(this.response ? 2 : 1, 6); // Operation (1 = request, 2 = reply)
+    buf.writeUInt32BE(0x00010800); // HW type (ethernet) + Protocol type (IPv4)
+    buf.writeUInt16BE(0x0604, 4); // HW len (6 = sizeof MAC) + Protocl len (4 = sizeof IPv4)
+    buf.writeUInt16BE(this.response ? 2 : 1, 6); // Operation (1 = request, 2 = reply)
 
-    buf.writeUint32BE(this.senderMAC / 2 ** 16, 8);
-    buf.writeUint16BE(this.senderMAC, 12);
+    buf.writeUInt16BE(Math.floor(this.senderMAC / 2 ** 32), 8);
+    buf.writeUInt32BE(this.senderMAC % 0x100000000, 10);
 
-    buf.writeUint32BE(this.senderIP, 14);
+    buf.writeUInt32BE(this.senderIP, 14);
 
-    buf.writeUint16BE(this.targetMAC / 2 ** 32, 18);
-    buf.writeUint32BE(this.targetMAC, 20);
+    buf.writeUInt16BE(Math.floor(this.targetMAC / 2 ** 32), 18);
+    buf.writeUInt32BE(this.targetMAC % 0x100000000, 20);
 
-    buf.writeUint32BE(this.targetIP, 24);
+    buf.writeUInt32BE(this.targetIP, 24);
 
     const pkt = new Layer2Packet(
       buf,
@@ -88,20 +89,23 @@ export class ARPPacket {
     const bytes = l2Packet.payload;
     if (bytes.length < 28)
       throw `Buffer too small (${bytes.length} < 28) to be an ARPPacket`;
-    if (bytes.readUint32BE() != 0x00010800)
+    if (bytes.readUInt32BE() != 0x00010800)
       throw `Invalid start bytes ${bytes.readUInt32BE()} in ARPPacket`;
-    if (bytes.writeUint16BE(4) != 0x0604)
+    if (bytes.readUInt16BE(4) != 0x0604)
       throw `Invalid size bytes ${bytes.readUInt16BE(4)} in ARPPacket`;
 
-    const senderMAC = bytes.writeUint32BE(8) ** 16 + bytes.readUint16BE(12);
-    const targetMAC = bytes.writeUint16BE(18) ** 32 + bytes.readUint32BE(20);
+    const senderMAC = bytes.readUInt16BE(8) * 2 ** 32 + bytes.readUInt32BE(10);
+    const targetMAC = bytes.readUInt16BE(18) * 2 ** 32 + bytes.readUInt32BE(20);
+
+    // if (senderMAC > 2 ** 48) throw `senderMAC is ${senderMAC.toString(16)}, bigger than ${(2 ** 48).toString(16)}`
+    // if (targetMAC > 2 ** 48) throw `targetMAC is ${targetMAC.toString(16)}, bigger than ${(2 ** 48).toString(16)}`
 
     return new ARPPacket(
       senderMAC,
-      bytes.readUint32BE(14),
-      bytes.readUint32BE(24),
+      bytes.readUInt32BE(14),
+      bytes.readUInt32BE(24),
       targetMAC,
-      bytes.writeUint16BE(6) == 2,
+      bytes.readUInt16BE(6) == 2,
     );
   }
 }

@@ -16,7 +16,13 @@ export type MacAddress = number;
 export const MAC_BROADCAST: MacAddress = 0xffffffffffff;
 
 export function randomMAC(): number {
-  return 2 ** 48 * Math.random();
+  return Math.floor(2 ** 48 * Math.random());
+}
+
+export function MACToString(mac: number): string {
+  return Array.from(mac.toString(16).padStart(12, "0")).reduce(
+    (acc, char, idx) => acc + (idx % 2 ? "" : ":") + char,
+  );
 }
 
 export class Layer2Packet {
@@ -41,18 +47,18 @@ export class Layer2Packet {
     const packetBuf = Buffer.alloc(1522);
     let cursor = 0;
     const writeMac = (mac: number) => {
-      packetBuf.writeUint16BE(mac / 2 ** 32, cursor);
-      packetBuf.writeUint32BE(mac, cursor + 2);
+      packetBuf.writeUInt16BE(Math.floor(mac / 2 ** 32), cursor);
+      packetBuf.writeUInt32BE(mac % 0x100000000, cursor + 2);
       cursor += 6;
     };
 
     writeMac(this.to);
     writeMac(this.from);
     if (this.vlanTag) {
-      packetBuf.writeUint32BE(0x81000000 | (0xfff & this.vlanTag), cursor);
+      packetBuf.writeUInt32BE(0x81000000 | (0xfff & this.vlanTag), cursor);
       cursor += 4;
     }
-    packetBuf.writeUint16BE(
+    packetBuf.writeUInt16BE(
       this._arpPacket ? 0x0806 : this.payload.byteLength,
       cursor,
     );
@@ -65,8 +71,8 @@ export class Layer2Packet {
     const readMac = () => {
       cursor += 6;
       return (
-        bytes.readUint16BE(cursor - 6) * 2 ** 32 +
-        bytes.readUint32BE(cursor - 4)
+        bytes.readUInt16BE(cursor - 6) * 2 ** 32 +
+        bytes.readUInt32BE(cursor - 4)
       );
     };
 
@@ -77,7 +83,7 @@ export class Layer2Packet {
       vlanTag = bytes.readUInt16BE(cursor + 2) & 0xfff;
       cursor += 4;
     }
-    if (bytes.readUint16BE(cursor) == 0x0806) {
+    if (bytes.readUInt16BE(cursor) == 0x0806) {
       // ARP packet
       cursor += 2;
       const pkt = new Layer2Packet(

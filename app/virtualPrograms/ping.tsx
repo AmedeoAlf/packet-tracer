@@ -31,18 +31,15 @@ export function ping<T extends L3InternalState<object>>() {
         }
         const start = Date.now();
         ctx.state.rawSocketFd = (packet) => {
+          const seq = ICMPPacket.fromBytes(packet.payload).echoResponseHeader()
+            .seq;
           ctx.write(
-            `From ${ipv4ToString(packet.source)}: icmp_seq=${ICMPPacket.fromBytes(packet.payload).echoResponseHeader().seq} ttl=${packet.ttl} time=${Date.now() - start} ms`,
+            `From ${ipv4ToString(packet.source)}: icmp_seq=${seq} ttl=${packet.ttl} time=${Date.now() - start} ms`,
           );
           ctx.state.rawSocketFd = undefined;
         };
-        sendIPv4Packet(
-          ctx.state,
-          ctx.sendOnIf,
-          addr,
-          ProtocolCode.icmp,
-          ICMPPacket.echoRequest(0, 0, Buffer.alloc(0)).toBytes(),
-        );
+        const req = ICMPPacket.echoRequest(0, 0, Buffer.alloc(0)).toBytes();
+        sendIPv4Packet(ctx.state, ctx.sendOnIf, addr, ProtocolCode.icmp, req);
       },
     },
   } satisfies Command<T>;

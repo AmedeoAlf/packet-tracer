@@ -50,17 +50,27 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
     const l2Packet = Layer2Packet.fromBytes(data);
     if (l2Packet.type() == "arp") {
       const arpPacket = ARPPacket.fromL2(l2Packet);
-      if (arpPacket.response) return;
+      if (arpPacket.response) {
+        if (
+          arpPacket.targetMAC != ctx.state.netInterfaces[intf].mac ||
+          arpPacket.targetIP != ctx.state.l3Ifs[intf].ip
+        )
+          return;
+        ctx.state.macTable.set(arpPacket.senderIP, arpPacket.senderMAC);
+        ctx.updateState();
+        return;
+      }
 
-      const intfIdx = ctx.state.l3Ifs.findIndex(
-        (intf) => intf.ip == arpPacket.targetIP,
-      );
-      if (intfIdx == -1) return;
+      if (
+        !ctx.state.l3Ifs[intf] ||
+        ctx.state.l3Ifs[intf].ip != arpPacket.targetIP
+      )
+        return;
 
       ctx.sendOnIf(
-        intfIdx,
+        intf,
         arpPacket
-          .respondWith(ctx.state.netInterfaces[intfIdx].mac)
+          .respondWith(ctx.state.netInterfaces[intf].mac)
           .toL2()
           .toBytes(),
       );
@@ -99,10 +109,13 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         if (packet.isPayloadFinished()) {
           switch (packet.protocol) {
             case ProtocolCode.icmp:
+              console.log("Sending response!!");
               const icmpPacket = ICMPPacket.fromBytes(packet.payload);
+              console.log(icmpPacket, packet.payload);
               // Gestisci i pacchetti echo ICMP
               switch (icmpPacket.type) {
                 case ICMPType.echoRequest:
+                  console.log("Got echorequest");
                   const response = new IPv4Packet(
                     ProtocolCode.icmp,
                     ICMPPacket.echoResponse(icmpPacket).toBytes(),

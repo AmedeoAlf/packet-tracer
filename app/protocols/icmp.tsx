@@ -58,16 +58,16 @@ export class ICMPPacket {
 
   toBytes(): Buffer {
     const buf = Buffer.alloc(8 + this.payload.byteLength);
-    buf.writeUInt16BE(this.type, 0);
-    buf.writeUInt32BE(4, this.extraHeader);
+    buf.writeUInt16BE(this.type);
+    buf.writeUInt32BE(this.extraHeader, 4);
     buf.set(this.payload, 8);
     return buf;
   }
 
   static fromBytes(bytes: Buffer): ICMPPacket {
     return new ICMPPacket(
-      bytes.readUint16BE(0),
-      bytes.readUint32BE(4),
+      bytes.readUInt16BE(0),
+      bytes.readUInt32BE(4),
       bytes.subarray(8),
     );
   }

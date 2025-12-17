@@ -165,7 +165,7 @@ export class ProjectManager {
     if (!target) return;
     const dev = this.project.devices.get(deviceOfIntf(target));
     if (!dev) return;
-    const ifIdx = idxOfIntf(intf);
+    const ifIdx = idxOfIntf(target);
     console.assert(dev.internalState.netInterfaces.length > ifIdx);
     dev.emulator.packetHandler(buildEmulatorContext(dev, toolCtx), data, ifIdx);
   }
