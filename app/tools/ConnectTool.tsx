@@ -37,7 +37,47 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
         case !this.deviceB:
           return <>Seleziona il secondo dispositivo</>;
         default:
-          return <>Qui sarebbe da implementare la selezione interfaccia</>;
+          return <div className="flex flex-wrap indent-0">
+
+                  <div className="p-[10px] w-[50%]">
+                  <textarea className="resize-none rounded-md bg-white h-6 w-full mb-[10px]"></textarea>
+
+                    <div className="flex items-center justify-between">
+                      <div className="bg-white h-6 w-17 rounded-md"></div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" className="sr-only peer"></input>
+                        <div className="w-16 h-8 bg-red-500 rounded-full peer-checked:bg-green-500"></div>
+                        <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition peer-checked:translate-x-8"></div>
+                      </label>
+                    </div>
+
+                    <div className="flex justify-center items-center gap-6 pt-6">
+                      <span className="text-white text-2xl cursor-pointer">&lt;</span>
+                      <div className="bg-white rounded-md w-10 h-6"></div>
+                      <span className="text-white text-2xl cursor-pointer">&gt;</span>
+                    </div>
+                  </div>
+
+                  <div className="p-[10px] w-[50%]">
+                  <textarea className="resize-none rounded-md bg-white h-6 w-full mb-[10px]"></textarea>
+
+                    <div className="flex items-center justify-between">
+                      <div className="bg-white h-6 w-17 rounded-md"></div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" className="sr-only peer"></input>
+                        <div className="w-16 h-8 bg-red-500 rounded-full peer-checked:bg-green-500"></div>
+                        <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition peer-checked:translate-x-8"></div>
+                      </label>
+                    </div>
+
+                    <div className="flex justify-center items-center gap-6 pt-6">
+                      <span className="text-white text-2xl cursor-pointer">&lt;</span>
+                      <div className="bg-white rounded-md w-10 h-6"></div>
+                      <span className="text-white text-2xl cursor-pointer">&gt;</span>
+                    </div>
+                  </div>
+                  
+                </div>;
       }
     },
     onEvent(ev) {
