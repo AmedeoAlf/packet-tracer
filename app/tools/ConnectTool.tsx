@@ -4,11 +4,13 @@ import { Coords } from "../common";
 import { intfColor } from "../editorComponents/Cables";
 import { toInterfaceId } from "../ProjectManager";
 import { ReactNode } from "react";
+import { NetworkInterface } from "../emulators/DeviceEmulator";
 
 export type ConnectTool = Tool & {
   deviceA?: Device;
   idxA?: number;
   deviceB?: Device;
+  idxB?: number;
   errorMsg?: string;
   cursorPos?: Coords;
 };
@@ -17,8 +19,29 @@ function clearSelection(c: ConnectTool) {
   c.deviceA = undefined;
   c.idxA = undefined;
   c.deviceB = undefined;
+  c.idxB = undefined;
   c.errorMsg = undefined;
   c.update();
+}
+
+function canConnect(
+  c: Pick<ConnectTool, "deviceA" | "idxA" | "deviceB" | "idxB">,
+) {
+  return (
+    c.idxA !== undefined &&
+    c.idxB !== undefined &&
+    intfType(c.deviceA!, c.idxA) == intfType(c.deviceB!, c.idxB)
+  );
+}
+
+function connect(c: ConnectTool) {
+  if (!canConnect(c))
+    throw "ArgumentException: can't access ConnectTool.idxA/.idxB";
+  c.project.connect(c.deviceA!.id, c.idxA!, c.deviceB!.id, c.idxB!);
+  clearSelection(c);
+}
+function intfType(dev: Device, intf: number) {
+  return dev.internalState.netInterfaces[intf].type;
 }
 
 export function makeConnectTool(ctx: ToolCtx): ConnectTool {
@@ -26,39 +49,81 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
     deviceA: undefined,
     idxA: undefined,
     deviceB: undefined,
+    idxB: undefined,
     errorMsg: undefined,
     ...ctx,
     toolname: "connect",
     panel() {
       return (
-        <div className="flex flex-wrap indent-0">
-          {!this.deviceA ? (
-            <>Seleziona il primo dispositivo</>
-          ) : (
-            <>
-              <InterfaceSelector
-                device={this.deviceA}
-                intfIdx={this.idxA}
-                connectTool={this}
-              />
-              {!this.deviceB ? (
-                <>Seleziona il secondo dispositivo</>
-              ) : (
-                <InterfaceSelector device={this.deviceB} connectTool={this} />
-              )}
-            </>
-          )}
-        </div>
+        <>
+          <div className="p-2">
+            {canConnect(this) ? (
+              <Btn
+                onClick={() => connect(this)}
+                className="w-full p-0 bg-green-900 text-green-200"
+              >
+                Collega [c]
+              </Btn>
+            ) : (
+              <Btn className="w-full p-0 bg-gray-800 text-gray-500">
+                Seleziona due interfacce compatibili
+              </Btn>
+            )}
+          </div>
+          <div className="flex flex-wrap indent-0">
+            {!this.deviceA ? (
+              <>Seleziona il primo dispositivo</>
+            ) : (
+              <>
+                <InterfaceSelector
+                  device={this.deviceA}
+                  selectIntf={(n) => {
+                    this.idxA = n;
+                    this.update();
+                  }}
+                  intfIdx={this.idxA}
+                  connectTool={this}
+                />
+                {!this.deviceB ? (
+                  <>Seleziona il secondo dispositivo</>
+                ) : (
+                  <InterfaceSelector
+                    device={this.deviceB}
+                    connectTool={this}
+                    intfIdx={this.idxB}
+                    selectIntf={(n) => {
+                      this.idxB = n;
+                      this.update();
+                    }}
+                  />
+                )}
+              </>
+            )}
+            <button></button>
+          </div>
+        </>
       );
     },
     onEvent(ev) {
-      const firstEmptyInterface = (device: Device): number => {
-        const res = device.internalState.netInterfaces.findIndex(
-          (_, idx) =>
+      const firstEmptyInterface = (
+        device: Device,
+        type?: NetworkInterface["type"],
+      ): number => {
+        let firstIf: number | undefined = undefined;
+        const res = device.internalState.netInterfaces.findIndex((_, idx) => {
+          if (
             this.project.getConnectedTo(toInterfaceId(device.id, idx)) ==
-            undefined,
-        );
-        return res == -1 ? 0 : res;
+            undefined
+          ) {
+            firstIf ??= idx;
+            return (
+              type === undefined ||
+              device.internalState.netInterfaces[idx].type === type
+            );
+          }
+          return false;
+        });
+        return res == -1 ? (firstIf ?? 0) : res;
       };
       switch (ev.type) {
         case "click":
@@ -74,14 +139,7 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
               return;
             case !this.deviceB:
               this.deviceB = ev.device;
-              const res = this.project.connect(
-                this.deviceA.id,
-                this.idxA!,
-                this.deviceB.id,
-                firstEmptyInterface(this.deviceB),
-              );
-              if (res) console.log(res);
-              this.updateProject();
+              this.idxB = firstEmptyInterface(this.deviceB);
               this.update();
               return;
           }
@@ -92,21 +150,51 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
             this.update();
           }
           break;
+        case "keydown":
+          if (ev.key == "c" && canConnect(this)) {
+            connect(this);
+            ev.consumed = true;
+          }
       }
     },
     svgElements() {
-      if (this.deviceA && this.idxA !== undefined && this.cursorPos) {
-        const interfaceType =
-          this.deviceA.internalState.netInterfaces[this.idxA].type;
-        return (
-          <line
-            x1={this.deviceA.pos.x}
-            y1={this.deviceA.pos.y}
-            x2={this.cursorPos.x}
-            y2={this.cursorPos.y}
-            stroke={intfColor[interfaceType]}
-          />
-        );
+      if (this.deviceA && this.idxA !== undefined) {
+        if (this.idxB !== undefined) {
+          const typeA = intfType(this.deviceA, this.idxA);
+
+          const lineColor =
+            intfType(this.deviceB!, this.idxB) === typeA
+              ? intfColor[intfType(this.deviceA, this.idxA)]
+              : "red";
+          return (
+            <line
+              x1={this.deviceA.pos.x}
+              y1={this.deviceA.pos.y}
+              x2={this.deviceB!.pos.x}
+              y2={this.deviceB!.pos.y}
+              stroke={lineColor}
+              strokeWidth={3}
+              strokeDasharray="10 10"
+            >
+              <animate
+                attributeName="stroke-dashoffset"
+                values="0;20"
+                dur="2s"
+                repeatCount="indefinite"
+              />
+            </line>
+          );
+        } else if (this.cursorPos) {
+          return (
+            <line
+              x1={this.deviceA.pos.x}
+              y1={this.deviceA.pos.y}
+              x2={this.cursorPos.x}
+              y2={this.cursorPos.y}
+              stroke={intfColor[intfType(this.deviceA, this.idxA)]}
+            />
+          );
+        }
       }
       return <></>;
     },
@@ -118,13 +206,17 @@ function Btn({
   className: extraClass,
   children,
 }: {
-  onClick: () => void;
-  className: string;
+  onClick?: () => void;
+  className?: string;
   children: ReactNode;
 }) {
   return (
     <button
-      className={"h-8 w-24 px-3 rounded-md font-bold " + extraClass}
+      className={
+        "h-8 rounded-md font-bold px-2 " +
+        (onClick ? "hover:brightness-110 " : "") +
+        (extraClass ?? "")
+      }
       onClick={onClick}
     >
       {children}
@@ -135,21 +227,22 @@ function Btn({
 function InterfaceSelector({
   device,
   intfIdx,
+  selectIntf,
   connectTool,
 }: {
   device: Device;
   intfIdx?: number;
-  connectTool: Pick<ConnectTool, "project" | "updateProject">;
+  selectIntf: (idx: number) => void;
+  connectTool: Pick<ConnectTool, "project" | "updateProject" | "update">;
 }) {
   const isConnected = (i: number) =>
     connectTool.project.getConnectedTo(toInterfaceId(device.id, i)) !==
     undefined;
   return (
     <div className="p-[10px] w-[50%] text-black">
-      <textarea
-        className="resize-none rounded-md bg-white h-6 w-full mb-[10px]"
-        value={device.name}
-      ></textarea>
+      <div className="resize-none rounded-md bg-white h-6 w-full mb-[10px]">
+        {device.name}
+      </div>
 
       {device.internalState.netInterfaces.map((intf, i) => (
         <div key={i} className="flex items-center justify-between m-1">
@@ -162,15 +255,23 @@ function InterfaceSelector({
         </label>
         */}
           {i === intfIdx ? (
-            <Btn onClick={() => {}} className="text-red-900 bg-red-400">
-              Selezionata
-            </Btn>
+            <Btn className="text-blue-900 bg-blue-400">Selezionata</Btn>
           ) : isConnected(i) ? (
-            <Btn onClick={() => {}} className="text-red-900 bg-red-400">
+            <Btn
+              onClick={() => {
+                connectTool.project.disconnect(device.id, i);
+                connectTool.updateProject();
+                selectIntf(i);
+              }}
+              className="text-red-900 bg-red-400"
+            >
               Scollega
             </Btn>
           ) : (
-            <Btn onClick={() => {}} className="text-slate-900 bg-slate-400">
+            <Btn
+              onClick={() => selectIntf(i)}
+              className="text-slate-900 bg-slate-400"
+            >
               Seleziona
             </Btn>
           )}
