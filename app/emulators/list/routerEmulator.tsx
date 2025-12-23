@@ -109,6 +109,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
           }
         case ProtocolCode.udp:
           const udpPacket = UDPPacket.fromBytes(packet.payload);
+          if (ctx.state.udpSocket) ctx.state.udpSocket(udpPacket, packet.source)
       }
       ctx.updateState();
     } catch (e) {
@@ -117,7 +118,6 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   },
   cmdInterpreter: {
     shell: {
-      desc: "Command",
       subcommands: {
         hello: hello(),
         interfaces: interfacesL3(),

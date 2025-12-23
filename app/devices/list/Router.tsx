@@ -1,4 +1,5 @@
 "use client";
+import { UDPPacket } from "@/app/protocols/udp";
 import { routerEmulator } from "../../emulators/list/routerEmulator";
 import { randomMAC } from "../../protocols/802_3";
 import {
@@ -13,8 +14,10 @@ export type RoutingTableEntry = {
   mask: IPv4Address;
   to: IPv4Address;
 };
+
 export type RouterInternalState = L3InternalState<{
   routingTables: RoutingTableEntry[];
+  udpSocket?: (packet: UDPPacket, from: IPv4Address) => void;
 }>;
 
 export const Router: DeviceFactory<RouterInternalState> = {

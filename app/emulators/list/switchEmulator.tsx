@@ -39,7 +39,6 @@ export const switchEmulator: DeviceEmulator<InternalState<object>> = {
   },
   cmdInterpreter: {
     shell: {
-      desc: "Command",
       subcommands: {
         hello: hello(),
         interfaces: interfaces(),
