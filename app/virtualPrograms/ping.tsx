@@ -1,4 +1,4 @@
-import { Command } from "../emulators/DeviceEmulator";
+import { SubCommand } from "../emulators/DeviceEmulator";
 import { ICMPPacket } from "../protocols/icmp";
 import {
   parseIpv4,
@@ -11,6 +11,7 @@ import {
 export function ping<T extends L3InternalState<object>>() {
   return {
     desc: "Sends an echo request",
+    paramDesc: "Target IP",
     autocomplete() {
       return [];
     },
@@ -22,7 +23,6 @@ export function ping<T extends L3InternalState<object>>() {
         .every((it) => 0 <= it && it < 256);
     },
     then: {
-      desc: "The ip address to ping",
       run(ctx) {
         const addr = parseIpv4(ctx.args![1]);
         if (addr == undefined) {
@@ -41,6 +41,6 @@ export function ping<T extends L3InternalState<object>>() {
         const req = ICMPPacket.echoRequest(0, 0, Buffer.alloc(0)).toBytes();
         sendIPv4Packet(ctx.state, ctx.sendOnIf, addr, ProtocolCode.icmp, req);
       },
-    },
-  } satisfies Command<T>;
+    }
+  } satisfies SubCommand<T>;
 }

@@ -1,4 +1,4 @@
-import { Command, InternalState } from "../emulators/DeviceEmulator";
+import { SubCommand, InternalState } from "../emulators/DeviceEmulator";
 import { MACToString } from "../protocols/802_3";
 
 export function interfaces<T extends InternalState<object>>() {
@@ -19,16 +19,16 @@ export function interfaces<T extends InternalState<object>>() {
           state.netInterfaces.map((it) => {
             return { desc: `${it.type} ${it.maxMbps} Mbps`, option: it.name };
           }),
-        validate(state, args) {
+        validate: (state, args) => {
           return state.netInterfaces.some((it) => it.name == args[2]);
         },
         desc: "Renames an interface",
+        paramDesc: "Interface",
         then: {
-          desc: "New name",
+          paramDesc: "New name",
           autocomplete: () => [],
           validate: () => true,
           then: {
-            desc: "Finished",
             run(ctx) {
               const [, , currName, newName] = ctx.args!;
               const intf = ctx.state.netInterfaces.find(
@@ -41,5 +41,5 @@ export function interfaces<T extends InternalState<object>>() {
         },
       },
     },
-  } satisfies Command<T>;
+  } satisfies SubCommand<T>;
 }

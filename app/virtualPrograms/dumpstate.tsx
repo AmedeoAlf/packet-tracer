@@ -1,9 +1,8 @@
-import { Command, InternalState } from "../emulators/DeviceEmulator";
-import { L3InternalState } from "../protocols/rfc_760";
+import { SubCommand, InternalState } from "../emulators/DeviceEmulator";
 
-export function dumpState<T extends L3InternalState<object>>() {
+export function dumpState<T extends InternalState<object>>() {
   return {
     desc: "Dumps the device internal state",
-    run: (ctx) => ctx.write(JSON.stringify(ctx.state.l3Ifs)),
-  } satisfies Command<T>;
+    run: (ctx) => ctx.write(JSON.stringify(ctx.state)),
+  } satisfies SubCommand<T>;
 }

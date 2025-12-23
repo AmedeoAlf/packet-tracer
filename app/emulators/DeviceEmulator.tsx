@@ -24,15 +24,20 @@ export type Command<State extends InternalState<object>> = (
   | {
     autocomplete: (state: State, past: string[]) => AutoCompleteOption[];
     validate: (state: State, past: string[]) => boolean;
+    paramDesc: string;
     then: Command<State>;
   }
   | {
-    subcommands?: Record<string, Command<State>>;
-    run?: (ctx: EmulatorContext<State>) => void;
+    subcommands: Record<string, SubCommand<State>>;
+  }
+  | {
+    run: (ctx: EmulatorContext<State>) => void;
   }
 ) & {
-  desc: string;
+  run?: (ctx: EmulatorContext<State>) => void;
 };
+
+export type SubCommand<State extends InternalState<object>> = Command<State> & { desc: string };
 
 export type Interpreter<State extends InternalState<object>> = {
   shell: Command<State>;
@@ -52,6 +57,7 @@ export function runOnInterpreter<State extends InternalState<object>>(
 ) {
   if (!ctx.args) return;
   let cmd = ctx.interpreter.shell;
+  ctx.args = ctx.args.filter(it => it);
   for (const arg of ctx.args.keys()) {
     const err = () =>
       ctx.write(
@@ -83,16 +89,16 @@ export function getAutoComplete<State extends InternalState<object>>(
   if (ctx.args == undefined) return;
   let cmd = ctx.interpreter.shell;
 
-  const writeOrComplete = (desc: string, opts: AutoCompleteOption[]) => {
+  const writeOrComplete = (opts: AutoCompleteOption[], desc: string = "") => {
     switch (opts.length) {
       case 0:
-        ctx.write(`<${desc}>`);
+        if (desc) ctx.write(`<${desc}>`);
         return;
       case 1:
         return opts[0].option + " ";
       default:
         ctx.write(
-          `<${desc}>\n` +
+          (desc ? `<${desc}>\n` : "") +
           opts.map(({ option, desc }) => `${option} - ${desc}`).join("\n"),
         );
         const equalUntil = (a: string, b: string) => {
@@ -109,11 +115,11 @@ export function getAutoComplete<State extends InternalState<object>>(
   };
 
   for (const arg of ctx.args.keys()) {
-    const autocompleteIfLast = (desc: string, opts: AutoCompleteOption[]) => {
+    const autocompleteIfLast = (opts: AutoCompleteOption[], desc?: string) => {
       if (arg == ctx.args!.length - 1) {
         return writeOrComplete(
-          desc,
           opts.filter(({ option }) => option.startsWith(ctx.args![arg])),
+          desc,
         );
       } else {
         ctx.write(
@@ -127,11 +133,10 @@ export function getAutoComplete<State extends InternalState<object>>(
           cmd = cmd.subcommands[ctx.args[arg]];
         } else
           return autocompleteIfLast(
-            cmd.desc,
             Object.entries(cmd.subcommands!).map(([option, { desc }]) => ({
               option,
               desc,
-            })),
+            }))
           );
         continue;
       case "validate" in cmd:
@@ -140,8 +145,8 @@ export function getAutoComplete<State extends InternalState<object>>(
           cmd = cmd.then;
         } else
           return autocompleteIfLast(
-            cmd.desc,
             cmd.autocomplete(ctx.state, args),
+            cmd.paramDesc,
           );
         continue;
       default:

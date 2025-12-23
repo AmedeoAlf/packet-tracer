@@ -1,4 +1,4 @@
-import { Command, InternalState } from "../emulators/DeviceEmulator";
+import { SubCommand, InternalState } from "../emulators/DeviceEmulator";
 import { Layer2Packet } from "../protocols/802_3";
 
 function parseInterface(
@@ -20,6 +20,7 @@ function parseInterface(
 export function l2send<T extends InternalState<object>>() {
   return {
     desc: "Sends a raw layer 2 packet",
+    paramDesc: "Interface",
     autocomplete(state) {
       return state.netInterfaces.flatMap((intf, idx) => {
         const desc = `${intf.type} ${intf.maxMbps} Mbps`;
@@ -33,29 +34,22 @@ export function l2send<T extends InternalState<object>>() {
       return parseInterface(past[1], state) != undefined;
     },
     then: {
-      desc: "The device interface",
       subcommands: {
         packet: {
           desc: "Sends an ethernet frame",
-          validate() {
-            return true;
+          paramDesc: "Payload in base64",
+          validate(_, past) {
+            try {
+              Buffer.from(past[3], "base64");
+              return true;
+            } catch (_) {
+              return false;
+            }
           },
           autocomplete() {
             return [];
           },
           then: {
-            desc: "Payload in base64",
-            validate(_, past) {
-              try {
-                Buffer.from(past[3], "base64");
-                return true;
-              } catch (_) {
-                return false;
-              }
-            },
-            autocomplete() {
-              return [];
-            },
             run(ctx) {
               const ifIdx = parseInterface(ctx.args![1], ctx.state)!;
               ctx.sendOnIf(
@@ -66,9 +60,9 @@ export function l2send<T extends InternalState<object>>() {
                 ).toBytes(),
               );
             },
-          },
+          }
         },
       },
     },
-  } satisfies Command<T>;
+  } satisfies SubCommand<T>;
 }
