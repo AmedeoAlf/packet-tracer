@@ -134,7 +134,7 @@ export class IPv4Packet {
       header.writeUInt16BE(packet.byteLength, 2); // Total length
       header.writeUInt16BE(
         (+moreFragments << 29) | // More fragments flag
-          ((offs + this.offset) >> 3), // Fragment offset
+        ((offs + this.offset) >> 3), // Fragment offset
         6,
       );
       packet.set(header);
@@ -233,6 +233,23 @@ export class PartialIPv4Packet extends IPv4Packet {
   }
 }
 
+export function targetIP(
+  state: L3InternalState<object>,
+  destination: IPv4Address,
+): { intf: number, ok: boolean, targetIp: IPv4Address } {
+  let targetIp = destination;
+  // L'interfaccia su cui inviare il pacchetto
+  let intf = getMatchingInterface(state.l3Ifs, destination);
+  // Il pacchetto non è su una rete disponibile -> invia al gateway
+  if (intf == -1) {
+    targetIp = state.gateway;
+    intf = getMatchingInterface(state.l3Ifs, state.gateway);
+    // Il gateway è invalido
+    if (intf == -1) return { intf: 0, targetIp: 0, ok: false };
+  }
+  return { targetIp, intf, ok: true };
+}
+
 export function sendIPv4Packet(
   state: L3InternalState<object>,
   sendOnIf: (id: number, data: Buffer) => void,
@@ -242,16 +259,8 @@ export function sendIPv4Packet(
   ttl: number = 255,
   vlanTag?: number,
 ): boolean {
-  let targetIp = destination;
-  // L'interfaccia su cui inviare il pacchetto
-  let intf = getMatchingInterface(state.l3Ifs, destination);
-  // Il pacchetto non è su una rete disponibile -> invia al gateway
-  if (intf == -1) {
-    targetIp = state.gateway;
-    intf = getMatchingInterface(state.l3Ifs, state.gateway);
-    // Il gateway è invalido
-    if (intf == -1) return false;
-  }
+  const { targetIp, intf, ok } = targetIP(state, destination);;
+  if (!ok) return false;
 
   if (!state.macTable.has(targetIp)) {
     sendOnIf(

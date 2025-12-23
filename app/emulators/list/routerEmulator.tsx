@@ -17,6 +17,8 @@ import { l2send } from "../../virtualPrograms/l2send";
 import { ping } from "../../virtualPrograms/ping";
 import { DeviceEmulator, EmulatorContext } from "../DeviceEmulator";
 import { arptable } from "@/app/virtualPrograms/arptable";
+import { udpSend } from "@/app/virtualPrograms/udpSend";
+import { UDPPacket } from "@/app/protocols/udp";
 
 export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   configPanel: {
@@ -105,6 +107,8 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
             default:
               if (ctx.state.rawSocketFd) ctx.state.rawSocketFd(packet);
           }
+        case ProtocolCode.udp:
+          const udpPacket = UDPPacket.fromBytes(packet.payload);
       }
       ctx.updateState();
     } catch (e) {
@@ -121,6 +125,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         ping: ping(),
         dumpState: dumpState(),
         arptable: arptable(),
+        "udp-send": udpSend()
       },
     },
   },
