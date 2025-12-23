@@ -22,22 +22,24 @@ interface AutoCompleteOption {
 }
 export type Command<State extends InternalState<object>> = (
   | {
-    autocomplete: (state: State, past: string[]) => AutoCompleteOption[];
-    validate: (state: State, past: string[]) => boolean;
-    paramDesc: string;
-    then: Command<State>;
-  }
+      autocomplete: (state: State, past: string[]) => AutoCompleteOption[];
+      validate: (state: State, past: string[]) => boolean;
+      paramDesc: string;
+      then: Command<State>;
+    }
   | {
-    subcommands: Record<string, SubCommand<State>>;
-  }
+      subcommands: Record<string, SubCommand<State>>;
+    }
   | {
-    run: (ctx: EmulatorContext<State>) => void;
-  }
+      run: (ctx: EmulatorContext<State>) => void;
+    }
 ) & {
   run?: (ctx: EmulatorContext<State>) => void;
 };
 
-export type SubCommand<State extends InternalState<object>> = Command<State> & { desc: string };
+export type SubCommand<State extends InternalState<object>> = Command<State> & {
+  desc: string;
+};
 
 export type Interpreter<State extends InternalState<object>> = {
   shell: Command<State>;
@@ -57,7 +59,7 @@ export function runOnInterpreter<State extends InternalState<object>>(
 ) {
   if (!ctx.args) return;
   let cmd = ctx.interpreter.shell;
-  ctx.args = ctx.args.filter(it => it);
+  ctx.args = ctx.args.filter((it) => it);
   for (const arg of ctx.args.keys()) {
     const err = () =>
       ctx.write(
@@ -99,7 +101,7 @@ export function getAutoComplete<State extends InternalState<object>>(
       default:
         ctx.write(
           (desc ? `<${desc}>\n` : "") +
-          opts.map(({ option, desc }) => `${option} - ${desc}`).join("\n"),
+            opts.map(({ option, desc }) => `${option} - ${desc}`).join("\n"),
         );
         const equalUntil = (a: string, b: string) => {
           if (a.length < b.length) [a, b] = [b, a];
@@ -136,7 +138,7 @@ export function getAutoComplete<State extends InternalState<object>>(
             Object.entries(cmd.subcommands!).map(([option, { desc }]) => ({
               option,
               desc,
-            }))
+            })),
           );
         continue;
       case "validate" in cmd:
@@ -188,6 +190,6 @@ export function buildEmulatorContext(
       toolCtx.project.sendOn(toInterfaceId(device.id, ifIdx), toolCtx, data);
     },
     state: device.internalState,
-    write() { },
+    write() {},
   };
 }

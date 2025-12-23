@@ -60,7 +60,7 @@ export function l2send<T extends InternalState<object>>() {
                 ).toBytes(),
               );
             },
-          }
+          },
         },
       },
     },

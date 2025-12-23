@@ -41,6 +41,6 @@ export function ping<T extends L3InternalState<object>>() {
         const req = ICMPPacket.echoRequest(0, 0, Buffer.alloc(0)).toBytes();
         sendIPv4Packet(ctx.state, ctx.sendOnIf, addr, ProtocolCode.icmp, req);
       },
-    }
+    },
   } satisfies SubCommand<T>;
 }

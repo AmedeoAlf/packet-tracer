@@ -1,5 +1,10 @@
 import { SubCommand } from "../emulators/DeviceEmulator";
-import { L3InternalState, parseIpv4, ProtocolCode, sendIPv4Packet } from "../protocols/rfc_760";
+import {
+  L3InternalState,
+  parseIpv4,
+  ProtocolCode,
+  sendIPv4Packet,
+} from "../protocols/rfc_760";
 import { UDPPacket } from "../protocols/udp";
 
 export function udpSend<T extends L3InternalState<object>>() {
@@ -15,14 +20,14 @@ export function udpSend<T extends L3InternalState<object>>() {
       autocomplete: () => [],
       validate(_, past) {
         const port = +past[2];
-        return !Number.isNaN(port) && 0 <= port && port <= 0xFFFF;
+        return !Number.isNaN(port) && 0 <= port && port <= 0xffff;
       },
       then: {
         paramDesc: "Destination port",
         autocomplete: () => [],
         validate(_, past) {
           const port = +past[3];
-          return !Number.isNaN(port) && 0 <= port && port <= 0xFFFF;
+          return !Number.isNaN(port) && 0 <= port && port <= 0xffff;
         },
         then: {
           paramDesc: "Payload (raw)",
@@ -36,12 +41,12 @@ export function udpSend<T extends L3InternalState<object>>() {
               new UDPPacket(
                 +ctx.args![2],
                 +ctx.args![3],
-                Buffer.from(ctx.args![4])
-              ).toBytes()
+                Buffer.from(ctx.args![4]),
+              ).toBytes(),
             );
           },
-        }
-      }
+        },
+      },
     },
   } satisfies SubCommand<T>;
 }

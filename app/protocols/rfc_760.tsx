@@ -134,7 +134,7 @@ export class IPv4Packet {
       header.writeUInt16BE(packet.byteLength, 2); // Total length
       header.writeUInt16BE(
         (+moreFragments << 29) | // More fragments flag
-        ((offs + this.offset) >> 3), // Fragment offset
+          ((offs + this.offset) >> 3), // Fragment offset
         6,
       );
       packet.set(header);
@@ -236,7 +236,7 @@ export class PartialIPv4Packet extends IPv4Packet {
 export function targetIP(
   state: L3InternalState<object>,
   destination: IPv4Address,
-): { intf: number, ok: boolean, targetIp: IPv4Address } {
+): { intf: number; ok: boolean; targetIp: IPv4Address } {
   let targetIp = destination;
   // L'interfaccia su cui inviare il pacchetto
   let intf = getMatchingInterface(state.l3Ifs, destination);
@@ -259,7 +259,7 @@ export function sendIPv4Packet(
   ttl: number = 255,
   vlanTag?: number,
 ): boolean {
-  const { targetIp, intf, ok } = targetIP(state, destination);;
+  const { targetIp, intf, ok } = targetIP(state, destination);
   if (!ok) return false;
 
   if (!state.macTable.has(targetIp)) {

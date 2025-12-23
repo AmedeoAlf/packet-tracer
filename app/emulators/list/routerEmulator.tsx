@@ -109,7 +109,8 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
           }
         case ProtocolCode.udp:
           const udpPacket = UDPPacket.fromBytes(packet.payload);
-          if (ctx.state.udpSocket) ctx.state.udpSocket(udpPacket, packet.source)
+          if (ctx.state.udpSocket)
+            ctx.state.udpSocket(udpPacket, packet.source);
       }
       ctx.updateState();
     } catch (e) {
@@ -125,7 +126,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         ping: ping(),
         dumpState: dumpState(),
         arptable: arptable(),
-        "udp-send": udpSend()
+        "udp-send": udpSend(),
       },
     },
   },
