@@ -141,7 +141,7 @@ export class IPv4Packet {
       header.writeUInt16BE(packet.byteLength, 2); // Total length
       header.writeUInt16BE(
         (+moreFragments << 29) | // More fragments flag
-        ((offs + this.offset) >> 3), // Fragment offset
+          ((offs + this.offset) >> 3), // Fragment offset
         6,
       );
       packet.set(header);
@@ -258,7 +258,10 @@ export function targetIP(
 }
 
 export function sendIPv4Packet(
-  ctx: Pick<EmulatorContext<L3InternalState<object>>, "state" | "sendOnIf" | "schedule">,
+  ctx: Pick<
+    EmulatorContext<L3InternalState<object>>,
+    "state" | "sendOnIf" | "schedule"
+  >,
   destination: IPv4Address,
   protocol: ProtocolCode,
   data: Buffer,
@@ -288,8 +291,10 @@ export function sendIPv4Packet(
     );
     ctx.state.packetsWaitingForARP.push(packet);
     ctx.schedule(10, (ctx: EmulatorContext<L3InternalState<object>>) => {
-      ctx.state.packetsWaitingForARP = ctx.state.packetsWaitingForARP.filter(it => it.destination != destination);
-    })
+      ctx.state.packetsWaitingForARP = ctx.state.packetsWaitingForARP.filter(
+        (it) => it.destination != destination,
+      );
+    });
     return false;
   }
 

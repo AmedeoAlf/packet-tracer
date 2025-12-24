@@ -168,11 +168,15 @@ export class ProjectManager {
   getConnectedTo(intf: InterfaceId): InterfaceId | undefined {
     return this.project.connections.get(intf);
   }
-  setTimeout(fn: (t: EmulatorContext<any>) => void, device: Device, delay: number) {
-    if (delay < 1) throw `setTimeout delay must be >0 (was ${delay})`
+  setTimeout(
+    fn: (t: EmulatorContext<any>) => void,
+    device: Device,
+    delay: number,
+  ) {
+    if (delay < 1) throw `setTimeout delay must be >0 (was ${delay})`;
     this.callbacks.push({
       onTick: this.currTick + delay,
-      fn: (toolCtx) => fn(buildEmulatorContext(device, toolCtx))
+      fn: (toolCtx) => fn(buildEmulatorContext(device, toolCtx)),
     });
   }
   sendOn(intf: InterfaceId, data: Buffer) {

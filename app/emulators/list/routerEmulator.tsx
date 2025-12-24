@@ -144,7 +144,12 @@ function handleArpPacket(
     const toRemove: number[] = [];
     for (const [i, pending] of ctx.state.packetsWaitingForARP.entries()) {
       if (pending.destination == packet.senderIP) {
-        sendIPv4Packet(ctx, pending.destination, pending.protocol, pending.payload);
+        sendIPv4Packet(
+          ctx,
+          pending.destination,
+          pending.protocol,
+          pending.payload,
+        );
         toRemove.push(i);
       }
     }
