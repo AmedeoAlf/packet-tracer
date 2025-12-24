@@ -23,17 +23,17 @@ interface AutoCompleteOption {
 }
 export type Command<State extends InternalState<object>> = (
   | {
-      autocomplete: (state: State, past: string[]) => AutoCompleteOption[];
-      validate: (state: State, past: string[]) => boolean;
-      paramDesc: string;
-      then: Command<State>;
-    }
+    autocomplete: (state: State, past: string[]) => AutoCompleteOption[];
+    validate: (state: State, past: string[]) => boolean;
+    paramDesc: string;
+    then: Command<State>;
+  }
   | {
-      subcommands: Record<string, SubCommand<State>>;
-    }
+    subcommands: Record<string, SubCommand<State>>;
+  }
   | {
-      run: (ctx: EmulatorContext<any>) => void;
-    }
+    run: (ctx: EmulatorContext<any>) => void;
+  }
 ) & {
   run?: (ctx: EmulatorContext<any>) => void;
 };
@@ -49,6 +49,7 @@ export type Interpreter<State extends InternalState<object>> = {
 export type EmulatorContext<State extends InternalState<object>> = {
   interpreter: Interpreter<State>;
   sendOnIf: (ifIdx: number, data: Buffer) => void;
+  schedule: (after: number, fn: (ctx: EmulatorContext<any>) => void) => void;
   state: State;
   updateState: () => void;
   args?: string[];
@@ -102,7 +103,7 @@ export function getAutoComplete<State extends InternalState<object>>(
       default:
         ctx.write(
           (desc ? `<${desc}>\n` : "") +
-            opts.map(({ option, desc }) => `${option} - ${desc}`).join("\n"),
+          opts.map(({ option, desc }) => `${option} - ${desc}`).join("\n"),
         );
         const equalUntil = (a: string, b: string) => {
           if (a.length < b.length) [a, b] = [b, a];
@@ -193,15 +194,18 @@ export function buildEmulatorContext(
     sendOnIf(ifIdx, data) {
       toolCtx.project.sendOn(toInterfaceId(device.id, ifIdx), data);
     },
+    schedule(after, fn) {
+      toolCtx.project.setTimeout(fn, device, after);
+    },
     state: device.internalState,
     // NOTE: il print avviene anche con il terminale connesso ad un dispositivo diverso
     write: isSelectTool(toolCtx)
       ? (msg) => {
-          toolCtx.stdout += "\n" + msg;
-          toolCtx.update();
-        }
+        toolCtx.stdout += "\n" + msg;
+        toolCtx.update();
+      }
       : (msg) => {
-          console.log("Impossibile scrivere sul terminale", msg);
-        },
+        console.log("Impossibile scrivere sul terminale", msg);
+      },
   };
 }

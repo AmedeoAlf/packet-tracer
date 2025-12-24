@@ -4,6 +4,7 @@ import { Device, makeDevice } from "./devices/Device";
 import { DeviceType, deviceTypesDB } from "./devices/deviceTypesDB";
 import {
   buildEmulatorContext,
+  EmulatorContext,
   NetworkInterface,
 } from "./emulators/DeviceEmulator";
 import { Decal, DecalData, emptyProject, Project } from "./Project";
@@ -166,6 +167,13 @@ export class ProjectManager {
   }
   getConnectedTo(intf: InterfaceId): InterfaceId | undefined {
     return this.project.connections.get(intf);
+  }
+  setTimeout(fn: (t: EmulatorContext<any>) => void, device: Device, delay: number) {
+    if (delay < 1) throw `setTimeout delay must be >0 (was ${delay})`
+    this.callbacks.push({
+      onTick: this.currTick + delay,
+      fn: (toolCtx) => fn(buildEmulatorContext(device, toolCtx))
+    });
   }
   sendOn(intf: InterfaceId, data: Buffer) {
     const target = this.getConnectedTo(intf);

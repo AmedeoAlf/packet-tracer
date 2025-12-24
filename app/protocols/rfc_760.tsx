@@ -67,6 +67,7 @@ type L3InternalStateProps = {
   l3Ifs: L3Interface[];
   gateway: IPv4Address;
   macTable: Map<IPv4Address, MacAddress>;
+  packetsWaitingForARP: IPv4Packet[];
 };
 export type L3InternalStateBase = InternalState<L3InternalStateProps>;
 export type L3InternalState<T extends object> = InternalState<
@@ -140,7 +141,7 @@ export class IPv4Packet {
       header.writeUInt16BE(packet.byteLength, 2); // Total length
       header.writeUInt16BE(
         (+moreFragments << 29) | // More fragments flag
-          ((offs + this.offset) >> 3), // Fragment offset
+        ((offs + this.offset) >> 3), // Fragment offset
         6,
       );
       packet.set(header);
@@ -257,45 +258,49 @@ export function targetIP(
 }
 
 export function sendIPv4Packet(
-  state: L3InternalStateBase,
-  sendOnIf: (id: number, data: Buffer) => void,
+  ctx: Pick<EmulatorContext<L3InternalState<object>>, "state" | "sendOnIf" | "schedule">,
   destination: IPv4Address,
   protocol: ProtocolCode,
   data: Buffer,
   ttl: number = 255,
-  vlanTag?: number,
 ): boolean {
-  const { targetIp, intf, ok } = targetIP(state, destination);
+  const { targetIp, intf, ok } = targetIP(ctx.state, destination);
   if (!ok) return false;
 
-  if (!state.macTable.has(targetIp)) {
-    sendOnIf(
+  const packet = new IPv4Packet(
+    protocol,
+    data,
+    ctx.state.l3Ifs[intf].ip,
+    destination,
+    ttl,
+  );
+
+  if (!ctx.state.macTable.has(targetIp)) {
+    ctx.sendOnIf(
       intf,
       new ARPPacket(
-        state.netInterfaces[intf].mac,
-        state.l3Ifs[intf].ip,
+        ctx.state.netInterfaces[intf].mac,
+        ctx.state.l3Ifs[intf].ip,
         targetIp,
       )
         .toL2()
         .toBytes(),
     );
+    ctx.state.packetsWaitingForARP.push(packet);
+    ctx.schedule(10, (ctx: EmulatorContext<L3InternalState<object>>) => {
+      ctx.state.packetsWaitingForARP = ctx.state.packetsWaitingForARP.filter(it => it.destination != destination);
+    })
     return false;
   }
-  const payloads = new IPv4Packet(
-    protocol,
-    data,
-    state.l3Ifs[intf].ip,
-    destination,
-    ttl,
-  ).toFragmentedBytes();
+
+  const payloads = packet.toFragmentedBytes();
   for (const p of payloads) {
-    sendOnIf(
+    ctx.sendOnIf(
       intf,
       new Layer2Packet(
         p,
-        state.netInterfaces[intf].mac,
-        state.macTable.get(targetIp),
-        vlanTag,
+        ctx.state.netInterfaces[intf].mac,
+        ctx.state.macTable.get(targetIp),
       ).toBytes(),
     );
   }

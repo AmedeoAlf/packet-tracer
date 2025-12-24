@@ -33,8 +33,7 @@ export const udpSend = {
         run(ctx) {
           const toIp = parseIpv4(ctx.args![1])!;
           sendIPv4Packet(
-            ctx.state,
-            ctx.sendOnIf,
+            ctx,
             toIp,
             ProtocolCode.udp,
             new UDPPacket(

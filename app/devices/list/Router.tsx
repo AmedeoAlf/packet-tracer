@@ -30,6 +30,7 @@ export const Router: DeviceFactory<RouterInternalState> = {
     return {
       ipPackets: new Map(),
       routingTables: [],
+      packetsWaitingForARP: [],
       l3Ifs: [],
       gateway: IPV4_BROADCAST,
       netInterfaces: [

@@ -97,8 +97,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
           switch (icmpPacket.type) {
             case ICMPType.echoRequest:
               sendIPv4Packet(
-                ctx.state,
-                ctx.sendOnIf,
+                ctx as any,
                 packet.source,
                 ProtocolCode.icmp,
                 ICMPPacket.echoResponse(icmpPacket).toBytes(),
@@ -142,6 +141,14 @@ function handleArpPacket(
     )
       return;
     ctx.state.macTable.set(packet.senderIP, packet.senderMAC);
+    const toRemove: number[] = [];
+    for (const [i, pending] of ctx.state.packetsWaitingForARP.entries()) {
+      if (pending.destination == packet.senderIP) {
+        sendIPv4Packet(ctx, pending.destination, pending.protocol, pending.payload);
+        toRemove.push(i);
+      }
+    }
+    ctx.state.packetsWaitingForARP.filter((_, i) => !toRemove.includes(i));
     ctx.updateState();
     return;
   }

@@ -29,7 +29,9 @@ export const ping = {
         return;
       }
       const start = Date.now();
+      let done = false;
       ctx.state.rawSocketFd = (ctx, packet) => {
+        done = true;
         const seq = ICMPPacket.fromBytes(packet.payload).echoResponseHeader()
           .seq;
         ctx.write(
@@ -38,7 +40,12 @@ export const ping = {
         ctx.state.rawSocketFd = undefined;
       };
       const req = ICMPPacket.echoRequest(0, 0, Buffer.alloc(0)).toBytes();
-      sendIPv4Packet(ctx.state, ctx.sendOnIf, addr, ProtocolCode.icmp, req);
+      sendIPv4Packet(ctx, addr, ProtocolCode.icmp, req);
+      ctx.schedule(15, (ctx) => {
+        if (!done) {
+          ctx.write("Request timeout");
+        }
+      });
     },
   },
 } satisfies SubCommand<L3InternalState<object>>;
