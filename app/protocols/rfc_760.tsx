@@ -26,7 +26,7 @@
  * simulatore)
  */
 
-import { InternalState } from "../emulators/DeviceEmulator";
+import { EmulatorContext, InternalState } from "../emulators/DeviceEmulator";
 import { Layer2Packet, MacAddress } from "./802_3";
 import { ARPPacket } from "./rfc_826";
 
@@ -62,14 +62,20 @@ export function getMatchingInterface(
   return interfaces.findIndex((v) => v && (v.ip & v.mask) == (ip & v.mask));
 }
 
+type L3InternalStateProps = {
+  ipPackets: Map<number, PartialIPv4Packet>;
+  l3Ifs: L3Interface[];
+  gateway: IPv4Address;
+  macTable: Map<IPv4Address, MacAddress>;
+};
+export type L3InternalStateBase = InternalState<L3InternalStateProps>;
 export type L3InternalState<T extends object> = InternalState<
   T & {
-    ipPackets: Map<number, PartialIPv4Packet>;
-    l3Ifs: L3Interface[];
-    gateway: IPv4Address;
-    macTable: Map<IPv4Address, MacAddress>;
-    rawSocketFd?: (packet: IPv4Packet) => void;
-  }
+    rawSocketFd?: (
+      ctx: EmulatorContext<L3InternalState<T>>,
+      packet: IPv4Packet,
+    ) => void;
+  } & L3InternalStateProps
 >;
 
 export enum ProtocolCode {
@@ -251,7 +257,7 @@ export function targetIP(
 }
 
 export function sendIPv4Packet(
-  state: L3InternalState<object>,
+  state: L3InternalStateBase,
   sendOnIf: (id: number, data: Buffer) => void,
   destination: IPv4Address,
   protocol: ProtocolCode,

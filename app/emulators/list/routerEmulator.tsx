@@ -5,12 +5,11 @@ import { ICMPPacket, ICMPType } from "../../protocols/icmp";
 import {
   getMatchingInterface,
   ipv4ToString,
-  L3InternalState,
+  L3InternalStateBase,
   PartialIPv4Packet,
   ProtocolCode,
   sendIPv4Packet,
 } from "../../protocols/rfc_760";
-import { dumpState } from "../../virtualPrograms/dumpstate";
 import { hello } from "../../virtualPrograms/hello";
 import { interfacesL3 } from "../../virtualPrograms/interfacesl3";
 import { l2send } from "../../virtualPrograms/l2send";
@@ -53,7 +52,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   packetHandler(ctx, data, intf) {
     const l2Packet = Layer2Packet.fromBytes(data);
     if (l2Packet.type() == "arp") {
-      handleArpPacket(ctx, ARPPacket.fromL2(l2Packet), intf);
+      handleArpPacket(ctx as any, ARPPacket.fromL2(l2Packet), intf);
       return;
     }
     try {
@@ -105,7 +104,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
                 ICMPPacket.echoResponse(icmpPacket).toBytes(),
               );
             default:
-              if (ctx.state.rawSocketFd) ctx.state.rawSocketFd(packet);
+              if (ctx.state.rawSocketFd) ctx.state.rawSocketFd(ctx, packet);
           }
         case ProtocolCode.udp:
           const udpPacket = UDPPacket.fromBytes(packet.payload);
@@ -120,23 +119,19 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   cmdInterpreter: {
     shell: {
       subcommands: {
-        hello: hello(),
-        interfaces: interfacesL3(),
-        l2send: l2send(),
-        ping: ping(),
-        dumpState: dumpState(),
-        arptable: arptable(),
-        "udp-send": udpSend(),
+        hello: hello,
+        interfaces: interfacesL3,
+        l2send: l2send,
+        ping: ping as any,
+        arptable: arptable,
+        "udp-send": udpSend,
       },
     },
   },
 };
 
 function handleArpPacket(
-  ctx: Pick<
-    EmulatorContext<L3InternalState<object>>,
-    "state" | "updateState" | "sendOnIf"
-  >,
+  ctx: EmulatorContext<L3InternalStateBase>,
   packet: ARPPacket,
   intf: number,
 ) {
@@ -159,7 +154,7 @@ function handleArpPacket(
     intf,
     packet.respondWith(ctx.state.netInterfaces[intf].mac).toL2().toBytes(),
   );
-  ctx.updateState();
+  // ctx.updateState();
 
   return;
 }

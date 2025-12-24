@@ -1,52 +1,50 @@
 import { SubCommand } from "../emulators/DeviceEmulator";
 import {
-  L3InternalState,
+  L3InternalStateBase,
   parseIpv4,
   ProtocolCode,
   sendIPv4Packet,
 } from "../protocols/rfc_760";
 import { UDPPacket } from "../protocols/udp";
 
-export function udpSend<T extends L3InternalState<object>>() {
-  return {
-    desc: "Sends and UDP packet",
-    paramDesc: "Destination ip",
+export const udpSend = {
+  desc: "Sends and UDP packet",
+  paramDesc: "Destination ip",
+  autocomplete: () => [],
+  validate(_, past) {
+    return parseIpv4(past[1]) !== undefined;
+  },
+  then: {
+    paramDesc: "Source port",
     autocomplete: () => [],
     validate(_, past) {
-      return parseIpv4(past[1]) !== undefined;
+      const port = +past[2];
+      return !Number.isNaN(port) && 0 <= port && port <= 0xffff;
     },
     then: {
-      paramDesc: "Source port",
+      paramDesc: "Destination port",
       autocomplete: () => [],
       validate(_, past) {
-        const port = +past[2];
+        const port = +past[3];
         return !Number.isNaN(port) && 0 <= port && port <= 0xffff;
       },
       then: {
-        paramDesc: "Destination port",
-        autocomplete: () => [],
-        validate(_, past) {
-          const port = +past[3];
-          return !Number.isNaN(port) && 0 <= port && port <= 0xffff;
-        },
-        then: {
-          paramDesc: "Payload (raw)",
-          run(ctx) {
-            const toIp = parseIpv4(ctx.args![1])!;
-            sendIPv4Packet(
-              ctx.state,
-              ctx.sendOnIf,
-              toIp,
-              ProtocolCode.udp,
-              new UDPPacket(
-                +ctx.args![2],
-                +ctx.args![3],
-                Buffer.from(ctx.args![4]),
-              ).toBytes(),
-            );
-          },
+        paramDesc: "Payload (raw)",
+        run(ctx) {
+          const toIp = parseIpv4(ctx.args![1])!;
+          sendIPv4Packet(
+            ctx.state,
+            ctx.sendOnIf,
+            toIp,
+            ProtocolCode.udp,
+            new UDPPacket(
+              +ctx.args![2],
+              +ctx.args![3],
+              Buffer.from(ctx.args![4]),
+            ).toBytes(),
+          );
         },
       },
     },
-  } satisfies SubCommand<T>;
-}
+  },
+} satisfies SubCommand<L3InternalStateBase>;

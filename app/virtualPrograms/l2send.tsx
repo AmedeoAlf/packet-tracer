@@ -17,52 +17,50 @@ function parseInterface(
   }
 }
 
-export function l2send<T extends InternalState<object>>() {
-  return {
-    desc: "Sends a raw layer 2 packet",
-    paramDesc: "Interface",
-    autocomplete(state) {
-      return state.netInterfaces.flatMap((intf, idx) => {
-        const desc = `${intf.type} ${intf.maxMbps} Mbps`;
-        return [
-          { option: idx.toString(), desc: intf.name + " " + desc },
-          { option: intf.name, desc },
-        ];
-      });
-    },
-    validate(state, past) {
-      return parseInterface(past[1], state) != undefined;
-    },
-    then: {
-      subcommands: {
-        packet: {
-          desc: "Sends an ethernet frame",
-          paramDesc: "Payload in base64",
-          validate(_, past) {
-            try {
-              Buffer.from(past[3], "base64");
-              return true;
-            } catch (_) {
-              return false;
-            }
-          },
-          autocomplete() {
-            return [];
-          },
-          then: {
-            run(ctx) {
-              const ifIdx = parseInterface(ctx.args![1], ctx.state)!;
-              ctx.sendOnIf(
-                ifIdx,
-                new Layer2Packet(
-                  Buffer.from(ctx.args![3], "base64"),
-                  ctx.state.netInterfaces[ifIdx].mac,
-                ).toBytes(),
-              );
-            },
+export const l2send = {
+  desc: "Sends a raw layer 2 packet",
+  paramDesc: "Interface",
+  autocomplete(state) {
+    return state.netInterfaces.flatMap((intf, idx) => {
+      const desc = `${intf.type} ${intf.maxMbps} Mbps`;
+      return [
+        { option: idx.toString(), desc: intf.name + " " + desc },
+        { option: intf.name, desc },
+      ];
+    });
+  },
+  validate(state, past) {
+    return parseInterface(past[1], state) != undefined;
+  },
+  then: {
+    subcommands: {
+      packet: {
+        desc: "Sends an ethernet frame",
+        paramDesc: "Payload in base64",
+        validate(_, past) {
+          try {
+            Buffer.from(past[3], "base64");
+            return true;
+          } catch (_) {
+            return false;
+          }
+        },
+        autocomplete() {
+          return [];
+        },
+        then: {
+          run(ctx) {
+            const ifIdx = parseInterface(ctx.args![1], ctx.state)!;
+            ctx.sendOnIf(
+              ifIdx,
+              new Layer2Packet(
+                Buffer.from(ctx.args![3], "base64"),
+                ctx.state.netInterfaces[ifIdx].mac,
+              ).toBytes(),
+            );
           },
         },
       },
     },
-  } satisfies SubCommand<T>;
-}
+  },
+} satisfies SubCommand<InternalState<object>>;

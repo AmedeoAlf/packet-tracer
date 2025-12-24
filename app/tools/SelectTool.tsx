@@ -38,10 +38,10 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
             )!;
             const emulator = device.emulator;
             const ctx = buildEmulatorContext(device, this);
-            ctx.write = (msg) => {
-              this.stdout += "\n" + msg;
-              this.update();
-            };
+            // ctx.write = (msg) => {
+            //   this.stdout += "\n" + msg;
+            //   this.update();
+            // };
 
             const panels: [string, DevicePanel<any>][] = [
               [

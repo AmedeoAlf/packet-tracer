@@ -27,6 +27,11 @@ export function idxOfIntf(i: InterfaceId): number {
 export const MAX_ZOOM_FACTOR = 3;
 export const MIN_ZOOM_FACTOR = 0.2;
 
+type Callback = {
+  onTick: number;
+  fn: (t: ToolCtx) => void;
+};
+
 /*
  * La classe che contiene tutti i dati del progetto attuale.
  * È l'unico oggetto da serializzare per salvare un progetto.
@@ -40,6 +45,8 @@ export class ProjectManager {
   mutatedDevices?: number[];
   mutatedDecals?: number[];
   lastCables?: ReturnType<ProjectManager["getCables"]>;
+
+  callbacks: Callback[] = [];
 
   deviceFromTag(tag: HTMLOrSVGElement): Device | undefined {
     if (tag.dataset.id) {
@@ -160,14 +167,53 @@ export class ProjectManager {
   getConnectedTo(intf: InterfaceId): InterfaceId | undefined {
     return this.project.connections.get(intf);
   }
-  sendOn(intf: InterfaceId, toolCtx: ToolCtx, data: Buffer) {
+  sendOn(intf: InterfaceId, data: Buffer) {
     const target = this.getConnectedTo(intf);
     if (!target) return;
     const dev = this.project.devices.get(deviceOfIntf(target));
     if (!dev) return;
     const ifIdx = idxOfIntf(target);
     console.assert(dev.internalState.netInterfaces.length > ifIdx);
-    dev.emulator.packetHandler(buildEmulatorContext(dev, toolCtx), data, ifIdx);
+    this.callbacks.push({
+      fn: (toolCtx: ToolCtx) =>
+        dev.emulator.packetHandler(
+          buildEmulatorContext(dev, toolCtx),
+          data,
+          ifIdx,
+        ),
+      onTick: this.project.currTick + 1,
+    });
+    // dev.emulator.packetHandler(buildEmulatorContext(dev, toolCtx), data, ifIdx);
+  }
+  areTicksPending() {
+    return this.callbacks.length != 0;
+  }
+  advanceTick(toolCtx: ToolCtx) {
+    this.project.currTick++;
+    this.processCurrTick(toolCtx);
+  }
+  advanceTickToCallback(toolCtx: ToolCtx) {
+    if (this.callbacks.length == 0) return;
+
+    const newTick = this.callbacks.reduce(
+      (acc, val) => Math.min(acc, val.onTick),
+      Infinity,
+    );
+    if (newTick <= this.project.currTick)
+      throw `There are callbacks in the past, currTick=${this.currTick}, callbacks=${this.callbacks.map((it) => it.onTick).join()}`;
+    this.project.currTick = newTick;
+    this.processCurrTick(toolCtx);
+  }
+  private processCurrTick(toolCtx: ToolCtx) {
+    const toClear: number[] = [];
+    for (const [i, { onTick, fn }] of this.callbacks.entries()) {
+      if (onTick != this.project.currTick) continue;
+      fn(toolCtx);
+      toClear.push(i);
+    }
+    if (toClear.length == 0) return;
+    this.callbacks = this.callbacks.filter((_, i) => !toClear.includes(i));
+    toolCtx.updateProject();
   }
   addDecal(d: DecalData): number {
     this.mutatedDecals ??= [];
@@ -249,6 +295,10 @@ export class ProjectManager {
     this.project.viewBoxZoom = clamp(val, MIN_ZOOM_FACTOR, MAX_ZOOM_FACTOR);
   }
 
+  get currTick() {
+    return this.project.currTick;
+  }
+
   // Il costruttore serve a creare copie identiche del progetto
   // per scatenare un rerender
   constructor(old?: ProjectManager) {
@@ -259,6 +309,7 @@ export class ProjectManager {
 
     old.applyMutations();
     if (old.mutatedDevices === undefined) this.lastCables = old.lastCables;
+    this.callbacks = old.callbacks;
     this.project = { ...old.project };
   }
 }

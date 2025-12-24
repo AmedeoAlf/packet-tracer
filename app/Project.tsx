@@ -44,12 +44,16 @@ export type Project = {
 
   // L'id dell'ultimo dispositivo creato
   lastId: number;
+
+  // Il tick corrente
+  currTick: number;
 };
 
 export function emptyProject(): Project {
   return {
     devices: new Map(),
     decals: [],
+    currTick: 0,
     connections: new Map(),
     viewBoxX: 0,
     viewBoxY: 0,

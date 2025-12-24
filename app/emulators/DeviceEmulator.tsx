@@ -3,6 +3,7 @@ import { Device } from "../devices/Device";
 import { ToolCtx } from "../tools/Tool";
 import { MacAddress } from "../protocols/802_3";
 import { toInterfaceId } from "../ProjectManager";
+import { SelectTool } from "../tools/SelectTool";
 
 export interface NetworkInterface {
   type: "serial" | "copper" | "fiber";
@@ -31,10 +32,10 @@ export type Command<State extends InternalState<object>> = (
       subcommands: Record<string, SubCommand<State>>;
     }
   | {
-      run: (ctx: EmulatorContext<State>) => void;
+      run: (ctx: EmulatorContext<any>) => void;
     }
 ) & {
-  run?: (ctx: EmulatorContext<State>) => void;
+  run?: (ctx: EmulatorContext<any>) => void;
 };
 
 export type SubCommand<State extends InternalState<object>> = Command<State> & {
@@ -175,8 +176,11 @@ export interface DeviceEmulator<State extends InternalState<object>> {
 
 export function buildEmulatorContext(
   device: Device,
-  toolCtx: ToolCtx,
-): EmulatorContext<InternalState<any>> {
+  toolCtx: ToolCtx | SelectTool,
+): EmulatorContext<any> {
+  function isSelectTool(t: ToolCtx): t is SelectTool {
+    return "toolname" in t && t.toolname == "select";
+  }
   const emulator = device.emulator;
   return {
     interpreter: emulator.cmdInterpreter as Interpreter<InternalState<any>>,
@@ -187,9 +191,17 @@ export function buildEmulatorContext(
       toolCtx.update();
     },
     sendOnIf(ifIdx, data) {
-      toolCtx.project.sendOn(toInterfaceId(device.id, ifIdx), toolCtx, data);
+      toolCtx.project.sendOn(toInterfaceId(device.id, ifIdx), data);
     },
     state: device.internalState,
-    write() {},
+    // NOTE: il print avviene anche con il terminale connesso ad un dispositivo diverso
+    write: isSelectTool(toolCtx)
+      ? (msg) => {
+          toolCtx.stdout += "\n" + msg;
+          toolCtx.update();
+        }
+      : (msg) => {
+          console.log("Impossibile scrivere sul terminale", msg);
+        },
   };
 }

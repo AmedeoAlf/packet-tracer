@@ -84,13 +84,26 @@ export function Editor(p: ProjectManager): ReactNode {
     return vb;
   }, [canvasSize, proj.viewBoxZoom, proj.viewBoxX, proj.viewBoxY]);
 
+  // useEffect(() => {
+  //   const int = setInterval(() => {
+  //     if (proj.areTicksPending()) { proj.advanceTick() };
+  //   }, 10)
+  //   return clearInterval.bind(0, int);
+  // }, [])
+  proj.advanceTickToCallback(tool);
+
   return (
     <div
       onKeyDown={buildKeyboardEventHandler(tool, "keydown")}
       onKeyUp={buildKeyboardEventHandler(tool, "keyup")}
       tabIndex={0}
     >
-      <div className="bg-sky-700 fixed top-0 w-full h-[50px] indent-1.5em border-b-[.1em] border-solid border-sky-800"></div>
+      <div className="bg-sky-700 fixed top-0 w-full h-[50px] indent-1.5em border-b-[.1em] border-solid border-sky-800">
+        <button onClick={() => proj.advanceTickToCallback(tool)}>
+          Advance
+        </button>
+        {proj.currTick}
+      </div>
 
       <SideBar tool={tool} />
 
