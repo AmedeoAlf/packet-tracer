@@ -255,6 +255,21 @@ export class ProjectManager {
     }
     return 0;
   }
+  exportProject(): object {
+    const proj = {
+      ...this.project,
+      devices: {} as Record<number, any>,
+      connections: Object.fromEntries(this.project.connections.entries()),
+    };
+    this.project.devices.entries().forEach(([id, dev]) => {
+      proj.devices[id] = {
+        ...dev,
+        type: dev.deviceType,
+        internalState: dev.serializeState?.() ?? dev.internalState,
+      };
+    });
+    return proj;
+  }
   recyclable(): boolean {
     return (
       !this.cantRecycle &&

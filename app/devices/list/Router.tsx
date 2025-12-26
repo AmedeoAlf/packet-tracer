@@ -6,8 +6,10 @@ import {
   IPV4_BROADCAST,
   IPv4Address,
   L3InternalState,
+  serializeL3InternalState,
 } from "../../protocols/rfc_760";
-import { DeviceFactory } from "../Device";
+import { Device, DeviceFactory } from "../Device";
+import { trustMeBroCast } from "@/app/common";
 
 export type RoutingTableEntry = {
   netAddr: IPv4Address;
@@ -22,6 +24,15 @@ export type RouterInternalState = L3InternalState<{
 
 export const Router: DeviceFactory<RouterInternalState> = {
   proto: {
+    serializeState() {
+      trustMeBroCast<Device>(this);
+      return {
+        ...this.internalState,
+        ...serializeL3InternalState(
+          this.internalState as L3InternalState<object>,
+        ),
+      };
+    },
     iconId: "#router-icon",
     emulator: routerEmulator,
     deviceType: "router",

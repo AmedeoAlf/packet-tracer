@@ -104,6 +104,11 @@ export function Editor(p: ProjectManager): ReactNode {
           Advance
         </button>
         {proj.currTick}
+        <button
+          onClick={() => console.log(JSON.stringify(proj.exportProject()))}
+        >
+          Save
+        </button>
       </div>
 
       <SideBar tool={tool} />

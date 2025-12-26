@@ -25,3 +25,7 @@ export function cloneWithProto<T extends object>(obj: T): T {
 export function intRange(from: number, to: number): number[] {
   return new Array(to - from).fill(1).map((_, i) => i + from);
 }
+
+export function trustMeBroCast<T>(t: any): asserts t is T {
+  return;
+}

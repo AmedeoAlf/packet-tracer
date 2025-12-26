@@ -79,6 +79,14 @@ export type L3InternalState<T extends object> = InternalState<
   } & L3InternalStateProps
 >;
 
+export function serializeL3InternalState(s: L3InternalState<object>) {
+  return {
+    ...s,
+    macTable: Object.fromEntries(s.macTable.entries()),
+    ipPackets: Object.fromEntries(s.ipPackets.entries()),
+  };
+}
+
 export enum ProtocolCode {
   "icmp" = 1,
   "tcp" = 6,
