@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/immutability */
+
 "use client";
 import {
   useState,
@@ -241,6 +242,11 @@ function buildKeyboardEventHandler(
   type: Extract<CanvasEvent["type"], "keydown" | "keyup">,
 ) {
   return (ev: KeyboardEvent<HTMLDivElement>) => {
+    if (
+      (ev.target as HTMLElement).tagName == "INPUT" ||
+      (ev.target as HTMLElement).tagName == "TEXTAREA"
+    )
+      return;
     const evObj = {
       type,
       key: ev.key,
