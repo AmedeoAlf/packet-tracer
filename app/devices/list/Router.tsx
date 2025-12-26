@@ -3,7 +3,8 @@ import { UDPPacket } from "@/app/protocols/udp";
 import { routerEmulator } from "../../emulators/list/routerEmulator";
 import { randomMAC } from "../../protocols/802_3";
 import {
-  IPV4_BROADCAST,
+  defaultL3InternalState,
+  deserializeL3InternalState,
   IPv4Address,
   L3InternalState,
   serializeL3InternalState,
@@ -33,24 +34,26 @@ export const Router: DeviceFactory<RouterInternalState> = {
         ),
       };
     },
+    deserializeState(o) {
+      return {
+        ...Router.defaultState(),
+        ...deserializeL3InternalState(o),
+      };
+    },
     iconId: "#router-icon",
     emulator: routerEmulator,
     deviceType: "router",
   },
   defaultState() {
     return {
-      ipPackets: new Map(),
-      routingTables: [],
-      packetsWaitingForARP: [],
-      l3Ifs: [],
-      gateway: IPV4_BROADCAST,
+      ...defaultL3InternalState(),
       netInterfaces: [
         { name: "if0", maxMbps: 100, type: "copper", mac: randomMAC() },
         { name: "if1", maxMbps: 100, type: "copper", mac: randomMAC() },
         { name: "se0", maxMbps: 100, type: "serial", mac: randomMAC() },
         { name: "se1", maxMbps: 100, type: "serial", mac: randomMAC() },
       ],
-      macTable: new Map(),
+      routingTables: [],
     };
   },
 };

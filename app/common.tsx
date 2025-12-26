@@ -29,3 +29,5 @@ export function intRange(from: number, to: number): number[] {
 export function trustMeBroCast<T>(t: any): asserts t is T {
   return;
 }
+
+export type PrimitiveType = ReturnType<(n: any) => typeof n>;

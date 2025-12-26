@@ -79,12 +79,51 @@ export type L3InternalState<T extends object> = InternalState<
   } & L3InternalStateProps
 >;
 
+export function defaultL3InternalState(): L3InternalStateBase {
+  return {
+    ipPackets: new Map(),
+    packetsWaitingForARP: [],
+    l3Ifs: [],
+    gateway: IPV4_BROADCAST,
+    netInterfaces: [],
+    macTable: new Map(),
+  };
+}
+
 export function serializeL3InternalState(s: L3InternalState<object>) {
   return {
     ...s,
     macTable: Object.fromEntries(s.macTable.entries()),
     ipPackets: Object.fromEntries(s.ipPackets.entries()),
   };
+}
+
+export function deserializeL3InternalState(
+  o: Record<string, unknown>,
+): L3InternalStateBase {
+  const s = {
+    ...defaultL3InternalState(),
+    ...o,
+  };
+
+  function setIf<K extends keyof L3InternalStateBase>(
+    prop: K,
+    transform: (v: any) => undefined | L3InternalStateBase[K],
+  ) {
+    if (prop in o) s[prop] = transform(o[prop]) ?? s[prop];
+  }
+
+  setIf(
+    "macTable",
+    (v) => new Map(Object.entries(v).map(([k, v]) => [+k, +(v as string)])),
+  );
+  setIf(
+    "ipPackets",
+    (v) =>
+      new Map(Object.entries(v).map(([k, v]) => [+k, v as PartialIPv4Packet])),
+  );
+
+  return s;
 }
 
 export enum ProtocolCode {

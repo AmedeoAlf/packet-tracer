@@ -1,5 +1,11 @@
 "use client";
-import { clamp, cloneWithProto, Coords } from "./common";
+import {
+  clamp,
+  cloneWithProto,
+  Coords,
+  PrimitiveType,
+  trustMeBroCast,
+} from "./common";
 import { Device, makeDevice } from "./devices/Device";
 import { DeviceType, deviceTypesDB } from "./devices/deviceTypesDB";
 import {
@@ -269,6 +275,78 @@ export class ProjectManager {
       };
     });
     return proj;
+  }
+  static fromSerialized(serialized: Record<string, any>) {
+    const pm = new ProjectManager();
+    function setIfPresent<P extends keyof typeof pm.project>(
+      prop: P,
+      transform: (t: Required<unknown>) => (typeof pm.project)[P] | undefined,
+    ) {
+      if (prop in serialized)
+        pm.project[prop] = transform(serialized[prop]) ?? pm.project[prop];
+    }
+    pm.project = {
+      ...pm.project,
+      ...serialized,
+    };
+    setIfPresent("devices", (d) => {
+      if (typeof d != "object") return;
+      const mustHaveProps: [string, PrimitiveType][] = [
+        ["type", "string"],
+        ["internalState", "object"],
+      ];
+      return new Map(
+        Object.entries(d)
+          .filter(
+            ([, dev]) =>
+              typeof dev == "object" &&
+              dev !== null &&
+              mustHaveProps.every(
+                ([prop, type]) =>
+                  prop in dev && typeof (dev as any)[prop] == type,
+              ) &&
+              Object.keys(deviceTypesDB).includes((dev as any).type),
+          )
+          .map(([id, dev]) => {
+            trustMeBroCast<{
+              type: DeviceType;
+              internalState: Record<string, any>;
+            }>(dev);
+            trustMeBroCast<string>(id);
+            const { type, ...props } = dev;
+            const factory = deviceTypesDB[type as DeviceType];
+
+            return [
+              +id,
+              Object.setPrototypeOf(
+                {
+                  name: "invalid name",
+                  pos: { x: 0, y: 0 },
+                  ...props,
+                  internalState: factory.proto.deserializeState?.(
+                    props.internalState,
+                  ) ?? {
+                    ...factory.defaultState(),
+                    ...("internalState" in props &&
+                    typeof props.internalState == "object"
+                      ? props.internalState
+                      : {}),
+                  },
+                  id: +id,
+                },
+                factory.proto,
+              ),
+            ];
+          }),
+      );
+    });
+    setIfPresent("connections", (d) => {
+      if (typeof d !== "object") return;
+      return new Map(
+        Object.entries(d).map(([from, to]) => [+from, +(to as string)]),
+      );
+    });
+    return pm;
   }
   recyclable(): boolean {
     return (

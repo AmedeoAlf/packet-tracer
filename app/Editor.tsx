@@ -105,9 +105,22 @@ export function Editor(p: ProjectManager): ReactNode {
         </button>
         {proj.currTick}
         <button
-          onClick={() => console.log(JSON.stringify(proj.exportProject()))}
+          onClick={() =>
+            navigator.clipboard.writeText(JSON.stringify(proj.exportProject()))
+          }
         >
           Save
+        </button>
+        <button
+          onClick={async () =>
+            setProject(
+              ProjectManager.fromSerialized(
+                JSON.parse(await navigator.clipboard.readText()),
+              ),
+            )
+          }
+        >
+          Load
         </button>
       </div>
 

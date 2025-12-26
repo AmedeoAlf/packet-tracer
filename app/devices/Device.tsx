@@ -21,6 +21,7 @@ export interface DeviceFactory<State extends InternalState<object>> {
     iconId: keyof typeof ICONS;
     emulator: DeviceEmulator<State>;
     serializeState?: () => object;
+    deserializeState?: (o: Record<string, unknown>) => State;
   };
   defaultState: () => State;
 }
