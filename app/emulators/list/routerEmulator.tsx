@@ -28,7 +28,8 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
             <tr>
               <th>Name</th>
               <th>Type</th>
-              <th>Max speed</th>
+              <th>IP</th>
+              <th>Subnet mask</th>
             </tr>
           </thead>
           <tbody>
@@ -36,11 +37,26 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
               const l3if = ctx.state.l3Ifs.at(idx);
               return (
                 <tr key={idx}>
-                  <td>{val.name}</td>
-                  <td>{val.type}</td>
-                  <td>{val.maxMbps} Mbps</td>
-                  <td>{l3if ? ipv4ToString(l3if.ip) : "No ip"}</td>
-                  <td>{l3if ? ipv4ToString(l3if.mask) : "No mask"}</td>
+                  <td className="p-1 max-w-1/4">
+                    <input
+                      type="text"
+                      value={val.name}
+                      className="w-full"
+                      onChange={(ev) => {
+                        ctx.state.netInterfaces[idx].name = ev.target.value;
+                        ctx.updateState();
+                      }}
+                    />
+                  </td>
+                  <td className="p-1">
+                    {val.type} {val.maxMbps}&nbsp;Mbps
+                  </td>
+                  <td className="p-1">
+                    {l3if ? ipv4ToString(l3if.ip) : "No ip"}
+                  </td>
+                  <td className="p-1">
+                    {l3if ? ipv4ToString(l3if.mask) : "No mask"}
+                  </td>
                 </tr>
               );
             })}
