@@ -11,10 +11,10 @@
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.17",
-    "next": "^16.0.10",
+    "next": "^16.1.1",
     "prettier": "^3.7.3",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "react-scan": "^0.4.3"
   },
   "devDependencies": {
@@ -23,7 +23,7 @@
     "@types/react-dom": "^19",
     "baseline-browser-mapping": "^2.8.32",
     "eslint": "^9.39.1",
-    "eslint-config-next": "^16.0.0",
+    "eslint-config-next": "^16.1.1",
     "eslint-config-prettier": "^10.1.8",
     "tailwindcss": "^4",
     "typescript": "^5"

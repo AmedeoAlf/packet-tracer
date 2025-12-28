@@ -1,6 +1,4 @@
 /* eslint-disable react-hooks/immutability */
-
-"use client";
 import {
   useState,
   useRef,
@@ -27,8 +25,17 @@ import { Decal } from "./Project";
  * `ProjectManager` che il `Tool` in uso, pertanto viene rirenderizzato ad ogni
  * cambiamento di questi.
  */
-export function Editor(p: ProjectManager): ReactNode {
-  const [proj, setProject] = useState(p);
+export function Editor({
+  initialProject,
+  isSaved,
+  save,
+}: {
+  initialProject: ProjectManager;
+  isSaved: boolean;
+  save: (p: ProjectManager) => void;
+}): ReactNode {
+  const [shouldSave, setShouldSave] = useState(false);
+  const [proj, setProject] = useState(initialProject);
   const [tool, setTool] = useState<Tool>(
     makeSelectTool({
       project: proj,
@@ -38,11 +45,21 @@ export function Editor(p: ProjectManager): ReactNode {
   );
   tool.project = proj;
   tool.updateProject = () => {
-    setProject(new ProjectManager(proj));
+    const newProj = new ProjectManager(proj);
+    setShouldSave(true);
+    setProject(newProj);
   };
   tool.update = () => {
     setTool({ ...tool });
   };
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (shouldSave) save(proj);
+      setShouldSave(false);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [proj, save, shouldSave]);
 
   const toolRef = useRef(tool);
   toolRef.current = tool;
@@ -104,13 +121,7 @@ export function Editor(p: ProjectManager): ReactNode {
           Advance
         </button>
         {proj.currTick}
-        <button
-          onClick={() =>
-            navigator.clipboard.writeText(JSON.stringify(proj.exportProject()))
-          }
-        >
-          Save
-        </button>
+        <button onClick={() => save(proj)}>Save</button>
         <button
           onClick={async () =>
             setProject(
@@ -122,6 +133,7 @@ export function Editor(p: ProjectManager): ReactNode {
         >
           Load
         </button>
+        {!shouldSave && isSaved ? "Salvato" : "Salvataggio in corso"}
       </div>
 
       <SideBar tool={tool} />

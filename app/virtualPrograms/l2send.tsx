@@ -41,6 +41,7 @@ export const l2send = {
           try {
             Buffer.from(past[3], "base64");
             return true;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (_) {
             return false;
           }
