@@ -3,8 +3,8 @@ import { Tool, ToolCtx } from "./Tool";
 import { Coords } from "../common";
 import { intfColor } from "../editorComponents/Cables";
 import { toInterfaceId } from "../ProjectManager";
-import { ReactNode } from "react";
 import { NetworkInterface } from "../emulators/DeviceEmulator";
+import { Button } from "../editorComponents/RoundBtn";
 
 export type ConnectTool = Tool & {
   deviceA?: Device;
@@ -58,16 +58,16 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
         <>
           <div className="p-2">
             {canConnect(this) ? (
-              <Btn
+              <Button
                 onClick={() => connect(this)}
                 className="w-full p-0 bg-green-900 text-green-200"
               >
                 Collega [c]
-              </Btn>
+              </Button>
             ) : (
-              <Btn className="w-full p-0 bg-gray-800 text-gray-500">
+              <Button className="w-full p-0 bg-gray-800 text-gray-500">
                 Seleziona due interfacce compatibili
-              </Btn>
+              </Button>
             )}
           </div>
           <div className="flex flex-wrap indent-0">
@@ -201,29 +201,6 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
   };
 }
 
-function Btn({
-  onClick,
-  className: extraClass,
-  children,
-}: {
-  onClick?: () => void;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      className={
-        "h-8 rounded-md font-bold px-2 " +
-        (onClick ? "hover:brightness-110 " : "") +
-        (extraClass ?? "")
-      }
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-}
-
 function InterfaceSelector({
   device,
   intfIdx,
@@ -255,9 +232,9 @@ function InterfaceSelector({
         </label>
         */}
           {i === intfIdx ? (
-            <Btn className="text-blue-900 bg-blue-400">Selezionata</Btn>
+            <Button className="text-blue-900 bg-blue-400">Selezionata</Button>
           ) : isConnected(i) ? (
-            <Btn
+            <Button
               onClick={() => {
                 connectTool.project.disconnect(device.id, i);
                 connectTool.updateProject();
@@ -266,14 +243,14 @@ function InterfaceSelector({
               className="text-red-900 bg-red-400"
             >
               Scollega
-            </Btn>
+            </Button>
           ) : (
-            <Btn
+            <Button
               onClick={() => selectIntf(i)}
               className="text-slate-900 bg-slate-400"
             >
               Seleziona
-            </Btn>
+            </Button>
           )}
         </div>
       ))}
