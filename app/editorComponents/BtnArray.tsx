@@ -8,7 +8,10 @@ export const BtnArrEl = memo(function BtnArrEl({
   children: ReactNode;
 }) {
   return (
-    <button onClick={onClick} className="bg-gray-600 px-4 h-9">
+    <button
+      onClick={onClick}
+      className="px-4 h-9 bg-gray-600 hover:bg-gray-700 active:bg-gray-800"
+    >
       {children}
     </button>
   );

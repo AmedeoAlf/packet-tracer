@@ -33,14 +33,16 @@ export const interfacesL3 = {
           paramDesc: "Subnet mask",
           autocomplete: () => [],
           validate: (_, past) => parseIpv4(past[4]) !== undefined,
-          run(ctx: EmulatorContext<L3InternalStateBase>) {
-            const intfId = ctx.state.netInterfaces.findIndex(
-              (it) => it.name == ctx.args![2],
-            );
-            const ip = parseIpv4(ctx.args![3])!;
-            const mask = parseIpv4(ctx.args![4])!;
-            ctx.state.l3Ifs[intfId] = { ip: ip, mask: mask };
-            ctx.updateState();
+          then: {
+            run(ctx: EmulatorContext<L3InternalStateBase>) {
+              const intfId = ctx.state.netInterfaces.findIndex(
+                (it) => it.name == ctx.args![2],
+              );
+              const ip = parseIpv4(ctx.args![3])!;
+              const mask = parseIpv4(ctx.args![4])!;
+              ctx.state.l3Ifs[intfId] = { ip: ip, mask: mask };
+              ctx.updateState();
+            },
           },
         },
       },
