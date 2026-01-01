@@ -39,6 +39,7 @@ function connect(c: ConnectTool) {
     throw "ArgumentException: can't access ConnectTool.idxA/.idxB";
   c.project.connect(c.deviceA!.id, c.idxA!, c.deviceB!.id, c.idxB!);
   clearSelection(c);
+  c.updateProject();
 }
 function intfType(dev: Device, intf: number) {
   return dev.internalState.netInterfaces[intf].type;
@@ -60,7 +61,7 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
             {canConnect(this) ? (
               <Button
                 onClick={() => connect(this)}
-                className="w-full p-0 bg-green-900 text-green-200"
+                className="w-full p-0 bg-green-900 text-green-200 hover:bg-green-800 active:bg-green-700"
               >
                 Collega [c]
               </Button>
@@ -240,14 +241,14 @@ function InterfaceSelector({
                 connectTool.updateProject();
                 selectIntf(i);
               }}
-              className="text-red-900 bg-red-400"
+              className="text-red-900 bg-red-400 hover:brightness-130 active:bg-red-300 active:brightness-100"
             >
               Scollega
             </Button>
           ) : (
             <Button
               onClick={() => selectIntf(i)}
-              className="text-slate-900 bg-slate-400"
+              className="text-slate-900 bg-slate-400 hover:brightness-110 active:brightness-120"
             >
               Seleziona
             </Button>

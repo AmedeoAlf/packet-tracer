@@ -11,12 +11,9 @@ export function Button({
 }) {
   return (
     <button
-      className={
-        "h-8 rounded-md font-bold px-2 " +
-        (onClick ? "hover:brightness-110 " : "") +
-        (extraClass ?? "")
-      }
+      className={"h-8 rounded-md font-bold px-2 " + (extraClass ?? "")}
       onClick={onClick}
+      disabled={onClick === undefined}
     >
       {children}
     </button>
