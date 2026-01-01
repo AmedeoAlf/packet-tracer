@@ -5,6 +5,7 @@ import { intfColor } from "../editorComponents/Cables";
 import { toInterfaceId } from "../ProjectManager";
 import { NetworkInterface } from "../emulators/DeviceEmulator";
 import { Button } from "../editorComponents/RoundBtn";
+import { memo } from "react";
 
 export type ConnectTool = Tool & {
   deviceA?: Device;
@@ -58,18 +59,7 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
       return (
         <>
           <div className="p-2">
-            {canConnect(this) ? (
-              <Button
-                onClick={() => connect(this)}
-                className="w-full p-0 bg-green-900 text-green-200 hover:bg-green-800 active:bg-green-700"
-              >
-                Collega [c]
-              </Button>
-            ) : (
-              <Button className="w-full p-0 bg-gray-800 text-gray-500">
-                Seleziona due interfacce compatibili
-              </Button>
-            )}
+            <ConnectBtn connectTool={this} />
           </div>
           <div className="flex flex-wrap indent-0">
             {!this.deviceA ? (
@@ -247,7 +237,9 @@ function InterfaceSelector({
             </Button>
           ) : (
             <Button
-              onClick={() => selectIntf(i)}
+              onClick={() => {
+                selectIntf(i);
+              }}
               className="text-slate-900 bg-slate-400 hover:brightness-110 active:brightness-120"
             >
               Seleziona
@@ -264,3 +256,25 @@ function InterfaceSelector({
     </div>
   );
 }
+
+const ConnectBtn = memo(
+  function ConnectBtn({ connectTool }: { connectTool: ConnectTool }) {
+    return canConnect(connectTool) ? (
+      <Button
+        onClick={() => connect(connectTool)}
+        className="w-full p-0 bg-green-900 text-green-200 hover:bg-green-800 active:bg-green-700"
+      >
+        Collega [c]
+      </Button>
+    ) : (
+      <Button className="w-full p-0 bg-gray-800 text-gray-500">
+        Seleziona due interfacce compatibili
+      </Button>
+    );
+  },
+  (p, n) =>
+    p.connectTool.idxA === n.connectTool.idxA &&
+    p.connectTool.idxB === n.connectTool.idxB &&
+    p.connectTool.deviceA === n.connectTool.deviceA &&
+    p.connectTool.deviceB === n.connectTool.deviceB,
+);
