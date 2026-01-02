@@ -31,3 +31,26 @@ export function trustMeBroCast<T>(t: any): asserts t is T {
 }
 
 export type PrimitiveType = ReturnType<(n: any) => typeof n>;
+
+export function deepCopy<T>(t: T): T {
+  switch (typeof t) {
+    case "object":
+      switch (true) {
+        case t === null:
+          return null as T;
+        case t instanceof Map:
+          return new Map(t.entries().map(([k, v]) => [k, deepCopy(v)])) as T;
+        case t instanceof Array:
+          return t.map((it) => deepCopy(it)) as T;
+        default:
+          return Object.setPrototypeOf(
+            Object.fromEntries(
+              Object.entries(t).map(([k, v]) => [k, deepCopy(v)]),
+            ),
+            Object.getPrototypeOf(t),
+          ) as T;
+      }
+    default:
+      return t;
+  }
+}

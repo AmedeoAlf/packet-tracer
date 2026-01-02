@@ -168,19 +168,44 @@ export function makeSelectTool(ctx: ToolCtx): SelectTool {
           }
           break;
         case "keydown":
-          if (ev.key == "Delete") {
-            for (const s of this.selected) {
-              this.project.deleteDevice(s);
+          ev.consumed = true;
+          switch (ev.key) {
+            case "Delete": {
+              for (const s of this.selected) {
+                this.project.deleteDevice(s);
+              }
+              for (const s of this.selectedDecals) {
+                this.project.removeDecal(s);
+              }
+              this.selected.clear();
+              this.selectedDecals.clear();
+              this.update();
+              this.updateProject();
+              return;
             }
-            for (const s of this.selectedDecals) {
-              this.project.removeDecal(s);
+            case "d": {
+              const newSelected = new Set<number>();
+              for (const s of this.selected) {
+                const newId = this.project.duplicateDevice(s)!;
+                newSelected.add(newId);
+                this.project.mutDevice(newId)!.pos.x += 10;
+                this.project.mutDevice(newId)!.pos.y += 10;
+              }
+              const newDecals = new Set<number>();
+              for (const s of this.selectedDecals) {
+                const newId = this.project.duplicateDecal(s)!;
+                newDecals.add(newId);
+                this.project.mutDecal(newId)!.pos.x += 10;
+                this.project.mutDecal(newId)!.pos.y += 10;
+              }
+              this.selected = newSelected;
+              this.selectedDecals = newDecals;
+              this.update();
+              this.updateProject();
+              return;
             }
-            this.selected.clear();
-            this.selectedDecals.clear();
-            this.update();
-            this.updateProject();
-            ev.consumed = true;
-            return;
+            default:
+              ev.consumed = false;
           }
       }
       if (

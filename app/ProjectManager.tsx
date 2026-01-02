@@ -3,6 +3,7 @@ import {
   clamp,
   cloneWithProto,
   Coords,
+  deepCopy,
   PrimitiveType,
   trustMeBroCast,
 } from "./common";
@@ -102,6 +103,19 @@ export class ProjectManager {
         name ?? `${capitalize(type)} ${this.project.lastId}`,
       ),
     );
+    return this.project.lastId;
+  }
+  duplicateDevice(id: number, newName?: string): number | undefined {
+    const old = this.project.devices.get(id);
+    if (old === undefined) return;
+
+    const newId = this.createDevice(old.deviceType, { ...old.pos }, newName);
+    if (newId === undefined) return;
+
+    const dup = this.project.devices.get(newId)!;
+    // FIXME: ho poca fiducia in una deep copy dell'internalState
+    dup.internalState = deepCopy(old.internalState);
+    return newId;
   }
   deleteDevice(id: number) {
     const dev = this.project.devices.get(id);
@@ -237,6 +251,12 @@ export class ProjectManager {
     this.mutatedDecals ??= [];
     this.project.decals.push({ ...d, id: this.project.decals.length });
     return this.project.decals.length - 1;
+  }
+  duplicateDecal(id: number): number | undefined {
+    const old = this.project.decals.at(id);
+    if (old === undefined) return undefined;
+
+    return this.addDecal(deepCopy(old));
   }
   removeDecal(id: number) {
     this.mutatedDecals ??= [];
