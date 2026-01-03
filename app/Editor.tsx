@@ -112,7 +112,7 @@ export function Editor({
   //   }, 10)
   //   return clearInterval.bind(0, int);
   // }, [])
-  project.advanceTickToCallback(tool);
+  project.advanceTickToCallback(toolCtx);
 
   return (
     <div
