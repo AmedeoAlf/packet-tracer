@@ -52,7 +52,7 @@ export function Editor({
       setProject(newProj);
     },
     updateTool() {
-      setTool({ ...tool });
+      setTool({ ...toolCtx.toolRef.current });
     },
   };
 

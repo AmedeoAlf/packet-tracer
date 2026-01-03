@@ -16,12 +16,12 @@ export type ConnectTool = Tool<{
   cursorPos?: Coords;
 }>;
 
-function clearSelection({ tool, updateTool }: ToolCtx<ConnectTool>) {
-  tool.deviceA = undefined;
-  tool.idxA = undefined;
-  tool.deviceB = undefined;
-  tool.idxB = undefined;
-  tool.errorMsg = undefined;
+function clearSelection({ toolRef, updateTool }: ToolCtx<ConnectTool>) {
+  toolRef.current.deviceA = undefined;
+  toolRef.current.idxA = undefined;
+  toolRef.current.deviceB = undefined;
+  toolRef.current.idxB = undefined;
+  toolRef.current.errorMsg = undefined;
   updateTool();
 }
 
@@ -74,21 +74,21 @@ export function makeConnectTool(prev: ConnectTool | object = {}): ConnectTool {
                 <InterfaceSelector
                   device={ctx.tool.deviceA}
                   selectIntf={(n) => {
-                    ctx.tool.idxA = n;
+                    ctx.toolRef.current.idxA = n;
                     ctx.updateTool();
                   }}
                   intfIdx={ctx.tool.idxA}
-                  connectTool={ctx}
+                  ctx={ctx}
                 />
                 {!ctx.tool.deviceB ? (
                   <>Seleziona il secondo dispositivo</>
                 ) : (
                   <InterfaceSelector
                     device={ctx.tool.deviceB}
-                    connectTool={ctx}
+                    ctx={ctx}
                     intfIdx={ctx.tool.idxB}
                     selectIntf={(n) => {
-                      ctx.tool.idxB = n;
+                      ctx.toolRef.current.idxB = n;
                       ctx.updateTool();
                     }}
                   />
@@ -197,73 +197,72 @@ export function makeConnectTool(prev: ConnectTool | object = {}): ConnectTool {
   };
 }
 
-function InterfaceSelector({
-  device,
-  intfIdx,
-  selectIntf,
-  connectTool,
-}: {
-  device: Device;
-  intfIdx?: number;
-  selectIntf: (idx: number) => void;
-  connectTool: Pick<
-    ToolCtx<ConnectTool>,
-    "project" | "updateProject" | "updateTool"
-  >;
-}) {
-  const isConnected = (i: number) =>
-    connectTool.project.getConnectedTo(toInterfaceId(device.id, i)) !==
-    undefined;
-  return (
-    <div className="p-[10px] w-[50%] text-black">
-      <div className="resize-none rounded-md bg-white h-6 w-full mb-[10px]">
-        {device.name}
-      </div>
+const InterfaceSelector = memo(
+  function InterfaceSelector({
+    device,
+    intfIdx,
+    selectIntf,
+    ctx,
+  }: {
+    device: Device;
+    intfIdx?: number;
+    selectIntf: (idx: number) => void;
+    ctx: Pick<ToolCtx<ConnectTool>, "project" | "updateProject" | "updateTool">;
+  }) {
+    const isConnected = (i: number) =>
+      ctx.project.getConnectedTo(toInterfaceId(device.id, i)) !== undefined;
+    return (
+      <div className="p-[10px] w-[50%] text-black">
+        <div className="resize-none rounded-md bg-white h-6 w-full mb-[10px]">
+          {device.name}
+        </div>
 
-      {device.internalState.netInterfaces.map((intf, i) => (
-        <div key={i} className="flex items-center justify-between m-1">
-          <div className="bg-white h-6 w-17 rounded-md">{intf.name}</div>
-          {/*
+        {device.internalState.netInterfaces.map((intf, i) => (
+          <div key={i} className="flex items-center justify-between m-1">
+            <div className="bg-white h-6 w-17 rounded-md">{intf.name}</div>
+            {/*
         <label className="relative inline-flex items-center cursor-pointer">
           <input type="checkbox" className="sr-only peer"></input>
           <div className="w-16 h-8 bg-red-500 rounded-full peer-checked:bg-green-500"></div>
           <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition peer-checked:translate-x-8"></div>
         </label>
         */}
-          {i === intfIdx ? (
-            <Button className="text-blue-900 bg-blue-400">Selezionata</Button>
-          ) : isConnected(i) ? (
-            <Button
-              onClick={() => {
-                connectTool.project.disconnect(device.id, i);
-                connectTool.updateProject();
-                selectIntf(i);
-              }}
-              className="text-red-900 bg-red-400 hover:brightness-130 active:bg-red-300 active:brightness-100"
-            >
-              Scollega
-            </Button>
-          ) : (
-            <Button
-              onClick={() => {
-                selectIntf(i);
-              }}
-              className="text-slate-900 bg-slate-400 hover:brightness-110 active:brightness-120"
-            >
-              Seleziona
-            </Button>
-          )}
-        </div>
-      ))}
+            {i === intfIdx ? (
+              <Button className="text-blue-900 bg-blue-400">Selezionata</Button>
+            ) : isConnected(i) ? (
+              <Button
+                onClick={() => {
+                  ctx.project.disconnect(device.id, i);
+                  ctx.updateProject();
+                  selectIntf(i);
+                }}
+                className="text-red-900 bg-red-400 hover:brightness-130 active:bg-red-300 active:brightness-100"
+              >
+                Scollega
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  selectIntf(i);
+                }}
+                className="text-slate-900 bg-slate-400 hover:brightness-110 active:brightness-120"
+              >
+                Seleziona
+              </Button>
+            )}
+          </div>
+        ))}
 
-      {/* <div className="flex justify-center items-center gap-6 pt-6"> */}
-      {/*   <span className="text-white text-2xl cursor-pointer">&lt;</span> */}
-      {/*   <div className="bg-white rounded-md w-10 h-6"></div> */}
-      {/*   <span className="text-white text-2xl cursor-pointer">&gt;</span> */}
-      {/* </div> */}
-    </div>
-  );
-}
+        {/* <div className="flex justify-center items-center gap-6 pt-6"> */}
+        {/*   <span className="text-white text-2xl cursor-pointer">&lt;</span> */}
+        {/*   <div className="bg-white rounded-md w-10 h-6"></div> */}
+        {/*   <span className="text-white text-2xl cursor-pointer">&gt;</span> */}
+        {/* </div> */}
+      </div>
+    );
+  },
+  (p, n) => p.intfIdx === n.intfIdx && p.ctx.project == n.ctx.project,
+);
 
 const ConnectBtn = memo(
   function ConnectBtn({ connectTool }: { connectTool: ToolCtx<ConnectTool> }) {
