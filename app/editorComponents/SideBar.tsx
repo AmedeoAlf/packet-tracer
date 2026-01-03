@@ -6,7 +6,7 @@ import { Tool } from "../tools/Tool";
 export const SideBar = memo(function SideBar({
   tool,
 }: {
-  tool: Tool;
+  tool: Tool<any>;
 }): ReactNode {
   const [open, setOpen] = useState(true);
   return open ? (

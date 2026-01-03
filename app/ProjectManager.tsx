@@ -37,7 +37,7 @@ export const MIN_ZOOM_FACTOR = 0.2;
 
 type Callback = {
   onTick: number;
-  fn: (t: ToolCtx) => void;
+  fn: (t: ToolCtx<any>) => void;
 };
 
 /*
@@ -207,7 +207,7 @@ export class ProjectManager {
     const ifIdx = idxOfIntf(target);
     console.assert(dev.internalState.netInterfaces.length > ifIdx);
     this.callbacks.push({
-      fn: (toolCtx: ToolCtx) =>
+      fn: (toolCtx: ToolCtx<any>) =>
         dev.emulator.packetHandler(
           buildEmulatorContext(dev, toolCtx),
           data,
@@ -220,11 +220,11 @@ export class ProjectManager {
   areTicksPending() {
     return this.callbacks.length != 0;
   }
-  advanceTick(toolCtx: ToolCtx) {
+  advanceTick(toolCtx: ToolCtx<any>) {
     this.project.currTick++;
     this.processCurrTick(toolCtx);
   }
-  advanceTickToCallback(toolCtx: ToolCtx) {
+  advanceTickToCallback(toolCtx: ToolCtx<any>) {
     if (this.callbacks.length == 0) return;
 
     const newTick = this.callbacks.reduce(
@@ -236,7 +236,7 @@ export class ProjectManager {
     this.project.currTick = newTick;
     this.processCurrTick(toolCtx);
   }
-  private processCurrTick(toolCtx: ToolCtx) {
+  private processCurrTick(toolCtx: ToolCtx<any>) {
     const toClear: number[] = [];
     for (const [i, { onTick, fn }] of this.callbacks.entries()) {
       if (onTick != this.project.currTick) continue;

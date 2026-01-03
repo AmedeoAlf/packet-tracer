@@ -1,61 +1,61 @@
 import { Coords } from "../common";
 import { Tool, ToolCtx } from "./Tool";
 
-export type LabelTool = Tool & {
+export type LabelTool = Tool<{
   currInput?: {
     text: string;
     pos: Coords;
   };
-};
+}>;
 
-export function makeLabelTool(ctx: ToolCtx): LabelTool {
+export function makeLabelTool(ctx: ToolCtx<LabelTool>): LabelTool {
   return {
     ...ctx,
     toolname: "label",
-    panel() {
-      if (!this.currInput)
+    panel: (ctx) => {
+      if (!ctx.tool.currInput)
         return <p>Clicca sullo scenario per aggiungere testo</p>;
       return (
         <>
           Contenuto:
           <input
             type="text"
-            value={this.currInput.text}
+            value={ctx.tool.currInput.text}
             onChange={(ev) => {
-              this.currInput!.text = ev.target.value;
-              this.update();
+              ctx.tool.currInput!.text = ev.target.value;
+              ctx.updateTool();
             }}
             autoFocus
           />
         </>
       );
     },
-    onEvent(ev) {
+    onEvent: (ctx, ev) => {
       switch (ev.type) {
         case "click":
-          if (this.currInput) {
-            if (this.currInput.text.trim() != "") {
-              this.project.addDecal({ type: "text", ...this.currInput });
-              this.updateProject();
+          if (ctx.tool.currInput) {
+            if (ctx.tool.currInput.text.trim() != "") {
+              ctx.project.addDecal({ type: "text", ...ctx.tool.currInput });
+              ctx.updateProject();
             }
-            this.currInput = undefined;
+            ctx.tool.currInput = undefined;
           } else if (ev.decal && ev.decal.type == "text") {
-            this.currInput = { text: ev.decal.text, pos: ev.decal.pos };
-            this.project.removeDecal(ev.decal.id);
-            this.updateProject();
+            ctx.tool.currInput = { text: ev.decal.text, pos: ev.decal.pos };
+            ctx.project.removeDecal(ev.decal.id);
+            ctx.updateProject();
           } else {
-            this.currInput = {
+            ctx.tool.currInput = {
               text: "",
               pos: ev.pos,
             };
           }
-          this.update();
+          ctx.updateTool();
           break;
       }
     },
-    svgElements() {
-      if (this.currInput) {
-        return <text {...this.currInput.pos}>{this.currInput.text}</text>;
+    svgElements: ({ tool }) => {
+      if (tool.currInput) {
+        return <text {...tool.currInput.pos}>{tool.currInput.text}</text>;
       }
     },
   };

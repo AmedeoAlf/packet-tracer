@@ -7,22 +7,22 @@ import { NetworkInterface } from "../emulators/DeviceEmulator";
 import { Button } from "../editorComponents/RoundBtn";
 import { memo } from "react";
 
-export type ConnectTool = Tool & {
+export type ConnectTool = Tool<{
   deviceA?: Device;
   idxA?: number;
   deviceB?: Device;
   idxB?: number;
   errorMsg?: string;
   cursorPos?: Coords;
-};
+}>;
 
-function clearSelection(c: ConnectTool) {
-  c.deviceA = undefined;
-  c.idxA = undefined;
-  c.deviceB = undefined;
-  c.idxB = undefined;
-  c.errorMsg = undefined;
-  c.update();
+function clearSelection({ tool, updateTool }: ToolCtx<ConnectTool>) {
+  tool.deviceA = undefined;
+  tool.idxA = undefined;
+  tool.deviceB = undefined;
+  tool.idxB = undefined;
+  tool.errorMsg = undefined;
+  updateTool();
 }
 
 function canConnect(
@@ -35,10 +35,15 @@ function canConnect(
   );
 }
 
-function connect(c: ConnectTool) {
-  if (!canConnect(c))
+function connect(c: ToolCtx<ConnectTool>) {
+  if (!canConnect(c.tool))
     throw "ArgumentException: can't access ConnectTool.idxA/.idxB";
-  c.project.connect(c.deviceA!.id, c.idxA!, c.deviceB!.id, c.idxB!);
+  c.project.connect(
+    c.tool.deviceA!.id,
+    c.tool.idxA!,
+    c.tool.deviceB!.id,
+    c.tool.idxB!,
+  );
   clearSelection(c);
   c.updateProject();
 }
@@ -46,7 +51,7 @@ function intfType(dev: Device, intf: number) {
   return dev.internalState.netInterfaces[intf].type;
 }
 
-export function makeConnectTool(ctx: ToolCtx): ConnectTool {
+export function makeConnectTool(ctx: ToolCtx<ConnectTool>): ConnectTool {
   return {
     deviceA: undefined,
     idxA: undefined,
@@ -55,36 +60,36 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
     errorMsg: undefined,
     ...ctx,
     toolname: "connect",
-    panel() {
+    panel: (ctx) => {
       return (
         <>
           <div className="p-2">
-            <ConnectBtn connectTool={this} />
+            <ConnectBtn connectTool={ctx} />
           </div>
           <div className="flex flex-wrap indent-0">
-            {!this.deviceA ? (
+            {!ctx.tool.deviceA ? (
               <>Seleziona il primo dispositivo</>
             ) : (
               <>
                 <InterfaceSelector
-                  device={this.deviceA}
+                  device={ctx.tool.deviceA}
                   selectIntf={(n) => {
-                    this.idxA = n;
-                    this.update();
+                    ctx.tool.idxA = n;
+                    ctx.updateTool();
                   }}
-                  intfIdx={this.idxA}
-                  connectTool={this}
+                  intfIdx={ctx.tool.idxA}
+                  connectTool={ctx}
                 />
-                {!this.deviceB ? (
+                {!ctx.tool.deviceB ? (
                   <>Seleziona il secondo dispositivo</>
                 ) : (
                   <InterfaceSelector
-                    device={this.deviceB}
-                    connectTool={this}
-                    intfIdx={this.idxB}
+                    device={ctx.tool.deviceB}
+                    connectTool={ctx}
+                    intfIdx={ctx.tool.idxB}
                     selectIntf={(n) => {
-                      this.idxB = n;
-                      this.update();
+                      ctx.tool.idxB = n;
+                      ctx.updateTool();
                     }}
                   />
                 )}
@@ -95,7 +100,7 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
         </>
       );
     },
-    onEvent(ev) {
+    onEvent: (ctx, ev) => {
       const firstEmptyInterface = (
         device: Device,
         type?: NetworkInterface["type"],
@@ -103,7 +108,7 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
         let firstIf: number | undefined = undefined;
         const res = device.internalState.netInterfaces.findIndex((_, idx) => {
           if (
-            this.project.getConnectedTo(toInterfaceId(device.id, idx)) ==
+            ctx.project.getConnectedTo(toInterfaceId(device.id, idx)) ==
             undefined
           ) {
             firstIf ??= idx;
@@ -120,49 +125,49 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
         case "click":
           switch (true) {
             case !ev.device:
-              clearSelection(this);
+              clearSelection(ctx);
               return;
-            case !this.deviceA:
-              this.deviceA = ev.device;
-              this.idxA = firstEmptyInterface(this.deviceA);
-              this.cursorPos = ev.pos;
-              this.update();
+            case !ctx.tool.deviceA:
+              ctx.tool.deviceA = ev.device;
+              ctx.tool.idxA = firstEmptyInterface(ctx.tool.deviceA);
+              ctx.tool.cursorPos = ev.pos;
+              ctx.updateTool();
               return;
-            case !this.deviceB:
-              this.deviceB = ev.device;
-              this.idxB = firstEmptyInterface(this.deviceB);
-              this.update();
+            case !ctx.tool.deviceB:
+              ctx.tool.deviceB = ev.device;
+              ctx.tool.idxB = firstEmptyInterface(ctx.tool.deviceB);
+              ctx.updateTool();
               return;
           }
           break;
         case "mousemove":
-          if (this.deviceA) {
-            this.cursorPos = ev.pos;
-            this.update();
+          if (ctx.tool.deviceA) {
+            ctx.tool.cursorPos = ev.pos;
+            ctx.updateTool();
           }
           break;
         case "keydown":
-          if (ev.key == "c" && canConnect(this)) {
-            connect(this);
+          if (ev.key == "c" && canConnect(ctx.tool)) {
+            connect(ctx);
             ev.consumed = true;
           }
       }
     },
-    svgElements() {
-      if (this.deviceA && this.idxA !== undefined) {
-        if (this.idxB !== undefined) {
-          const typeA = intfType(this.deviceA, this.idxA);
+    svgElements: ({ tool }) => {
+      if (tool.deviceA && tool.idxA !== undefined) {
+        if (tool.idxB !== undefined) {
+          const typeA = intfType(tool.deviceA, tool.idxA);
 
           const lineColor =
-            intfType(this.deviceB!, this.idxB) === typeA
-              ? intfColor[intfType(this.deviceA, this.idxA)]
+            intfType(tool.deviceB!, tool.idxB) === typeA
+              ? intfColor[intfType(tool.deviceA, tool.idxA)]
               : "red";
           return (
             <line
-              x1={this.deviceA.pos.x}
-              y1={this.deviceA.pos.y}
-              x2={this.deviceB!.pos.x}
-              y2={this.deviceB!.pos.y}
+              x1={tool.deviceA.pos.x}
+              y1={tool.deviceA.pos.y}
+              x2={tool.deviceB!.pos.x}
+              y2={tool.deviceB!.pos.y}
               stroke={lineColor}
               strokeWidth={3}
               strokeDasharray="10 10"
@@ -175,14 +180,14 @@ export function makeConnectTool(ctx: ToolCtx): ConnectTool {
               />
             </line>
           );
-        } else if (this.cursorPos) {
+        } else if (tool.cursorPos) {
           return (
             <line
-              x1={this.deviceA.pos.x}
-              y1={this.deviceA.pos.y}
-              x2={this.cursorPos.x}
-              y2={this.cursorPos.y}
-              stroke={intfColor[intfType(this.deviceA, this.idxA)]}
+              x1={tool.deviceA.pos.x}
+              y1={tool.deviceA.pos.y}
+              x2={tool.cursorPos.x}
+              y2={tool.cursorPos.y}
+              stroke={intfColor[intfType(tool.deviceA, tool.idxA)]}
             />
           );
         }
@@ -201,7 +206,10 @@ function InterfaceSelector({
   device: Device;
   intfIdx?: number;
   selectIntf: (idx: number) => void;
-  connectTool: Pick<ConnectTool, "project" | "updateProject" | "update">;
+  connectTool: Pick<
+    ToolCtx<ConnectTool>,
+    "project" | "updateProject" | "updateTool"
+  >;
 }) {
   const isConnected = (i: number) =>
     connectTool.project.getConnectedTo(toInterfaceId(device.id, i)) !==
@@ -258,8 +266,8 @@ function InterfaceSelector({
 }
 
 const ConnectBtn = memo(
-  function ConnectBtn({ connectTool }: { connectTool: ConnectTool }) {
-    return canConnect(connectTool) ? (
+  function ConnectBtn({ connectTool }: { connectTool: ToolCtx<ConnectTool> }) {
+    return canConnect(connectTool.tool) ? (
       <Button
         onClick={() => connect(connectTool)}
         className="w-full p-0 bg-green-900 text-green-200 hover:bg-green-800 active:bg-green-700"
@@ -273,8 +281,8 @@ const ConnectBtn = memo(
     );
   },
   (p, n) =>
-    p.connectTool.idxA === n.connectTool.idxA &&
-    p.connectTool.idxB === n.connectTool.idxB &&
-    p.connectTool.deviceA === n.connectTool.deviceA &&
-    p.connectTool.deviceB === n.connectTool.deviceB,
+    p.connectTool.tool.idxA === n.connectTool.tool.idxA &&
+    p.connectTool.tool.idxB === n.connectTool.tool.idxB &&
+    p.connectTool.tool.deviceA === n.connectTool.tool.deviceA &&
+    p.connectTool.tool.deviceB === n.connectTool.tool.deviceB,
 );

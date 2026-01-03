@@ -1,12 +1,12 @@
 import { Coords } from "../common";
 import { Tool, ToolCtx } from "./Tool";
 
-export type RectTool = Tool & {
+export type RectTool = Tool<{
   startPos?: Coords;
   currPos?: Coords;
   fill: string;
   stroke: string;
-};
+}>;
 
 function rectProps(
   mousedown: Coords,
@@ -20,73 +20,73 @@ function rectProps(
   };
 }
 
-export function makeRectTool(ctx: ToolCtx): RectTool {
+export function makeRectTool(ctx: ToolCtx<RectTool>): RectTool {
   return {
     fill: "#000000",
     stroke: "none",
     ...ctx,
     toolname: "rect",
-    panel() {
-      if (this.startPos === undefined || this.currPos === undefined)
+    panel: (ctx) => {
+      if (ctx.tool.startPos === undefined || ctx.tool.currPos === undefined)
         return (
           <div>
             Trascina per disegnare un rettangolo <br />
             Riempimento:{" "}
             <input
               type="color"
-              value={this.fill}
+              value={ctx.tool.fill}
               onChange={(ev) => {
-                this.fill = ev.target.value;
-                this.update();
+                ctx.tool.fill = ev.target.value;
+                ctx.updateTool();
               }}
             />
           </div>
         );
       return (
         <>
-          Dimensioni: {this.currPos.x - this.startPos.x}x
-          {this.currPos.y - this.startPos.y}
+          Dimensioni: {ctx.tool.currPos.x - ctx.tool.startPos.x}x
+          {ctx.tool.currPos.y - ctx.tool.startPos.y}
         </>
       );
     },
-    onEvent(ev) {
+    onEvent: (ctx, ev) => {
       switch (ev.type) {
         case "mousedown":
-          this.startPos = ev.pos;
-          this.currPos = ev.pos;
+          ctx.tool.startPos = ev.pos;
+          ctx.tool.currPos = ev.pos;
           break;
         case "mousemove":
-          if (!this.startPos) return;
-          this.currPos = ev.pos;
+          if (!ctx.tool.startPos) return;
+          ctx.tool.currPos = ev.pos;
           break;
         case "mouseup":
-          if (!this.startPos) return;
-          const { x, y, width, height } = rectProps(this.startPos, ev.pos);
-          this.startPos = undefined;
-          this.update();
+          if (!ctx.tool.startPos) return;
+          const { x, y, width, height } = rectProps(ctx.tool.startPos, ev.pos);
+          ctx.tool.startPos = undefined;
+          ctx.updateTool();
           if (ev.pos.x || ev.pos.y) {
-            this.project.addDecal({
+            ctx.project.addDecal({
               type: "rect",
               pos: { x, y },
               size: { width, height },
-              fill: this.fill,
-              stroke: this.stroke,
+              fill: ctx.tool.fill,
+              stroke: ctx.tool.stroke,
             });
-            this.updateProject();
+            ctx.updateProject();
           }
           return;
         default:
           return;
       }
-      this.update();
+      ctx.updateTool();
     },
-    svgElements() {
-      if (this.startPos && this.currPos) {
+    svgElements: ({ tool }) => {
+      if (tool.startPos && tool.currPos) {
         return (
           <rect
-            {...rectProps(this.startPos, this.currPos)}
-            fill={this.fill}
-            stroke={this.stroke}
+            {...rectProps(tool.startPos, tool.currPos)}
+            fill={tool.fill}
+            stroke={tool.stroke}
           />
         );
       }

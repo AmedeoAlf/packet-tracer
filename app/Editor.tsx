@@ -9,7 +9,7 @@ import {
   memo,
   KeyboardEvent,
 } from "react";
-import { CanvasEvent, Tool, TOOLS } from "./tools/Tool";
+import { CanvasEvent, Tool, ToolCtx, TOOLS } from "./tools/Tool";
 import { makeSelectTool, SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { Cables } from "./editorComponents/Cables";
@@ -37,13 +37,7 @@ export function Editor({
 }): ReactNode {
   const [shouldSave, setShouldSave] = useState(false);
   const [proj, setProject] = useState(initialProject);
-  const [tool, setTool] = useState<Tool>(
-    makeSelectTool({
-      project: proj,
-      updateProject: () => setProject(new ProjectManager(proj)),
-      update: () => {},
-    }),
-  );
+  const [tool, setTool] = useState<Tool<any>>(makeSelectTool());
   tool.project = proj;
   tool.updateProject = () => {
     const newProj = new ProjectManager(proj);
@@ -281,7 +275,7 @@ export function Editor({
 
 // buildEventHandler per eventi "keydown" e "keyup"
 function buildKeyboardEventHandler(
-  tool: Tool,
+  ctx: ToolCtx<Tool<SelectTool>>,
   type: Extract<CanvasEvent["type"], "keydown" | "keyup">,
 ) {
   return (ev: KeyboardEvent<HTMLDivElement>) => {
@@ -297,7 +291,7 @@ function buildKeyboardEventHandler(
       shift: ev.shiftKey,
       consumed: false,
     };
-    tool.onEvent(evObj);
+    ctx.tool.onEvent(ctx, evObj);
     if (evObj.consumed) ev.preventDefault();
   };
 }
@@ -306,7 +300,7 @@ function buildKeyboardEventHandler(
 // `CanvasEvent`, costruito a partire dal tipo di evento DOM specificato
 function buildMouseEventHandler(
   toDOMPoint: (x: number, y: number) => DOMPoint | undefined,
-  tool: Tool,
+  tool: Tool<any>,
   type: Exclude<CanvasEvent["type"], "keydown" | "keyup">,
 ): (ev: MouseEvent) => void {
   const getPos = (ev: MouseEvent) => {

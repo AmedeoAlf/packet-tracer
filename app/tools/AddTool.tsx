@@ -2,26 +2,26 @@ import { Tool, ToolCtx } from "./Tool";
 import { DeviceType, deviceTypesDB } from "../devices/deviceTypesDB";
 import { Coords } from "../common";
 
-export type AddTool = Tool & {
+export type AddTool = Tool<{
   deviceType: keyof typeof deviceTypesDB;
   cursorPos: Coords;
-};
+}>;
 
-export function makeAddTool(ctx: ToolCtx): AddTool {
+export function makeAddTool(ctx: ToolCtx<AddTool>): AddTool {
   return {
     cursorPos: { x: 0, y: 0 },
     deviceType: Object.keys(deviceTypesDB)[0] as DeviceType,
     ...ctx,
     toolname: "add",
-    panel() {
+    panel: (ctx) => {
       return (
         <div>
           Device type:
           <select
-            defaultValue={this.deviceType}
+            defaultValue={ctx.tool.deviceType}
             onChange={(ev) => {
-              this.deviceType = ev.target.value as DeviceType;
-              this.update();
+              ctx.tool.deviceType = ev.target.value as DeviceType;
+              ctx.updateTool();
             }}
           >
             {Object.keys(deviceTypesDB).map((it) => (
@@ -33,24 +33,24 @@ export function makeAddTool(ctx: ToolCtx): AddTool {
         </div>
       );
     },
-    onEvent(ev): void {
+    onEvent: (ctx, ev) => {
       switch (ev.type) {
         case "click":
-          this.project.createDevice(this.deviceType, ev.pos);
-          this.updateProject();
+          ctx.project.createDevice(ctx.tool.deviceType, ev.pos);
+          ctx.updateProject();
           break;
         case "mousemove":
-          this.cursorPos = ev.pos;
-          this.update();
+          ctx.tool.cursorPos = ev.pos;
+          ctx.updateTool();
           break;
       }
     },
-    svgElements() {
+    svgElements: (ctx) => {
       return (
         <use
-          href={deviceTypesDB[this.deviceType].proto.iconId}
+          href={deviceTypesDB[ctx.tool.deviceType].proto.iconId}
           className="opacity-50"
-          {...this.cursorPos}
+          {...ctx.tool.cursorPos}
         />
       );
     },

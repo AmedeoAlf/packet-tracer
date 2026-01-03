@@ -2,7 +2,7 @@
 import { Device } from "../devices/Device";
 import { Coords } from "../common";
 import { Decal } from "../Project";
-import { ReactNode } from "react";
+import { ReactNode, RefObject } from "react";
 import { makeSelectTool } from "./SelectTool";
 import { makeAddTool } from "./AddTool";
 import { makeHandTool } from "./HandTool";
@@ -39,19 +39,22 @@ export type CanvasEvent =
       consumed: boolean;
     } & { type: "keydown" | "keyup" });
 
-export type Tool = ToolCtx & {
+export type Tool<Ext extends object> = {
   readonly toolname: keyof typeof TOOLS;
-  readonly onEvent: (ev: CanvasEvent) => void;
-  readonly panel: () => ReactNode;
-  readonly svgElements: () => ReactNode;
-};
+  readonly onEvent: (ctx: ToolCtx<Tool<Ext>>, ev: CanvasEvent) => void;
+  readonly panel: (ctx: ToolCtx<Tool<Ext>>) => ReactNode;
+  readonly svgElements: (ctx: ToolCtx<Tool<Ext>>) => ReactNode;
+} & Ext;
 
-export type ToolCtx = {
+export type ToolCtx<T extends Tool<any>> = {
   project: ProjectManager;
   // Triggers a React rerender with changes applied to project
   updateProject: () => void;
+
+  tool: T;
+  toolRef: RefObject<T>;
   // Triggers a React rerender with changes applied to the ctx, any further edit won't be applied
-  update: () => void;
+  updateTool: () => void;
 };
 export const TOOLS = {
   select: makeSelectTool,
@@ -60,7 +63,7 @@ export const TOOLS = {
   connect: makeConnectTool,
   label: makeLabelTool,
   rect: makeRectTool,
-} satisfies Record<string, (ctx: ToolCtx) => Tool>;
+} satisfies Record<string, (ctx: ToolCtx<Tool<any>>) => Tool<any>>;
 
 export const TOOL_LIST = [
   "select",

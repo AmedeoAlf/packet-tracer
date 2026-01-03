@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Device } from "../devices/Device";
-import { ToolCtx } from "../tools/Tool";
+import { Tool, ToolCtx } from "../tools/Tool";
 import { MacAddress } from "../protocols/802_3";
 import { toInterfaceId } from "../ProjectManager";
 import { SelectTool } from "../tools/SelectTool";
@@ -177,10 +177,12 @@ export interface DeviceEmulator<State extends InternalState<object>> {
 
 export function buildEmulatorContext(
   device: Device,
-  toolCtx: ToolCtx | SelectTool,
+  toolCtx: ToolCtx<SelectTool | Tool<object>>,
 ): EmulatorContext<any> {
-  function isSelectTool(t: ToolCtx): t is SelectTool {
-    return "toolname" in t && t.toolname == "select";
+  function isSelectTool(
+    t: ToolCtx<SelectTool | Tool<object>>,
+  ): t is ToolCtx<SelectTool> {
+    return t.tool.toolname == "select";
   }
   const emulator = device.emulator;
   return {
@@ -189,7 +191,7 @@ export function buildEmulatorContext(
       device.internalState = { ...device.internalState };
       toolCtx.project.mutDevice(device.id);
       toolCtx.updateProject();
-      toolCtx.update();
+      toolCtx.updateTool();
     },
     sendOnIf(ifIdx, data) {
       toolCtx.project.sendOn(toInterfaceId(device.id, ifIdx), data);
@@ -201,8 +203,8 @@ export function buildEmulatorContext(
     // NOTE: il print avviene anche con il terminale connesso ad un dispositivo diverso
     write: isSelectTool(toolCtx)
       ? (msg) => {
-          toolCtx.stdout += "\n" + msg;
-          toolCtx.update();
+          toolCtx.tool.stdout += "\n" + msg;
+          toolCtx.updateTool();
         }
       : (msg) => {
           console.log("Impossibile scrivere sul terminale", msg);
