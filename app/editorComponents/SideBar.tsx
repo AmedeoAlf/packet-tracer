@@ -1,12 +1,12 @@
 import { memo, ReactNode, useState } from "react";
-import { Tool } from "../tools/Tool";
+import { Tool, ToolCtx } from "../tools/Tool";
 
 // La barra laterale dell'interfaccia: il suo contenuto è intermente deciso dal
 // tool in uso.
 export const SideBar = memo(function SideBar({
-  tool,
+  toolCtx,
 }: {
-  tool: Tool<any>;
+  toolCtx: ToolCtx<Tool<object>>;
 }): ReactNode {
   const [open, setOpen] = useState(true);
   return open ? (
@@ -19,7 +19,7 @@ export const SideBar = memo(function SideBar({
           x
         </div>
       </div>
-      {tool.panel()}
+      {toolCtx.tool.panel(toolCtx)}
     </div>
   ) : (
     <button

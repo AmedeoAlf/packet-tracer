@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/immutability */
+
 import {
   useState,
   useRef,
@@ -36,28 +37,32 @@ export function Editor({
   save: (p: ProjectManager) => void;
 }): ReactNode {
   const [shouldSave, setShouldSave] = useState(false);
-  const [proj, setProject] = useState(initialProject);
+  const [project, setProject] = useState(initialProject);
   const [tool, setTool] = useState<Tool<any>>(makeSelectTool());
-  tool.project = proj;
-  tool.updateProject = () => {
-    const newProj = new ProjectManager(proj);
-    setShouldSave(true);
-    setProject(newProj);
-  };
-  tool.update = () => {
-    setTool({ ...tool });
+  const toolRef = useRef(tool);
+  toolRef.current = tool;
+
+  const toolCtx: ToolCtx<Tool<object>> = {
+    tool,
+    project,
+    toolRef,
+    updateProject() {
+      const newProj = new ProjectManager(project);
+      setShouldSave(true);
+      setProject(newProj);
+    },
+    updateTool() {
+      setTool({ ...tool });
+    },
   };
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (shouldSave) save(proj);
+      if (shouldSave) save(project);
       setShouldSave(false);
     }, 500);
     return () => clearTimeout(timeout);
-  }, [proj, save, shouldSave]);
-
-  const toolRef = useRef(tool);
-  toolRef.current = tool;
+  }, [project, save, shouldSave]);
 
   const svgCanvas = useRef<SVGSVGElement>(null);
   let pt = svgCanvas.current?.createSVGPoint();
@@ -73,7 +78,11 @@ export function Editor({
     return pt.matrixTransform(svgCanvas.current!.getScreenCTM()!.inverse());
   }
 
-  const mouseHandler = buildMouseEventHandler.bind(null, svgToDOMPoint, tool);
+  const mouseHandler = buildMouseEventHandler.bind(
+    null,
+    svgToDOMPoint,
+    toolCtx,
+  );
 
   useEffect(() => {
     window.onresize = () => setCanvasSize(undefined);
@@ -87,15 +96,15 @@ export function Editor({
   }, []);
 
   const svgViewBox = useMemo(() => {
-    const vb = [proj.viewBoxX, proj.viewBoxY, 10000, 10000];
+    const vb = [project.viewBoxX, project.viewBoxY, 10000, 10000];
     if (canvasSize) {
-      vb[2] = canvasSize[0] / proj.viewBoxZoom;
-      vb[3] = canvasSize[1] / proj.viewBoxZoom;
+      vb[2] = canvasSize[0] / project.viewBoxZoom;
+      vb[3] = canvasSize[1] / project.viewBoxZoom;
       vb[0] -= vb[2] * 0.5;
       vb[1] -= vb[3] * 0.5;
     }
     return vb;
-  }, [canvasSize, proj.viewBoxZoom, proj.viewBoxX, proj.viewBoxY]);
+  }, [canvasSize, project.viewBoxZoom, project.viewBoxX, project.viewBoxY]);
 
   // useEffect(() => {
   //   const int = setInterval(() => {
@@ -103,23 +112,23 @@ export function Editor({
   //   }, 10)
   //   return clearInterval.bind(0, int);
   // }, [])
-  proj.advanceTickToCallback(tool);
+  project.advanceTickToCallback(tool);
 
   return (
     <div
-      onKeyDown={buildKeyboardEventHandler(tool, "keydown")}
-      onKeyUp={buildKeyboardEventHandler(tool, "keyup")}
+      onKeyDown={buildKeyboardEventHandler(toolCtx, "keydown")}
+      onKeyUp={buildKeyboardEventHandler(toolCtx, "keyup")}
       tabIndex={0}
     >
       <div className="bg-sky-700 fixed top-0 w-full h-[50px] indent-1.5em border-b-[.1em] border-solid border-sky-800 flex items-center px-1">
         <BtnArray>
-          <BtnArrEl onClick={() => proj.advanceTickToCallback(tool)}>
+          <BtnArrEl onClick={() => project.advanceTickToCallback(tool)}>
             Advance
           </BtnArrEl>
           <BtnArrEl
             onClick={() =>
               navigator.clipboard.writeText(
-                JSON.stringify(proj.exportProject()),
+                JSON.stringify(project.exportProject()),
               )
             }
           >
@@ -140,10 +149,10 @@ export function Editor({
         <p className="inline ml-3">
           {!shouldSave && isSaved ? "Salvato" : "Salvataggio in corso"}
         </p>
-        <p className="inline ml-3">Tick corrente: {proj.currTick}</p>
+        <p className="inline ml-3">Tick corrente: {project.currTick}</p>
       </div>
 
-      <SideBar tool={tool} />
+      <SideBar toolCtx={toolCtx} />
 
       <div
         id="left-side-bar"
@@ -159,9 +168,9 @@ export function Editor({
               <svg
                 viewBox="-35 -35 70 70"
                 onClick={() => {
-                  proj.createDevice(it.proto.deviceType, {
-                    x: (proj.lastId % 5) * 100 - 600,
-                    y: Math.floor(proj.lastId / 5) * 100 - 350,
+                  project.createDevice(it.proto.deviceType, {
+                    x: (project.lastId % 5) * 100 - 600,
+                    y: Math.floor(project.lastId / 5) * 100 - 350,
                   });
                   tool.updateProject();
                 }}
@@ -205,11 +214,11 @@ export function Editor({
         onMouseLeave={mouseHandler("mouseleave")}
         onWheel={(ev) => {
           if (ev.ctrlKey) {
-            const from = tool.project.viewBoxZoom;
-            tool.project.viewBoxZoom *= 1 + ev.deltaY * -0.0005;
+            const from = toolCtx.project.viewBoxZoom;
+            toolCtx.project.viewBoxZoom *= 1 + ev.deltaY * -0.0005;
             // devono entrambe non essere undefined per chiamare svgToDOMPoint
             if (canvasSize && pt) {
-              const factor = from / tool.project.viewBoxZoom;
+              const factor = from / toolCtx.project.viewBoxZoom;
 
               const cursor = svgToDOMPoint(ev.clientX, ev.clientY)!;
               const center = svgToDOMPoint(
@@ -217,20 +226,20 @@ export function Editor({
                 canvasSize[1] / 2,
               )!;
 
-              tool.project.viewBoxX += (cursor.x - center.x) * (1 - factor);
-              tool.project.viewBoxY += (cursor.y - center.y) * (1 - factor);
+              toolCtx.project.viewBoxX += (cursor.x - center.x) * (1 - factor);
+              toolCtx.project.viewBoxY += (cursor.y - center.y) * (1 - factor);
             }
-            tool.updateProject();
-            tool.update();
+            toolCtx.updateProject();
+            toolCtx.updateTool();
           } else if (ev.shiftKey) {
-            tool.project.viewBoxX += ev.deltaY / tool.project.viewBoxZoom;
-            tool.updateProject();
-            // tool.update()
+            toolCtx.project.viewBoxX += ev.deltaY / toolCtx.project.viewBoxZoom;
+            toolCtx.updateProject();
+            // toolCtx.update()
           } else {
-            tool.project.viewBoxX += ev.deltaX / tool.project.viewBoxZoom;
-            tool.project.viewBoxY += ev.deltaY / tool.project.viewBoxZoom;
-            tool.updateProject();
-            // tool.update()
+            toolCtx.project.viewBoxX += ev.deltaX / toolCtx.project.viewBoxZoom;
+            toolCtx.project.viewBoxY += ev.deltaY / toolCtx.project.viewBoxZoom;
+            toolCtx.updateProject();
+            // toolCtx.update()
           }
         }}
         className={`bg-${svgCanvas.current ? "gray-700" : "gray-100"} -z-1 w-full h-screen transition-colors select-none`}
@@ -251,17 +260,20 @@ export function Editor({
       >
         <defs> {Object.values(ICONS)} </defs>
         <Decals
-          decals={proj.immutableDecals}
+          decals={toolCtx.project.immutableDecals}
           highlighted={
             tool.toolname == "select"
               ? (tool as SelectTool).selectedDecals
               : undefined
           }
         />
-        <Cables devices={proj.immutableDevices} cables={proj.getCables()} />
-        {tool.svgElements()}
+        <Cables
+          devices={project.immutableDevices}
+          cables={project.getCables()}
+        />
+        {toolCtx.tool.svgElements(toolCtx)}
         <Devices
-          devices={proj.immutableDevices}
+          devices={project.immutableDevices}
           highlighted={
             tool.toolname == "select"
               ? (tool as SelectTool).selected
@@ -275,7 +287,7 @@ export function Editor({
 
 // buildEventHandler per eventi "keydown" e "keyup"
 function buildKeyboardEventHandler(
-  ctx: ToolCtx<Tool<SelectTool>>,
+  ctx: ToolCtx<Tool<object>>,
   type: Extract<CanvasEvent["type"], "keydown" | "keyup">,
 ) {
   return (ev: KeyboardEvent<HTMLDivElement>) => {
@@ -300,7 +312,7 @@ function buildKeyboardEventHandler(
 // `CanvasEvent`, costruito a partire dal tipo di evento DOM specificato
 function buildMouseEventHandler(
   toDOMPoint: (x: number, y: number) => DOMPoint | undefined,
-  tool: Tool<any>,
+  ctx: ToolCtx<Tool<object>>,
   type: Exclude<CanvasEvent["type"], "keydown" | "keyup">,
 ): (ev: MouseEvent) => void {
   const getPos = (ev: MouseEvent) => {
@@ -312,27 +324,27 @@ function buildMouseEventHandler(
     return (ev: MouseEvent) => {
       if (ev.buttons == 4) {
         ev.preventDefault();
-        tool.project.viewBoxX -= ev.movementX / tool.project.viewBoxZoom;
-        tool.project.viewBoxY -= ev.movementY / tool.project.viewBoxZoom;
-        tool.updateProject();
+        ctx.project.viewBoxX -= ev.movementX / ctx.project.viewBoxZoom;
+        ctx.project.viewBoxY -= ev.movementY / ctx.project.viewBoxZoom;
+        ctx.updateProject();
       } else {
-        tool.onEvent({
+        ctx.tool.onEvent(ctx, {
           type,
           movement: { x: ev.movementX, y: ev.movementY },
           pos: getPos(ev),
-          device: tool.project.deviceFromTag(ev.target as SVGUseElement),
-          decal: tool.project.decalFromTag(ev.target as SVGUseElement),
+          device: ctx.project.deviceFromTag(ev.target as SVGUseElement),
+          decal: ctx.project.decalFromTag(ev.target as SVGUseElement),
           shiftKey: ev.shiftKey,
         });
       }
     };
   } else {
     return (ev: MouseEvent) => {
-      tool.onEvent({
+      ctx.tool.onEvent(ctx, {
         type,
         pos: getPos(ev),
-        device: tool.project.deviceFromTag(ev.target as SVGUseElement),
-        decal: tool.project.decalFromTag(ev.target as SVGUseElement),
+        device: ctx.project.deviceFromTag(ev.target as SVGUseElement),
+        decal: ctx.project.decalFromTag(ev.target as SVGUseElement),
         shiftKey: ev.shiftKey,
       });
       return false;
