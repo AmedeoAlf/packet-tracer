@@ -51,14 +51,14 @@ function intfType(dev: Device, intf: number) {
   return dev.internalState.netInterfaces[intf].type;
 }
 
-export function makeConnectTool(ctx: ToolCtx<ConnectTool>): ConnectTool {
+export function makeConnectTool(prev: ConnectTool | object = {}): ConnectTool {
   return {
     deviceA: undefined,
     idxA: undefined,
     deviceB: undefined,
     idxB: undefined,
     errorMsg: undefined,
-    ...ctx,
+    ...prev,
     toolname: "connect",
     panel: (ctx) => {
       return (

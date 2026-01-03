@@ -1,5 +1,5 @@
 import { Coords } from "../common";
-import { Tool, ToolCtx } from "./Tool";
+import { Tool } from "./Tool";
 
 export type LabelTool = Tool<{
   currInput?: {
@@ -8,9 +8,9 @@ export type LabelTool = Tool<{
   };
 }>;
 
-export function makeLabelTool(ctx: ToolCtx<LabelTool>): LabelTool {
+export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
   return {
-    ...ctx,
+    ...prev,
     toolname: "label",
     panel: (ctx) => {
       if (!ctx.tool.currInput)

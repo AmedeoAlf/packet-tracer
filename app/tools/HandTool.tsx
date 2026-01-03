@@ -1,11 +1,11 @@
-import { Tool, ToolCtx } from "./Tool";
+import { Tool } from "./Tool";
 
 export type HandTool = Tool<{ holding: boolean }>;
 
-export function makeHandTool(ctx: ToolCtx<HandTool>): HandTool {
+export function makeHandTool(prev: HandTool | object = {}): HandTool {
   return {
     holding: false,
-    ...ctx,
+    ...prev,
     toolname: "hand",
     panel: (ctx) => {
       return (

@@ -63,7 +63,7 @@ export const TOOLS = {
   connect: makeConnectTool,
   label: makeLabelTool,
   rect: makeRectTool,
-} satisfies Record<string, (ctx: ToolCtx<Tool<any>>) => Tool<any>>;
+} satisfies Record<string, (prev: Tool<any> | object) => Tool<any>>;
 
 export const TOOL_LIST = [
   "select",

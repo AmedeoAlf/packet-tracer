@@ -1,4 +1,4 @@
-import { Tool, ToolCtx } from "./Tool";
+import { Tool } from "./Tool";
 import {
   buildEmulatorContext,
   DevicePanel,

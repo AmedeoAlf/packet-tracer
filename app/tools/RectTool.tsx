@@ -1,5 +1,5 @@
 import { Coords } from "../common";
-import { Tool, ToolCtx } from "./Tool";
+import { Tool } from "./Tool";
 
 export type RectTool = Tool<{
   startPos?: Coords;
@@ -20,11 +20,11 @@ function rectProps(
   };
 }
 
-export function makeRectTool(ctx: ToolCtx<RectTool>): RectTool {
+export function makeRectTool(prev: RectTool | object = {}): RectTool {
   return {
     fill: "#000000",
     stroke: "none",
-    ...ctx,
+    ...prev,
     toolname: "rect",
     panel: (ctx) => {
       if (ctx.tool.startPos === undefined || ctx.tool.currPos === undefined)

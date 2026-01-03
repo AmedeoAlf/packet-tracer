@@ -1,4 +1,4 @@
-import { Tool, ToolCtx } from "./Tool";
+import { Tool } from "./Tool";
 import { DeviceType, deviceTypesDB } from "../devices/deviceTypesDB";
 import { Coords } from "../common";
 
@@ -7,11 +7,11 @@ export type AddTool = Tool<{
   cursorPos: Coords;
 }>;
 
-export function makeAddTool(ctx: ToolCtx<AddTool>): AddTool {
+export function makeAddTool(prev: AddTool | object = {}): AddTool {
   return {
     cursorPos: { x: 0, y: 0 },
     deviceType: Object.keys(deviceTypesDB)[0] as DeviceType,
-    ...ctx,
+    ...prev,
     toolname: "add",
     panel: (ctx) => {
       return (
