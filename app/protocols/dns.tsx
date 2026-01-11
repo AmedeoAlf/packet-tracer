@@ -85,12 +85,41 @@ export enum DNSClass {
 
 export class ResourceRecord {
   constructor(
-    name: string,
-    type: RRType,
-    dnsClass: DNSClass,
-    ttl: number,
-    rdata: Buffer
+    public name: string,
+    public type: RRType,
+    public classCode: DNSClass,
+    public ttl: number,
+    public rdata: Buffer
   ) { }
+
+  toBytes(): Buffer {
+    if (this.rdata.length >= 1 << 16) throw `Can't handle resource record RDATA >=${1 << 16}`;
+    const name = Buffer.from(
+      this.name
+        .split(".")
+        .map(word => Buffer.from(word, "ascii"))
+        .flatMap(bytes => {
+          if (bytes.length >= 64) throw `Tried to encode domain longer than 64 bytes (${bytes.length}) in resource record`;
+          return [bytes.length, ...bytes]
+        })
+        .concat([0])
+    );
+
+    const buf = Buffer.alloc(name.length + 10 + this.rdata.length);
+    buf.set(name);
+    let cursor = name.length;
+
+    buf.writeUInt16BE(this.type, cursor);
+    buf.writeUInt16BE(this.classCode, (cursor += 2));
+    buf.writeUInt32BE(this.ttl, (cursor += 2));
+    buf.writeUInt16BE(this.rdata.length, (cursor += 4));
+    buf.set(this.rdata, (cursor += 2));
+
+    return buf;
+  }
+
+  static fromBytes(bytes: Buffer, from: number): ResourceRecord {
+  }
 }
 
 export enum ResponseCode {
@@ -124,15 +153,15 @@ export enum DNSOpCodes {
 
 export class DNSQuestion {
   constructor(
-    name: string,
-    type: RRType,
-    dnsClass: DNSClass,
+    public name: string,
+    public type: RRType,
+    public dnsClass: DNSClass,
   ) { }
 }
 
 export class DNSPacket {
   constructor(
-    id: number,
+    public id: number,
   ) { }
 
   toBytes(): Buffer {
@@ -146,8 +175,8 @@ export class DNSPacket {
 export class DNSQueryPacket extends DNSPacket {
   constructor(
     id: number,
-    recursionDesired: boolean,
-    checkingDisabled = true
+    public recursionDesired: boolean,
+    public checkingDisabled = true
   ) {
     super(id);
   }
@@ -156,10 +185,10 @@ export class DNSQueryPacket extends DNSPacket {
 export class DNSResponsePacket extends DNSPacket {
   constructor(
     id: number,
-    authoritative: boolean,
-    responseCode = ResponseCode.NoError,
-    recursionAvailable = false,
-    authenticData = true,
+    public authoritative: boolean,
+    public responseCode = ResponseCode.NoError,
+    public recursionAvailable = false,
+    public authenticData = true,
   ) {
     super(id);
   }
