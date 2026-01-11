@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/immutability */
-
 import {
   useState,
   useRef,
@@ -20,7 +19,7 @@ import { Devices } from "./editorComponents/Devices";
 import { deviceTypesDB } from "./devices/deviceTypesDB";
 import { ProjectManager } from "./ProjectManager";
 import { Decal } from "./Project";
-import { BtnArray, BtnArrEl } from "./editorComponents/BtnArray";
+import { TopBarBtns, TopBarBtnsParams } from "./editorComponents/TopBarBtns";
 
 /*
  * Questo componente è tutta l'interfaccia del sito. Crea gli hook sia per il
@@ -114,6 +113,9 @@ export function Editor({
   // }, [])
   project.advanceTickToCallback(toolCtx);
 
+  const tbbp: TopBarBtnsParams = useRef({ ctx: toolCtx, setProject });
+  tbbp.current = { ctx: toolCtx, setProject };
+
   return (
     <div
       onKeyDown={buildKeyboardEventHandler(toolCtx, "keydown")}
@@ -121,31 +123,8 @@ export function Editor({
       tabIndex={0}
     >
       <div className="bg-sky-700 fixed top-0 w-full h-[50px] indent-1.5em border-b-[.1em] border-solid border-sky-800 flex items-center px-1">
-        <BtnArray>
-          <BtnArrEl onClick={() => project.advanceTickToCallback(tool)}>
-            Advance
-          </BtnArrEl>
-          <BtnArrEl
-            onClick={() =>
-              navigator.clipboard.writeText(
-                JSON.stringify(project.exportProject()),
-              )
-            }
-          >
-            Salva
-          </BtnArrEl>
-          <BtnArrEl
-            onClick={async () =>
-              setProject(
-                ProjectManager.fromSerialized(
-                  JSON.parse(await navigator.clipboard.readText()),
-                ),
-              )
-            }
-          >
-            Carica
-          </BtnArrEl>
-        </BtnArray>
+        <TopBarBtns ref={tbbp} />
+
         <p className="inline ml-3">
           {!shouldSave && isSaved ? "Salvato" : "Salvataggio in corso"}
         </p>
