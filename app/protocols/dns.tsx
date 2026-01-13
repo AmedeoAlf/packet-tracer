@@ -72,7 +72,7 @@ export enum RRType {
   STAR = 255,
   AXFT = 252,
   IXFR = 251,
-  OPT = 41
+  OPT = 41,
 }
 
 export enum DNSClass {
@@ -80,7 +80,7 @@ export enum DNSClass {
   CHAOS = 3,
   HESIOD = 4,
   NONE = 254,
-  ANY = 255
+  ANY = 255,
 }
 
 export class ResourceRecord {
@@ -89,20 +89,22 @@ export class ResourceRecord {
     public type: RRType,
     public classCode: DNSClass,
     public ttl: number,
-    public rdata: Buffer
-  ) { }
+    public rdata: Buffer,
+  ) {}
 
   toBytes(): Buffer {
-    if (this.rdata.length >= 1 << 16) throw `Can't handle resource record RDATA >=${1 << 16}`;
+    if (this.rdata.length >= 1 << 16)
+      throw `Can't handle resource record RDATA >=${1 << 16}`;
     const name = Buffer.from(
       this.name
         .split(".")
-        .map(word => Buffer.from(word, "ascii"))
-        .flatMap(bytes => {
-          if (bytes.length >= 64) throw `Tried to encode domain longer than 64 bytes (${bytes.length}) in resource record`;
-          return [bytes.length, ...bytes]
+        .map((word) => Buffer.from(word, "ascii"))
+        .flatMap((bytes) => {
+          if (bytes.length >= 64)
+            throw `Tried to encode domain longer than 64 bytes (${bytes.length}) in resource record`;
+          return [bytes.length, ...bytes];
         })
-        .concat([0])
+        .concat([0]),
     );
 
     const buf = Buffer.alloc(name.length + 10 + this.rdata.length);
@@ -118,8 +120,7 @@ export class ResourceRecord {
     return buf;
   }
 
-  static fromBytes(bytes: Buffer, from: number): ResourceRecord {
-  }
+  static fromBytes(bytes: Buffer, from: number): ResourceRecord {}
 }
 
 export enum ResponseCode {
@@ -156,27 +157,24 @@ export class DNSQuestion {
     public name: string,
     public type: RRType,
     public dnsClass: DNSClass,
-  ) { }
+  ) {}
 }
 
 export class DNSPacket {
-  constructor(
-    public id: number,
-  ) { }
+  constructor(public id: number) {}
 
   toBytes(): Buffer {
     return Buffer.alloc(0);
   }
 
-  static fromBytes(bytes: Buffer): DNSPacket {
-  }
+  static fromBytes(bytes: Buffer): DNSPacket {}
 }
 
 export class DNSQueryPacket extends DNSPacket {
   constructor(
     id: number,
     public recursionDesired: boolean,
-    public checkingDisabled = true
+    public checkingDisabled = true,
   ) {
     super(id);
   }

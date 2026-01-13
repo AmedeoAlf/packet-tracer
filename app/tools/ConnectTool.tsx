@@ -68,7 +68,9 @@ export function makeConnectTool(prev: ConnectTool | object = {}): ConnectTool {
           </div>
           <div className="flex flex-wrap indent-0">
             {!ctx.tool.deviceA ? (
-              <>Seleziona il primo dispositivo</>
+              <div className="h-8 rounded-md font-bold m-2 px-2 p-1 bg-gray-700 text-gray-400">
+                Seleziona il primo dispositivo
+              </div>
             ) : (
               <>
                 <InterfaceSelector
@@ -81,7 +83,9 @@ export function makeConnectTool(prev: ConnectTool | object = {}): ConnectTool {
                   ctx={ctx}
                 />
                 {!ctx.tool.deviceB ? (
-                  <>Seleziona il secondo dispositivo</>
+                  <div className="h-8 rounded-md font-bold m-2 px-2 p-1 bg-gray-700 text-gray-400">
+                    Seleziona il secondo dispositivo
+                  </div>
                 ) : (
                   <InterfaceSelector
                     device={ctx.tool.deviceB}

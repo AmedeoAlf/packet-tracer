@@ -14,19 +14,28 @@ export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
     toolname: "label",
     panel: (ctx) => {
       if (!ctx.tool.currInput)
-        return <p>Clicca sullo scenario per aggiungere testo</p>;
+        return (
+          <p className="h-8 rounded-md font-bold m-2 px-2 p-1 bg-gray-800 text-gray-500 text-center">
+            Clicca sullo scenario per aggiungere testo
+          </p>
+        );
       return (
         <>
-          Contenuto:
-          <input
-            type="text"
-            value={ctx.tool.currInput.text}
-            onChange={(ev) => {
-              ctx.tool.currInput!.text = ev.target.value;
-              ctx.updateTool();
-            }}
-            autoFocus
-          />
+          <p className="h-8 rounded-md font-bold m-2 px-2 p-1 bg-gray-800 text-gray-500 text-center">
+            Clicca sullo scenario per aggiungere testo
+          </p>
+          <div className="h-10 rounded-md font-bold m-2 px-2 p-2 bg-gray-700 text-gray-400 text-center w-[60%]">
+            Contenuto:
+            <input
+              type="text"
+              value={ctx.tool.currInput.text}
+              onChange={(ev) => {
+                ctx.tool.currInput!.text = ev.target.value;
+                ctx.updateTool();
+              }}
+              autoFocus
+            />
+          </div>
         </>
       );
     },

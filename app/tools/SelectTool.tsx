@@ -30,7 +30,11 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
     panel: (ctx) => {
       switch (ctx.tool.selected.size + ctx.tool.selectedDecals.size) {
         case 0:
-          return <p>Seleziona un dispositivo per vedere le proprietà</p>;
+          return (
+            <p className="h-8 rounded-md font-bold m-2 px-2 p-1 bg-gray-800 text-gray-500 text-center">
+              Seleziona un dispositivo per vedere le proprietà
+            </p>
+          );
         case 1:
           if (ctx.tool.selected.size === 1) {
             const device = ctx.project.immutableDevices.get(

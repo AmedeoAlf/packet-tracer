@@ -9,9 +9,10 @@ export function makeHandTool(prev: HandTool | object = {}): HandTool {
     toolname: "hand",
     panel: (ctx) => {
       return (
-        <div>
-          Zoom level:
+        <div className="h-8 rounded-md font-bold m-2 px-2 p-1 bg-gray-700 text-gray-400">
+          Zoom level:&nbsp;
           <input
+            className="text-center w-15 rounded-md bg-gray-800"
             type="number"
             min={0}
             max={500}
