@@ -15,9 +15,10 @@ export function makeAddTool(prev: AddTool | object = {}): AddTool {
     toolname: "add",
     panel: (ctx) => {
       return (
-        <div>
-          Device type:
+        <div className="h-8 rounded-md font-bold m-2 px-2 p-1 bg-gray-700 text-gray-400">
+          Device type:&nbsp;
           <select
+            className="rounded-md bg-gray-800"
             defaultValue={ctx.tool.deviceType}
             onChange={(ev) => {
               ctx.tool.deviceType = ev.target.value as DeviceType;

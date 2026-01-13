@@ -72,7 +72,7 @@ export enum RRType {
   STAR = 255,
   AXFT = 252,
   IXFR = 251,
-  OPT = 41
+  OPT = 41,
 }
 
 export enum DNSClass {
@@ -80,7 +80,7 @@ export enum DNSClass {
   CHAOS = 3,
   HESIOD = 4,
   NONE = 254,
-  ANY = 255
+  ANY = 255,
 }
 
 function parseNameField(nullTerminated: Buffer): string[] {
@@ -115,8 +115,8 @@ export class ResourceRecord {
     public type: RRType,
     public classCode: DNSClass,
     public ttl: number,
-    public rdata: Buffer
-  ) { }
+    public rdata: Buffer,
+  ) {}
 
   toBytes(): Buffer {
     if (this.rdata.length >= 1 << 16) throw `Can't handle resource record RDATA >=${1 << 16}`;
