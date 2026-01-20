@@ -9,7 +9,7 @@ export const Devices = memo(function Devices({
   highlighted,
 }: {
   devices: Project["devices"];
-  highlighted?: Set<number>;
+  highlighted?: (d: Device) => boolean;
 }) {
   return (
     <g>
@@ -23,7 +23,7 @@ export const Devices = memo(function Devices({
                     device={d}
                     key={d.id}
                     extraClass={
-                      highlighted.has(d.id) ? " brightness-50" : undefined
+                      highlighted(d) ? " brightness-50" : undefined
                     }
                   />
                 )

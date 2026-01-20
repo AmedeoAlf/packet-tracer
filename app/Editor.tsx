@@ -10,7 +10,7 @@ import {
   KeyboardEvent,
 } from "react";
 import { CanvasEvent, Tool, ToolCtx, TOOLS } from "./tools/Tool";
-import { makeSelectTool, SelectTool } from "./tools/SelectTool";
+import { isDecalHighlighted, isDeviceHighlighted, isSelectTool, makeSelectTool, SelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { Cables } from "./editorComponents/Cables";
 import { SideBar } from "./editorComponents/SideBar";
@@ -241,8 +241,8 @@ export function Editor({
         <Decals
           decals={toolCtx.project.immutableDecals}
           highlighted={
-            tool.toolname == "select"
-              ? (tool as SelectTool).selectedDecals
+            isSelectTool(tool)
+              ? isDecalHighlighted.bind(null, tool)
               : undefined
           }
         />
@@ -254,8 +254,8 @@ export function Editor({
         <Devices
           devices={project.immutableDevices}
           highlighted={
-            tool.toolname == "select"
-              ? (tool as SelectTool).selected
+            isSelectTool(toolCtx.tool)
+              ? isDeviceHighlighted.bind(null, tool)
               : undefined
           }
         />
@@ -336,7 +336,7 @@ const Decals = memo(function Decals({
   highlighted,
 }: {
   decals: (Decal | undefined)[];
-  highlighted?: Set<number>;
+  highlighted?: (d: Decal) => boolean;
 }): ReactNode {
   return decals.map((d, idx) => {
     if (!d) return;
@@ -348,7 +348,7 @@ const Decals = memo(function Decals({
             key={idx}
             {...d.pos}
             {...data}
-            fill={highlighted && highlighted.has(idx) ? "#555" : "#000"}
+            fill={highlighted && highlighted(d) ? "#555" : "#000"}
           >
             {d.text}
           </text>

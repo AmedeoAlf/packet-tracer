@@ -1,4 +1,4 @@
-import { Tool } from "./Tool";
+import { Tool, ToolCtx } from "./Tool";
 import {
   buildEmulatorContext,
   DevicePanel,
@@ -8,14 +8,46 @@ import {
   runOnInterpreter,
 } from "../emulators/DeviceEmulator";
 import { Coords } from "../common";
+import { Device } from "../devices/Device";
+import { Decal } from "../Project";
 
 export type SelectTool = Tool<{
   selected: Set<number>;
   selectedDecals: Set<number>;
   lastCursorPos?: Coords;
+  // User is in rectangle selection if this is not undefined
+  selectionRectangle?: Coords;
   stdout: string;
   stdin: string;
 }>;
+
+export function isSelectTool(tool: Tool<any>): tool is SelectTool {
+  return tool.toolname == "select";
+}
+
+export function isDeviceHighlighted(tool: SelectTool, dev: Device) {
+  if (tool.selected.has(dev.id)) return true;
+  if (!tool.lastCursorPos || !tool.selectionRectangle) return false;
+
+  // Check if it is part of the selection rectangle
+  const x = [tool.lastCursorPos.x, tool.selectionRectangle.x].toSorted();
+  const y = [tool.lastCursorPos.y, tool.selectionRectangle.y].toSorted();
+
+  return x[0] < dev.pos.x && dev.pos.x < x[1] &&
+    y[0] < dev.pos.y && dev.pos.y < y[1]
+}
+
+export function isDecalHighlighted(tool: SelectTool, dec: Decal) {
+  if (tool.selectedDecals.has(dec.id)) return true;
+  if (!tool.lastCursorPos || !tool.selectionRectangle) return false;
+
+  // Check if it is part of the selection rectangle
+  const x = [tool.lastCursorPos.x, tool.selectionRectangle.x].toSorted();
+  const y = [tool.lastCursorPos.y, tool.selectionRectangle.y].toSorted();
+
+  return x[0] < dec.pos.x && dec.pos.x < x[1] &&
+    y[0] < dec.pos.y && dec.pos.y < y[1]
+}
 
 export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
   return {
@@ -26,7 +58,22 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
     lastCursorPos: undefined,
     ...prev,
     toolname: "select",
-    svgElements: () => <></>,
+    svgElements: (ctx) => {
+      if (!ctx.tool.selectionRectangle || !ctx.tool.lastCursorPos) return <></>;
+      const props = {
+        x: Math.min(ctx.tool.selectionRectangle.x, ctx.tool.lastCursorPos.x),
+        y: Math.min(ctx.tool.selectionRectangle.y, ctx.tool.lastCursorPos.y),
+        width: Math.abs(
+          ctx.tool.selectionRectangle.x - ctx.tool.lastCursorPos.x,
+        ),
+        height: Math.abs(
+          ctx.tool.selectionRectangle.y - ctx.tool.lastCursorPos.y,
+        ),
+      };
+      return (
+        <rect {...props} className="fill-blue-400/10 stroke-blue-200" rx={6} />
+      );
+    },
     panel: (ctx) => {
       switch (ctx.tool.selected.size + ctx.tool.selectedDecals.size) {
         case 0:
@@ -131,30 +178,40 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             ctx.tool.selectedDecals.add(ev.decal.id);
             ctx.tool.lastCursorPos = ev.pos;
           } else {
-            ctx.tool.selected.clear();
-            ctx.tool.selectedDecals.clear();
+            if (!ev.shiftKey) {
+              ctx.tool.selected.clear();
+              ctx.tool.selectedDecals.clear();
+            }
+            ctx.tool.selectionRectangle = ev.pos;
+            ctx.tool.lastCursorPos = ev.pos;
+            ctx.updateTool();
           }
           break;
         case "mousemove":
           if (ctx.tool.lastCursorPos) {
-            for (const dev of ctx.tool.selected) {
-              ctx.project.mutDevice(dev)!.pos.x +=
-                ev.pos.x - ctx.tool.lastCursorPos.x;
-              ctx.project.mutDevice(dev)!.pos.y +=
-                ev.pos.y - ctx.tool.lastCursorPos.y;
+            if (!ctx.tool.selectionRectangle) {
+              for (const dev of ctx.tool.selected) {
+                ctx.project.mutDevice(dev)!.pos.x +=
+                  ev.pos.x - ctx.tool.lastCursorPos.x;
+                ctx.project.mutDevice(dev)!.pos.y +=
+                  ev.pos.y - ctx.tool.lastCursorPos.y;
+              }
+              for (const dec of ctx.tool.selectedDecals) {
+                ctx.project.mutDecal(dec)!.pos.x +=
+                  ev.pos.x - ctx.tool.lastCursorPos.x;
+                ctx.project.mutDecal(dec)!.pos.y +=
+                  ev.pos.y - ctx.tool.lastCursorPos.y;
+              }
+              ctx.updateProject();
             }
-            for (const dec of ctx.tool.selectedDecals) {
-              ctx.project.mutDecal(dec)!.pos.x +=
-                ev.pos.x - ctx.tool.lastCursorPos.x;
-              ctx.project.mutDecal(dec)!.pos.y +=
-                ev.pos.y - ctx.tool.lastCursorPos.y;
-            }
-            ctx.updateProject();
             ctx.tool.lastCursorPos = ev.pos;
+            ctx.updateTool();
           }
           break;
         case "mouseup":
-          if (ctx.tool.lastCursorPos) {
+          if (ctx.tool.selectionRectangle) {
+            ctx.tool.selectionRectangle = undefined;
+          } else if (ctx.tool.lastCursorPos) {
             const diffX = ev.pos.x - ctx.tool.lastCursorPos.x;
             const diffY = ev.pos.y - ctx.tool.lastCursorPos.y;
             if (diffX || diffY) {
@@ -168,8 +225,9 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
               }
               ctx.updateProject();
             }
-            ctx.tool.lastCursorPos = undefined;
           }
+          ctx.tool.lastCursorPos = undefined;
+          ctx.updateTool();
           break;
         case "keydown":
           ev.consumed = true;
