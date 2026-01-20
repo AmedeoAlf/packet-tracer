@@ -13,6 +13,8 @@ export type SelectTool = Tool<{
   selected: Set<number>;
   selectedDecals: Set<number>;
   lastCursorPos?: Coords;
+  // User is in rectangle selection if this is not undefined
+  selectionRectangle?: Coords;
   stdout: string;
   stdin: string;
 }>;
@@ -26,7 +28,22 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
     lastCursorPos: undefined,
     ...prev,
     toolname: "select",
-    svgElements: () => <></>,
+    svgElements: (ctx) => {
+      if (!ctx.tool.selectionRectangle || !ctx.tool.lastCursorPos) return <></>;
+      const props = {
+        x: Math.min(ctx.tool.selectionRectangle.x, ctx.tool.lastCursorPos.x),
+        y: Math.min(ctx.tool.selectionRectangle.y, ctx.tool.lastCursorPos.y),
+        width: Math.abs(
+          ctx.tool.selectionRectangle.x - ctx.tool.lastCursorPos.x,
+        ),
+        height: Math.abs(
+          ctx.tool.selectionRectangle.y - ctx.tool.lastCursorPos.y,
+        ),
+      };
+      return (
+        <rect {...props} className="fill-blue-400/10 stroke-blue-200" rx={6} />
+      );
+    },
     panel: (ctx) => {
       switch (ctx.tool.selected.size + ctx.tool.selectedDecals.size) {
         case 0:
@@ -123,6 +140,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             }
             ctx.tool.selected.add(ev.device.id);
             ctx.tool.lastCursorPos = ev.pos;
+            console.log("mousedown");
           } else if (ev.decal) {
             if (!ev.shiftKey && !ctx.tool.selectedDecals.has(ev.decal.id)) {
               ctx.tool.selected.clear();
@@ -131,30 +149,41 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             ctx.tool.selectedDecals.add(ev.decal.id);
             ctx.tool.lastCursorPos = ev.pos;
           } else {
-            ctx.tool.selected.clear();
-            ctx.tool.selectedDecals.clear();
+            if (!ev.shiftKey) {
+              ctx.tool.selected.clear();
+              ctx.tool.selectedDecals.clear();
+            }
+            ctx.tool.selectionRectangle = ev.pos;
+            ctx.tool.lastCursorPos = ev.pos;
+            ctx.updateTool();
           }
           break;
         case "mousemove":
           if (ctx.tool.lastCursorPos) {
-            for (const dev of ctx.tool.selected) {
-              ctx.project.mutDevice(dev)!.pos.x +=
-                ev.pos.x - ctx.tool.lastCursorPos.x;
-              ctx.project.mutDevice(dev)!.pos.y +=
-                ev.pos.y - ctx.tool.lastCursorPos.y;
+            if (!ctx.tool.selectionRectangle) {
+              for (const dev of ctx.tool.selected) {
+                ctx.project.mutDevice(dev)!.pos.x +=
+                  ev.pos.x - ctx.tool.lastCursorPos.x;
+                ctx.project.mutDevice(dev)!.pos.y +=
+                  ev.pos.y - ctx.tool.lastCursorPos.y;
+              }
+              for (const dec of ctx.tool.selectedDecals) {
+                ctx.project.mutDecal(dec)!.pos.x +=
+                  ev.pos.x - ctx.tool.lastCursorPos.x;
+                ctx.project.mutDecal(dec)!.pos.y +=
+                  ev.pos.y - ctx.tool.lastCursorPos.y;
+              }
+              ctx.updateProject();
             }
-            for (const dec of ctx.tool.selectedDecals) {
-              ctx.project.mutDecal(dec)!.pos.x +=
-                ev.pos.x - ctx.tool.lastCursorPos.x;
-              ctx.project.mutDecal(dec)!.pos.y +=
-                ev.pos.y - ctx.tool.lastCursorPos.y;
-            }
-            ctx.updateProject();
+            console.log("mousemove");
             ctx.tool.lastCursorPos = ev.pos;
+            ctx.updateTool();
           }
           break;
         case "mouseup":
-          if (ctx.tool.lastCursorPos) {
+          if (ctx.tool.selectionRectangle) {
+            ctx.tool.selectionRectangle = undefined;
+          } else if (ctx.tool.lastCursorPos) {
             const diffX = ev.pos.x - ctx.tool.lastCursorPos.x;
             const diffY = ev.pos.y - ctx.tool.lastCursorPos.y;
             if (diffX || diffY) {
@@ -168,8 +197,10 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
               }
               ctx.updateProject();
             }
-            ctx.tool.lastCursorPos = undefined;
+            console.log("mouseup");
           }
+          ctx.tool.lastCursorPos = undefined;
+          ctx.updateTool();
           break;
         case "keydown":
           ev.consumed = true;
