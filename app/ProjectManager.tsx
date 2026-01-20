@@ -168,7 +168,7 @@ export class ProjectManager {
       cabled.add(conn[1]);
 
       const key = [deviceOfIntf(conn[0]), deviceOfIntf(conn[1])]
-        .toSorted()
+        .toSorted((a, b) => a - b)
         .reduce((acc, val) => (acc << 16) | val);
       if (!cableToOccurencies.has(key)) cableToOccurencies.set(key, []);
 
