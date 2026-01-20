@@ -90,8 +90,8 @@ function parseNameField(nullTerminated: Buffer): string[] {
     words.push(
       nullTerminated
         .subarray(cursor + 1, cursor + nullTerminated[cursor])
-        .toString("ascii")
-    )
+        .toString("ascii"),
+    );
     cursor += nullTerminated[cursor] + 1;
   }
   return words;
@@ -100,12 +100,13 @@ function parseNameField(nullTerminated: Buffer): string[] {
 function serializeNameField(words: string[]): Buffer {
   return Buffer.from(
     words
-      .map(word => Buffer.from(word, "ascii"))
-      .flatMap(bytes => {
-        if (bytes.length >= 64) throw `Tried to encode domain longer than 64 bytes (${bytes.length}) in resource record`;
-        return [bytes.length, ...bytes]
+      .map((word) => Buffer.from(word, "ascii"))
+      .flatMap((bytes) => {
+        if (bytes.length >= 64)
+          throw `Tried to encode domain longer than 64 bytes (${bytes.length}) in resource record`;
+        return [bytes.length, ...bytes];
       })
-      .concat([0])
+      .concat([0]),
   );
 }
 
@@ -119,7 +120,8 @@ export class ResourceRecord {
   ) {}
 
   toBytes(): Buffer {
-    if (this.rdata.length >= 1 << 16) throw `Can't handle resource record RDATA >=${1 << 16}`;
+    if (this.rdata.length >= 1 << 16)
+      throw `Can't handle resource record RDATA >=${1 << 16}`;
     const name = serializeNameField(this.name.split("."));
 
     const buf = Buffer.alloc(name.length + 10 + this.rdata.length);
@@ -140,10 +142,12 @@ export class ResourceRecord {
     const name = parseNameField(bytes.subarray(0, nameLen)).join(".");
 
     const type = bytes.readUInt16BE(nameLen);
-    if (!(type in RRType)) throw `Invalid RRType ${type}, can't decode ResourceRecord`;
+    if (!(type in RRType))
+      throw `Invalid RRType ${type}, can't decode ResourceRecord`;
 
     const dnsClass = bytes.readUInt16BE(nameLen + 2);
-    if (!(dnsClass in DNSClass)) throw `Invalid DNSClass ${dnsClass}, can't decode ResourceRecord`;
+    if (!(dnsClass in DNSClass))
+      throw `Invalid DNSClass ${dnsClass}, can't decode ResourceRecord`;
 
     const ttl = bytes.readUInt32BE(nameLen + 4);
 
@@ -154,8 +158,8 @@ export class ResourceRecord {
       type,
       dnsClass,
       ttl,
-      bytes.subarray(nameLen + 10, nameLen + 10 + rdataLen)
-    )
+      bytes.subarray(nameLen + 10, nameLen + 10 + rdataLen),
+    );
   }
 }
 
@@ -193,7 +197,7 @@ export class DNSQuestion {
     public name: string,
     public type: RRType,
     public dnsClass: DNSClass,
-  ) { }
+  ) {}
 
   toBytes() {
     const name = serializeNameField(this.name.split("."));
@@ -208,17 +212,21 @@ export class DNSQuestion {
     const name = parseNameField(bytes.subarray(0, nameLen)).join(".");
 
     const type = bytes.readUInt16BE(nameLen);
-    if (!(type in RRType)) throw `Invalid RRType ${type}, can't decode DNSQuestion`;
+    if (!(type in RRType))
+      throw `Invalid RRType ${type}, can't decode DNSQuestion`;
 
     const dnsClass = bytes.readUInt16BE(nameLen + 2);
-    if (!(dnsClass in DNSClass)) throw `Invalid DNSClass ${dnsClass}, can't decode DNSQuestion`;
+    if (!(dnsClass in DNSClass))
+      throw `Invalid DNSClass ${dnsClass}, can't decode DNSQuestion`;
 
     return new DNSQuestion(name, type, dnsClass);
   }
 }
 
 export enum OPCode {
-  QUERY, IQUERY, STATUS 
+  QUERY,
+  IQUERY,
+  STATUS,
 }
 
 export class DNSPacket {
@@ -229,20 +237,20 @@ export class DNSPacket {
     public answers: ResourceRecord[],
     public authorityRR: ResourceRecord[],
     public additionalRR: ResourceRecord[],
-  ) { }
+  ) {}
 
   // Non imposta le flag!!! È responsabilità dell classi figlie
   protected _toBytes(): Buffer {
     const payloads = [
-      ...this.questions.map(it => it.toBytes()),
-      ...this.answers.map(it => it.toBytes()),
-      ...this.authorityRR.map(it => it.toBytes()),
-      ...this.additionalRR.map(it => it.toBytes()),
-    ]
+      ...this.questions.map((it) => it.toBytes()),
+      ...this.answers.map((it) => it.toBytes()),
+      ...this.authorityRR.map((it) => it.toBytes()),
+      ...this.additionalRR.map((it) => it.toBytes()),
+    ];
 
-    const totalLen = 12 /* Header len */ + payloads
-      .map(it => it.length)
-      .reduce((acc, val) => acc + val);
+    const totalLen =
+      12 /* Header len */ +
+      payloads.map((it) => it.length).reduce((acc, val) => acc + val);
 
     const buf = Buffer.alloc(totalLen);
     buf.writeUInt16BE(this.id);
@@ -278,9 +286,9 @@ export class DNSQueryPacket extends DNSPacket {
   toBytes(): Buffer {
     const buf = this._toBytes();
     const flags =
-      Number(this.recursionDesired) << 8
-      | Number(this.checkingDisabled) << 4
-      | (this.opcode & 0b1111) << 11;
+      (Number(this.recursionDesired) << 8) |
+      (Number(this.checkingDisabled) << 4) |
+      ((this.opcode & 0b1111) << 11);
     buf.writeUint16BE(flags, 2);
     return buf;
   }
@@ -304,12 +312,12 @@ export class DNSResponsePacket extends DNSPacket {
   toBytes(): Buffer {
     const buf = this._toBytes();
     const flags =
-      1 << 15
-      | Number(this.authoritative) << 10
-      | Number(this.recursionAvailable) << 7
-      | Number(this.authenticData) << 5
-      | this.responseCode & 0b1111
-      | (this.opcode & 0b1111) << 11;
+      (1 << 15) |
+      (Number(this.authoritative) << 10) |
+      (Number(this.recursionAvailable) << 7) |
+      (Number(this.authenticData) << 5) |
+      (this.responseCode & 0b1111) |
+      ((this.opcode & 0b1111) << 11);
     buf.writeUint16BE(flags, 2);
     return buf;
   }

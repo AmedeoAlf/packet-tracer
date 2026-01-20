@@ -10,7 +10,13 @@ import {
   KeyboardEvent,
 } from "react";
 import { CanvasEvent, Tool, ToolCtx, TOOLS } from "./tools/Tool";
-import { isDecalHighlighted, isDeviceHighlighted, isSelectTool, makeSelectTool, SelectTool } from "./tools/SelectTool";
+import {
+  isDecalHighlighted,
+  isDeviceHighlighted,
+  isSelectTool,
+  makeSelectTool,
+  SelectTool,
+} from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { Cables } from "./editorComponents/Cables";
 import { SideBar } from "./editorComponents/SideBar";
@@ -241,9 +247,7 @@ export function Editor({
         <Decals
           decals={toolCtx.project.immutableDecals}
           highlighted={
-            isSelectTool(tool)
-              ? isDecalHighlighted.bind(null, tool)
-              : undefined
+            isSelectTool(tool) ? isDecalHighlighted.bind(null, tool) : undefined
           }
         />
         <Cables

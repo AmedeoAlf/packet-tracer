@@ -33,8 +33,9 @@ export function isDeviceHighlighted(tool: SelectTool, dev: Device) {
   const x = [tool.lastCursorPos.x, tool.selectionRectangle.x].toSorted();
   const y = [tool.lastCursorPos.y, tool.selectionRectangle.y].toSorted();
 
-  return x[0] < dev.pos.x && dev.pos.x < x[1] &&
-    y[0] < dev.pos.y && dev.pos.y < y[1]
+  return (
+    x[0] < dev.pos.x && dev.pos.x < x[1] && y[0] < dev.pos.y && dev.pos.y < y[1]
+  );
 }
 
 export function isDecalHighlighted(tool: SelectTool, dec: Decal) {
@@ -45,8 +46,9 @@ export function isDecalHighlighted(tool: SelectTool, dec: Decal) {
   const x = [tool.lastCursorPos.x, tool.selectionRectangle.x].toSorted();
   const y = [tool.lastCursorPos.y, tool.selectionRectangle.y].toSorted();
 
-  return x[0] < dec.pos.x && dec.pos.x < x[1] &&
-    y[0] < dec.pos.y && dec.pos.y < y[1]
+  return (
+    x[0] < dec.pos.x && dec.pos.x < x[1] && y[0] < dec.pos.y && dec.pos.y < y[1]
+  );
 }
 
 export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {

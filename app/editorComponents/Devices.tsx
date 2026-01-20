@@ -15,27 +15,25 @@ export const Devices = memo(function Devices({
   return (
     <g>
       {[
-        ...devices
-          .values()
-          .map(
-            highlighted
-              ? (d) => {
+        ...devices.values().map(
+          highlighted
+            ? (d) => {
                 if (d.id == 7) {
                   if (flag && !highlighted(d)) {
                     highlighted(d);
                   }
                   flag ||= highlighted(d);
                 }
-                return <DeviceComponent
-                  device={d}
-                  key={d.id}
-                  extraClass={
-                    highlighted(d) ? " brightness-50" : undefined
-                  }
-                />
+                return (
+                  <DeviceComponent
+                    device={d}
+                    key={d.id}
+                    extraClass={highlighted(d) ? " brightness-50" : undefined}
+                  />
+                );
               }
-              : (d) => <DeviceComponent device={d} key={d.id} />,
-          ),
+            : (d) => <DeviceComponent device={d} key={d.id} />,
+        ),
       ]}
     </g>
   );
