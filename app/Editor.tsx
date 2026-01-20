@@ -151,7 +151,7 @@ export function Editor({
                     x: (project.lastId % 5) * 100 - 600,
                     y: Math.floor(project.lastId / 5) * 100 - 350,
                   });
-                  tool.updateProject();
+                  toolCtx.updateProject();
                 }}
               >
                 {ICONS[it.proto.iconId]}
