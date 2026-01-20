@@ -170,6 +170,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             }
             ctx.tool.selected.add(ev.device.id);
             ctx.tool.lastCursorPos = ev.pos;
+            console.log("mousedown");
           } else if (ev.decal) {
             if (!ev.shiftKey && !ctx.tool.selectedDecals.has(ev.decal.id)) {
               ctx.tool.selected.clear();
@@ -189,21 +190,19 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
           break;
         case "mousemove":
           if (ctx.tool.lastCursorPos) {
-            if (!ctx.tool.selectionRectangle) {
-              for (const dev of ctx.tool.selected) {
-                ctx.project.mutDevice(dev)!.pos.x +=
-                  ev.pos.x - ctx.tool.lastCursorPos.x;
-                ctx.project.mutDevice(dev)!.pos.y +=
-                  ev.pos.y - ctx.tool.lastCursorPos.y;
-              }
-              for (const dec of ctx.tool.selectedDecals) {
-                ctx.project.mutDecal(dec)!.pos.x +=
-                  ev.pos.x - ctx.tool.lastCursorPos.x;
-                ctx.project.mutDecal(dec)!.pos.y +=
-                  ev.pos.y - ctx.tool.lastCursorPos.y;
-              }
-              ctx.updateProject();
+            for (const dev of ctx.tool.selected) {
+              ctx.project.mutDevice(dev)!.pos.x +=
+                ev.pos.x - ctx.tool.lastCursorPos.x;
+              ctx.project.mutDevice(dev)!.pos.y +=
+                ev.pos.y - ctx.tool.lastCursorPos.y;
             }
+            for (const dec of ctx.tool.selectedDecals) {
+              ctx.project.mutDecal(dec)!.pos.x +=
+                ev.pos.x - ctx.tool.lastCursorPos.x;
+              ctx.project.mutDecal(dec)!.pos.y +=
+                ev.pos.y - ctx.tool.lastCursorPos.y;
+            }
+            ctx.updateProject();
             ctx.tool.lastCursorPos = ev.pos;
             ctx.updateTool();
           }
@@ -225,6 +224,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
               }
               ctx.updateProject();
             }
+            ctx.tool.lastCursorPos = undefined;
           }
           ctx.tool.lastCursorPos = undefined;
           ctx.updateTool();
