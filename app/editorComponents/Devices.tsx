@@ -2,7 +2,6 @@ import { memo } from "react";
 import { Project } from "../Project";
 import { Device } from "../devices/Device";
 
-let flag = false;
 // Utility function che disegna i dispositivi del progetto, opzionalmente
 // evidenziandoli
 export const Devices = memo(function Devices({
@@ -15,25 +14,19 @@ export const Devices = memo(function Devices({
   return (
     <g>
       {[
-        ...devices.values().map(
-          highlighted
-            ? (d) => {
-                if (d.id == 7) {
-                  if (flag && !highlighted(d)) {
-                    highlighted(d);
-                  }
-                  flag ||= highlighted(d);
-                }
-                return (
+        ...devices
+          .values()
+          .map(
+            highlighted
+              ? (d) => (
                   <DeviceComponent
                     device={d}
                     key={d.id}
                     extraClass={highlighted(d) ? " brightness-50" : undefined}
                   />
-                );
-              }
-            : (d) => <DeviceComponent device={d} key={d.id} />,
-        ),
+                )
+              : (d) => <DeviceComponent device={d} key={d.id} />,
+          ),
       ]}
     </g>
   );
