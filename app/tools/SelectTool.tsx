@@ -1,4 +1,4 @@
-import { Tool, ToolCtx } from "./Tool";
+import { Tool } from "./Tool";
 import {
   buildEmulatorContext,
   DevicePanel,
@@ -30,8 +30,12 @@ export function isDeviceHighlighted(tool: SelectTool, dev: Device) {
   if (!tool.lastCursorPos || !tool.selectionRectangle) return false;
 
   // Check if it is part of the selection rectangle
-  const x = [tool.lastCursorPos.x, tool.selectionRectangle.x].toSorted();
-  const y = [tool.lastCursorPos.y, tool.selectionRectangle.y].toSorted();
+  const x = [tool.lastCursorPos.x, tool.selectionRectangle.x].toSorted(
+    (a, b) => a - b,
+  );
+  const y = [tool.lastCursorPos.y, tool.selectionRectangle.y].toSorted(
+    (a, b) => a - b,
+  );
 
   return (
     x[0] < dev.pos.x && dev.pos.x < x[1] && y[0] < dev.pos.y && dev.pos.y < y[1]
@@ -43,8 +47,12 @@ export function isDecalHighlighted(tool: SelectTool, dec: Decal) {
   if (!tool.lastCursorPos || !tool.selectionRectangle) return false;
 
   // Check if it is part of the selection rectangle
-  const x = [tool.lastCursorPos.x, tool.selectionRectangle.x].toSorted();
-  const y = [tool.lastCursorPos.y, tool.selectionRectangle.y].toSorted();
+  const x = [tool.lastCursorPos.x, tool.selectionRectangle.x].toSorted(
+    (a, b) => a - b,
+  );
+  const y = [tool.lastCursorPos.y, tool.selectionRectangle.y].toSorted(
+    (a, b) => a - b,
+  );
 
   return (
     x[0] < dec.pos.x && dec.pos.x < x[1] && y[0] < dec.pos.y && dec.pos.y < y[1]
