@@ -180,7 +180,6 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             }
             ctx.tool.selected.add(ev.device.id);
             ctx.tool.lastCursorPos = ev.pos;
-            console.log("mousedown");
           } else if (ev.decal) {
             if (!ev.shiftKey && !ctx.tool.selectedDecals.has(ev.decal.id)) {
               ctx.tool.selected.clear();
@@ -200,43 +199,77 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
           break;
         case "mousemove":
           if (ctx.tool.lastCursorPos) {
-            for (const dev of ctx.tool.selected) {
-              ctx.project.mutDevice(dev)!.pos.x +=
-                ev.pos.x - ctx.tool.lastCursorPos.x;
-              ctx.project.mutDevice(dev)!.pos.y +=
-                ev.pos.y - ctx.tool.lastCursorPos.y;
+            if (!ctx.tool.selectionRectangle) {
+              for (const dev of ctx.tool.selected) {
+                ctx.project.mutDevice(dev)!.pos.x +=
+                  ev.pos.x - ctx.tool.lastCursorPos.x;
+                ctx.project.mutDevice(dev)!.pos.y +=
+                  ev.pos.y - ctx.tool.lastCursorPos.y;
+              }
+              for (const dec of ctx.tool.selectedDecals) {
+                ctx.project.mutDecal(dec)!.pos.x +=
+                  ev.pos.x - ctx.tool.lastCursorPos.x;
+                ctx.project.mutDecal(dec)!.pos.y +=
+                  ev.pos.y - ctx.tool.lastCursorPos.y;
+              }
+              ctx.updateProject();
             }
-            for (const dec of ctx.tool.selectedDecals) {
-              ctx.project.mutDecal(dec)!.pos.x +=
-                ev.pos.x - ctx.tool.lastCursorPos.x;
-              ctx.project.mutDecal(dec)!.pos.y +=
-                ev.pos.y - ctx.tool.lastCursorPos.y;
-            }
-            ctx.updateProject();
             ctx.tool.lastCursorPos = ev.pos;
             ctx.updateTool();
           }
           break;
         case "mouseup":
-          if (ctx.tool.selectionRectangle) {
-            ctx.tool.selectionRectangle = undefined;
-          } else if (ctx.tool.lastCursorPos) {
-            const diffX = ev.pos.x - ctx.tool.lastCursorPos.x;
-            const diffY = ev.pos.y - ctx.tool.lastCursorPos.y;
-            if (diffX || diffY) {
-              for (const dev of ctx.tool.selected) {
-                ctx.project.mutDevice(dev)!.pos.x += diffX;
-                ctx.project.mutDevice(dev)!.pos.y += diffY;
+          if (ctx.tool.lastCursorPos) {
+            if (ctx.tool.selectionRectangle) {
+              const x = [
+                ctx.tool.selectionRectangle.x,
+                ctx.tool.lastCursorPos.x,
+              ].toSorted((a, b) => a - b);
+              const y = [
+                ctx.tool.selectionRectangle.y,
+                ctx.tool.lastCursorPos.y,
+              ].toSorted((a, b) => a - b);
+
+              ctx.project.immutableDevices
+                .values()
+                .filter(
+                  (it) =>
+                    x[0] <= it.pos.x &&
+                    it.pos.x <= x[1] &&
+                    y[0] <= it.pos.y &&
+                    it.pos.y <= y[1],
+                )
+                .forEach((it) => ctx.tool.selected.add(it.id));
+
+              ctx.project.immutableDecals
+                .filter(
+                  (it) =>
+                    it &&
+                    x[0] <= it.pos.x &&
+                    it.pos.x <= x[1] &&
+                    y[0] <= it.pos.y &&
+                    it.pos.y <= y[1],
+                )
+                .forEach((it) => ctx.tool.selectedDecals.add(it!.id));
+            } else {
+              const diffX = ev.pos.x - ctx.tool.lastCursorPos.x;
+              const diffY = ev.pos.y - ctx.tool.lastCursorPos.y;
+              if (diffX || diffY) {
+                for (const dev of ctx.tool.selected) {
+                  ctx.project.mutDevice(dev)!.pos.x += diffX;
+                  ctx.project.mutDevice(dev)!.pos.y += diffY;
+                }
+                for (const dec of ctx.tool.selectedDecals) {
+                  ctx.project.mutDecal(dec)!.pos.x += diffX;
+                  ctx.project.mutDecal(dec)!.pos.y += diffY;
+                }
+                ctx.updateProject();
               }
-              for (const dec of ctx.tool.selectedDecals) {
-                ctx.project.mutDecal(dec)!.pos.x += diffX;
-                ctx.project.mutDecal(dec)!.pos.y += diffY;
-              }
-              ctx.updateProject();
+              ctx.tool.lastCursorPos = undefined;
             }
-            ctx.tool.lastCursorPos = undefined;
           }
           ctx.tool.lastCursorPos = undefined;
+          ctx.tool.selectionRectangle = undefined;
           ctx.updateTool();
           break;
         case "keydown":
