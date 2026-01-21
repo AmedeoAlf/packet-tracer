@@ -15,7 +15,6 @@ import {
   isDeviceHighlighted,
   isSelectTool,
   makeSelectTool,
-  SelectTool,
 } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { Cables } from "./editorComponents/Cables";
@@ -26,6 +25,7 @@ import { deviceTypesDB } from "./devices/deviceTypesDB";
 import { ProjectManager } from "./ProjectManager";
 import { Decal } from "./Project";
 import { TopBarBtns, TopBarBtnsParams } from "./editorComponents/TopBarBtns";
+import { Coords } from "./common";
 
 /*
  * Questo componente è tutta l'interfaccia del sito. Crea gli hook sia per il
@@ -153,10 +153,10 @@ export function Editor({
               <svg
                 viewBox="-35 -35 70 70"
                 onClick={() => {
-                  project.createDevice(it.proto.deviceType, {
-                    x: (project.lastId % 5) * 100 - 600,
-                    y: Math.floor(project.lastId / 5) * 100 - 350,
-                  });
+                  project.createDevice(it.proto.deviceType, [
+                    (project.lastId % 5) * 100 - 600,
+                    Math.floor(project.lastId / 5) * 100 - 350,
+                  ]);
                   toolCtx.updateProject();
                 }}
               >
@@ -300,7 +300,7 @@ function buildMouseEventHandler(
 ): (ev: MouseEvent) => void {
   const getPos = (ev: MouseEvent) => {
     const result = toDOMPoint(ev.clientX, ev.clientY);
-    return result ? { x: result.x, y: result.y } : { x: 0, y: 0 };
+    return (result ? [result.x, result.y] : [0, 0]) as Coords;
   };
 
   if (type == "mousemove") {
@@ -313,7 +313,7 @@ function buildMouseEventHandler(
       } else {
         ctx.tool.onEvent(ctx, {
           type,
-          movement: { x: ev.movementX, y: ev.movementY },
+          movement: [ev.movementX, ev.movementY],
           pos: getPos(ev),
           device: ctx.project.deviceFromTag(ev.target as SVGUseElement),
           decal: ctx.project.decalFromTag(ev.target as SVGUseElement),
@@ -350,7 +350,8 @@ const Decals = memo(function Decals({
         return (
           <text
             key={idx}
-            {...d.pos}
+            x={d.pos[0]}
+            y={d.pos[1]}
             {...data}
             fill={highlighted && highlighted(d) ? "#555" : "#000"}
           >
@@ -361,7 +362,8 @@ const Decals = memo(function Decals({
         return (
           <rect
             key={idx}
-            {...d.pos}
+            x={d.pos[0]}
+            y={d.pos[1]}
             {...d.size}
             stroke={d.stroke}
             fill={d.fill}

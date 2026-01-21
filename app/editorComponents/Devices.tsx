@@ -49,12 +49,13 @@ const DeviceComponent = memo(function DeviceComponent({
       <use
         href={device.iconId}
         className={"device " + (extraClass || "")}
-        {...device.pos}
+        x={device.pos[0]}
+        y={device.pos[1]}
         {...dataProps}
       />
       <text
-        x={device.pos.x}
-        y={device.pos.y + 40}
+        x={device.pos[0]}
+        y={device.pos[1] + 40}
         width="100px"
         textAnchor="middle"
         fill="#ffffff"

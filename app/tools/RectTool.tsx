@@ -11,12 +11,12 @@ export type RectTool = Tool<{
 function rectProps(
   mousedown: Coords,
   curr: Coords,
-): Coords & { width: number; height: number } {
+): { x: number; y: number; width: number; height: number } {
   return {
-    x: Math.min(mousedown.x, curr.x),
-    y: Math.min(mousedown.y, curr.y),
-    width: Math.abs(mousedown.x - curr.x),
-    height: Math.abs(mousedown.y - curr.y),
+    x: Math.min(mousedown[0], curr[0]),
+    y: Math.min(mousedown[1], curr[1]),
+    width: Math.abs(mousedown[0] - curr[0]),
+    height: Math.abs(mousedown[1] - curr[1]),
   };
 }
 
@@ -50,8 +50,8 @@ export function makeRectTool(prev: RectTool | object = {}): RectTool {
         );
       return (
         <>
-          Dimensioni: {ctx.tool.currPos.x - ctx.tool.startPos.x}x
-          {ctx.tool.currPos.y - ctx.tool.startPos.y}
+          Dimensioni: {ctx.tool.currPos[0] - ctx.tool.startPos[0]}x
+          {ctx.tool.currPos[1] - ctx.tool.startPos[1]}
         </>
       );
     },
@@ -70,10 +70,10 @@ export function makeRectTool(prev: RectTool | object = {}): RectTool {
           const { x, y, width, height } = rectProps(ctx.tool.startPos, ev.pos);
           ctx.tool.startPos = undefined;
           ctx.updateTool();
-          if (ev.pos.x || ev.pos.y) {
+          if (ev.pos[0] || ev.pos[1]) {
             ctx.project.addDecal({
               type: "rect",
-              pos: { x, y },
+              pos: [x, y],
               size: { width, height },
               fill: ctx.tool.fill,
               stroke: ctx.tool.stroke,

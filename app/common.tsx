@@ -1,6 +1,6 @@
 "use client";
 
-export type Coords = { x: number; y: number };
+export type Coords = [x: number, y: number];
 
 export function areArraysShallowEqual<T>(a: T[], b: T[]): boolean {
   if (a.length != b.length) return false;

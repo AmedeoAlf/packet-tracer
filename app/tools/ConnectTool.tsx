@@ -168,10 +168,10 @@ export function makeConnectTool(prev: ConnectTool | object = {}): ConnectTool {
               : "red";
           return (
             <line
-              x1={tool.deviceA.pos.x}
-              y1={tool.deviceA.pos.y}
-              x2={tool.deviceB!.pos.x}
-              y2={tool.deviceB!.pos.y}
+              x1={tool.deviceA.pos[0]}
+              y1={tool.deviceA.pos[1]}
+              x2={tool.deviceB!.pos[0]}
+              y2={tool.deviceB!.pos[1]}
               stroke={lineColor}
               strokeWidth={3}
               strokeDasharray="10 10"
@@ -187,10 +187,10 @@ export function makeConnectTool(prev: ConnectTool | object = {}): ConnectTool {
         } else if (tool.cursorPos) {
           return (
             <line
-              x1={tool.deviceA.pos.x}
-              y1={tool.deviceA.pos.y}
-              x2={tool.cursorPos.x}
-              y2={tool.cursorPos.y}
+              x1={tool.deviceA.pos[0]}
+              y1={tool.deviceA.pos[1]}
+              x2={tool.cursorPos[0]}
+              y2={tool.cursorPos[1]}
               stroke={intfColor[intfType(tool.deviceA, tool.idxA)]}
             />
           );

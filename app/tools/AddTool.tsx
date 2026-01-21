@@ -9,7 +9,7 @@ export type AddTool = Tool<{
 
 export function makeAddTool(prev: AddTool | object = {}): AddTool {
   return {
-    cursorPos: { x: 0, y: 0 },
+    cursorPos: [0, 0],
     deviceType: Object.keys(deviceTypesDB)[0] as DeviceType,
     ...prev,
     toolname: "add",
@@ -51,7 +51,8 @@ export function makeAddTool(prev: AddTool | object = {}): AddTool {
         <use
           href={deviceTypesDB[ctx.tool.deviceType].proto.iconId}
           className="opacity-50"
-          {...ctx.tool.cursorPos}
+          x={ctx.tool.cursorPos[0]}
+          y={ctx.tool.cursorPos[1]}
         />
       );
     },

@@ -30,15 +30,18 @@ export function isDeviceHighlighted(tool: SelectTool, dev: Device) {
   if (!tool.lastCursorPos || !tool.selectionRectangle) return false;
 
   // Check if it is part of the selection rectangle
-  const x = [tool.lastCursorPos.x, tool.selectionRectangle.x].toSorted(
+  const x = [tool.lastCursorPos[0], tool.selectionRectangle[0]].toSorted(
     (a, b) => a - b,
   );
-  const y = [tool.lastCursorPos.y, tool.selectionRectangle.y].toSorted(
+  const y = [tool.lastCursorPos[1], tool.selectionRectangle[1]].toSorted(
     (a, b) => a - b,
   );
 
   return (
-    x[0] < dev.pos.x && dev.pos.x < x[1] && y[0] < dev.pos.y && dev.pos.y < y[1]
+    x[0] < dev.pos[0] &&
+    dev.pos[0] < x[1] &&
+    y[0] < dev.pos[1] &&
+    dev.pos[1] < y[1]
   );
 }
 
@@ -47,15 +50,18 @@ export function isDecalHighlighted(tool: SelectTool, dec: Decal) {
   if (!tool.lastCursorPos || !tool.selectionRectangle) return false;
 
   // Check if it is part of the selection rectangle
-  const x = [tool.lastCursorPos.x, tool.selectionRectangle.x].toSorted(
+  const x = [tool.lastCursorPos[0], tool.selectionRectangle[0]].toSorted(
     (a, b) => a - b,
   );
-  const y = [tool.lastCursorPos.y, tool.selectionRectangle.y].toSorted(
+  const y = [tool.lastCursorPos[1], tool.selectionRectangle[1]].toSorted(
     (a, b) => a - b,
   );
 
   return (
-    x[0] < dec.pos.x && dec.pos.x < x[1] && y[0] < dec.pos.y && dec.pos.y < y[1]
+    x[0] < dec.pos[0] &&
+    dec.pos[0] < x[1] &&
+    y[0] < dec.pos[1] &&
+    dec.pos[1] < y[1]
   );
 }
 
@@ -71,13 +77,13 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
     svgElements: (ctx) => {
       if (!ctx.tool.selectionRectangle || !ctx.tool.lastCursorPos) return <></>;
       const props = {
-        x: Math.min(ctx.tool.selectionRectangle.x, ctx.tool.lastCursorPos.x),
-        y: Math.min(ctx.tool.selectionRectangle.y, ctx.tool.lastCursorPos.y),
+        x: Math.min(ctx.tool.selectionRectangle[0], ctx.tool.lastCursorPos[0]),
+        y: Math.min(ctx.tool.selectionRectangle[1], ctx.tool.lastCursorPos[1]),
         width: Math.abs(
-          ctx.tool.selectionRectangle.x - ctx.tool.lastCursorPos.x,
+          ctx.tool.selectionRectangle[0] - ctx.tool.lastCursorPos[0],
         ),
         height: Math.abs(
-          ctx.tool.selectionRectangle.y - ctx.tool.lastCursorPos.y,
+          ctx.tool.selectionRectangle[1] - ctx.tool.lastCursorPos[1],
         ),
       };
       return (
@@ -201,16 +207,16 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
           if (ctx.tool.lastCursorPos) {
             if (!ctx.tool.selectionRectangle) {
               for (const dev of ctx.tool.selected) {
-                ctx.project.mutDevice(dev)!.pos.x +=
-                  ev.pos.x - ctx.tool.lastCursorPos.x;
-                ctx.project.mutDevice(dev)!.pos.y +=
-                  ev.pos.y - ctx.tool.lastCursorPos.y;
+                ctx.project.mutDevice(dev)!.pos[0] +=
+                  ev.pos[0] - ctx.tool.lastCursorPos[0];
+                ctx.project.mutDevice(dev)!.pos[1] +=
+                  ev.pos[1] - ctx.tool.lastCursorPos[1];
               }
               for (const dec of ctx.tool.selectedDecals) {
-                ctx.project.mutDecal(dec)!.pos.x +=
-                  ev.pos.x - ctx.tool.lastCursorPos.x;
-                ctx.project.mutDecal(dec)!.pos.y +=
-                  ev.pos.y - ctx.tool.lastCursorPos.y;
+                ctx.project.mutDecal(dec)!.pos[0] +=
+                  ev.pos[0] - ctx.tool.lastCursorPos[0];
+                ctx.project.mutDecal(dec)!.pos[1] +=
+                  ev.pos[1] - ctx.tool.lastCursorPos[1];
               }
               ctx.updateProject();
             }
@@ -222,22 +228,22 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
           if (ctx.tool.lastCursorPos) {
             if (ctx.tool.selectionRectangle) {
               const x = [
-                ctx.tool.selectionRectangle.x,
-                ctx.tool.lastCursorPos.x,
+                ctx.tool.selectionRectangle[0],
+                ctx.tool.lastCursorPos[0],
               ].toSorted((a, b) => a - b);
               const y = [
-                ctx.tool.selectionRectangle.y,
-                ctx.tool.lastCursorPos.y,
+                ctx.tool.selectionRectangle[1],
+                ctx.tool.lastCursorPos[1],
               ].toSorted((a, b) => a - b);
 
               ctx.project.immutableDevices
                 .values()
                 .filter(
                   (it) =>
-                    x[0] <= it.pos.x &&
-                    it.pos.x <= x[1] &&
-                    y[0] <= it.pos.y &&
-                    it.pos.y <= y[1],
+                    x[0] <= it.pos[0] &&
+                    it.pos[0] <= x[1] &&
+                    y[0] <= it.pos[1] &&
+                    it.pos[1] <= y[1],
                 )
                 .forEach((it) => ctx.tool.selected.add(it.id));
 
@@ -245,23 +251,23 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                 .filter(
                   (it) =>
                     it &&
-                    x[0] <= it.pos.x &&
-                    it.pos.x <= x[1] &&
-                    y[0] <= it.pos.y &&
-                    it.pos.y <= y[1],
+                    x[0] <= it.pos[0] &&
+                    it.pos[0] <= x[1] &&
+                    y[0] <= it.pos[1] &&
+                    it.pos[1] <= y[1],
                 )
                 .forEach((it) => ctx.tool.selectedDecals.add(it!.id));
             } else {
-              const diffX = ev.pos.x - ctx.tool.lastCursorPos.x;
-              const diffY = ev.pos.y - ctx.tool.lastCursorPos.y;
+              const diffX = ev.pos[0] - ctx.tool.lastCursorPos[0];
+              const diffY = ev.pos[1] - ctx.tool.lastCursorPos[1];
               if (diffX || diffY) {
                 for (const dev of ctx.tool.selected) {
-                  ctx.project.mutDevice(dev)!.pos.x += diffX;
-                  ctx.project.mutDevice(dev)!.pos.y += diffY;
+                  ctx.project.mutDevice(dev)!.pos[0] += diffX;
+                  ctx.project.mutDevice(dev)!.pos[1] += diffY;
                 }
                 for (const dec of ctx.tool.selectedDecals) {
-                  ctx.project.mutDecal(dec)!.pos.x += diffX;
-                  ctx.project.mutDecal(dec)!.pos.y += diffY;
+                  ctx.project.mutDecal(dec)!.pos[0] += diffX;
+                  ctx.project.mutDecal(dec)!.pos[1] += diffY;
                 }
                 ctx.updateProject();
               }
@@ -293,15 +299,15 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
               for (const s of ctx.tool.selected) {
                 const newId = ctx.project.duplicateDevice(s)!;
                 newSelected.add(newId);
-                ctx.project.mutDevice(newId)!.pos.x += 10;
-                ctx.project.mutDevice(newId)!.pos.y += 10;
+                ctx.project.mutDevice(newId)!.pos[0] += 10;
+                ctx.project.mutDevice(newId)!.pos[1] += 10;
               }
               const newDecals = new Set<number>();
               for (const s of ctx.tool.selectedDecals) {
                 const newId = ctx.project.duplicateDecal(s)!;
                 newDecals.add(newId);
-                ctx.project.mutDecal(newId)!.pos.x += 10;
-                ctx.project.mutDecal(newId)!.pos.y += 10;
+                ctx.project.mutDecal(newId)!.pos[0] += 10;
+                ctx.project.mutDecal(newId)!.pos[1] += 10;
               }
               ctx.tool.selected = newSelected;
               ctx.tool.selectedDecals = newDecals;

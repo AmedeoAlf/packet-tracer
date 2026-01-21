@@ -23,18 +23,18 @@ export const Cables = memo(function Cables({
             if (cables.length == 1) {
               return [
                 {
-                  x1: aPos.x,
-                  x2: bPos.x,
-                  y1: aPos.y,
-                  y2: bPos.y,
+                  x1: aPos[0],
+                  x2: bPos[0],
+                  y1: aPos[1],
+                  y2: bPos[1],
                   stroke: intfColor[cables[0].type],
                 },
               ];
             }
 
             // Altrimenti disegnali con offset corretti
-            const dx = bPos.x - aPos.x;
-            const dy = bPos.y - aPos.y;
+            const dx = bPos[0] - aPos[0];
+            const dy = bPos[1] - aPos[1];
             const len = Math.sqrt(dx * dx + dy * dy);
             const CABLE_DIAMETER = Math.min(cables.length * 3 + 5, 20);
             const height = (dx / len) * CABLE_DIAMETER;
@@ -43,10 +43,10 @@ export const Cables = memo(function Cables({
             return cables.map((c, i) => {
               const t = i / (cables.length - 1) - 0.5;
               return {
-                x1: aPos.x - width * t,
-                x2: bPos.x - width * t,
-                y1: aPos.y + height * t,
-                y2: bPos.y + height * t,
+                x1: aPos[0] - width * t,
+                x2: bPos[0] - width * t,
+                y1: aPos[1] + height * t,
+                y2: bPos[1] + height * t,
                 stroke: intfColor[c.type],
               };
             });

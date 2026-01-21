@@ -64,7 +64,11 @@ export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
     },
     svgElements: ({ tool }) => {
       if (tool.currInput) {
-        return <text {...tool.currInput.pos}>{tool.currInput.text}</text>;
+        return (
+          <text x={tool.currInput.pos[0]} y={tool.currInput.pos[1]}>
+            {tool.currInput.text}
+          </text>
+        );
       }
     },
   };
