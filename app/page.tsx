@@ -13,18 +13,18 @@ function defaultProject(): ProjectManager {
   p.addDecal({
     type: "text",
     text: "This is an example project",
-    pos: { x: -300, y: -250 },
+    pos: [-300, -250],
   });
-  p.createDevice("switch", { x: -300, y: -100 }, "Rete A");
-  p.createDevice("router", { x: -150, y: -100 }, "Router A");
+  p.createDevice("switch", [-300, -100], "Rete A");
+  p.createDevice("router", [-150, -100], "Router A");
 
-  p.createDevice("router", { x: -50, y: -200 }, "Internet A");
+  p.createDevice("router", [-50, -200], "Internet A");
   (p.mutDevice(p.lastId)?.internalState as RouterInternalState).l3Ifs[3] = {
     ip: parseIpv4("1.1.1.1")!,
     mask: parseIpv4("255.255.255.0")!,
   };
 
-  p.createDevice("router", { x: -50, y: -100 }, "Internet B");
+  p.createDevice("router", [-50, -100], "Internet B");
   p.mutDevice(p.lastId)?.internalState.netInterfaces.push({
     name: "se2",
     maxMbps: 100,
@@ -36,9 +36,9 @@ function defaultProject(): ProjectManager {
     mask: parseIpv4("255.255.255.0")!,
   };
 
-  p.createDevice("router", { x: -50, y: 0 }, "Internet C");
-  p.createDevice("router", { x: 50, y: 0 }, "Router B");
-  p.createDevice("switch", { x: 200, y: -100 }, "Rete B");
+  p.createDevice("router", [-50, 0], "Internet C");
+  p.createDevice("router", [50, 0], "Router B");
+  p.createDevice("switch", [200, -100], "Rete B");
   console.assert(p.connect(1, 0, 2, 0) == undefined); // "Rete A" -> "Router A"
   console.assert(p.connect(2, 2, 3, 2) == undefined); // "Router A" -> "Internet A"
   console.assert(p.connect(2, 3, 4, 2) == undefined); // "Router A" -> "Internet B"
