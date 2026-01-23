@@ -1,11 +1,9 @@
 import { ARPPacket } from "@/app/protocols/rfc_826";
-import { RouterInternalState } from "../../devices/list/Router";
 import { Layer2Packet, MAC_BROADCAST } from "../../protocols/802_3";
 import { ICMPPacket, ICMPType } from "../../protocols/icmp";
 import {
   getMatchingInterface,
-  ipv4ToString,
-  L3InternalStateBase,
+  IPv4Address,
   PartialIPv4Packet,
   ProtocolCode,
   sendIPv4Packet,
@@ -14,55 +12,24 @@ import { hello } from "../../virtualPrograms/hello";
 import { interfacesL3 } from "../../virtualPrograms/interfacesl3";
 import { l2send } from "../../virtualPrograms/l2send";
 import { ping } from "../../virtualPrograms/ping";
-import { DeviceEmulator, EmulatorContext } from "../DeviceEmulator";
+import { DeviceEmulator } from "../DeviceEmulator";
 import { arptable } from "@/app/virtualPrograms/arptable";
 import { udpSend } from "@/app/virtualPrograms/udpSend";
 import { UDPPacket } from "@/app/protocols/udp";
+import { OSInternalState } from "@/app/devices/list/Computer";
+import { handleArpPacket } from "./routerEmulator";
 
-export const routerEmulator: DeviceEmulator<RouterInternalState> = {
+export type OSUDPPacket = {
+  from: IPv4Address;
+  fromPort: number;
+  toPort: number;
+  payload: Buffer;
+};
+
+export const computerEmulator: DeviceEmulator<OSInternalState> = {
   configPanel: {
-    interfacce(ctx) {
-      return (
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>IP</th>
-              <th>Subnet mask</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ctx.state.netInterfaces.map((val, idx) => {
-              const l3if = ctx.state.l3Ifs.at(idx);
-              return (
-                <tr key={idx}>
-                  <td className="p-1 max-w-1/4">
-                    <input
-                      type="text"
-                      value={val.name}
-                      className="w-full"
-                      onChange={(ev) => {
-                        ctx.state.netInterfaces[idx].name = ev.target.value;
-                        ctx.updateState();
-                      }}
-                    />
-                  </td>
-                  <td className="p-1">
-                    {val.type} {val.maxMbps}&nbsp;Mbps
-                  </td>
-                  <td className="p-1">
-                    {l3if ? ipv4ToString(l3if.ip) : "No ip"}
-                  </td>
-                  <td className="p-1">
-                    {l3if ? ipv4ToString(l3if.mask) : "No mask"}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      );
+    wip() {
+      return <>UI Work in progress</>;
     },
   },
   packetHandler(ctx, data, intf) {
@@ -123,8 +90,12 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
           }
         case ProtocolCode.udp:
           const udpPacket = UDPPacket.fromBytes(packet.payload);
-          if (ctx.state.udpSocket)
-            ctx.state.udpSocket(udpPacket, packet.source);
+          ctx.state.udpSockets.get(udpPacket.destination)?.call(null, ctx, {
+            from: packet.source,
+            fromPort: udpPacket.source,
+            toPort: udpPacket.destination,
+            payload: udpPacket.payload,
+          });
       }
       ctx.updateState();
     } catch (e) {
@@ -144,45 +115,3 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
     },
   },
 };
-
-export function handleArpPacket(
-  ctx: EmulatorContext<L3InternalStateBase>,
-  packet: ARPPacket,
-  intf: number,
-) {
-  if (packet.response) {
-    if (
-      packet.targetMAC != ctx.state.netInterfaces[intf].mac ||
-      packet.targetIP != ctx.state.l3Ifs[intf].ip
-    )
-      return;
-    ctx.state.macTable.set(packet.senderIP, packet.senderMAC);
-    const toRemove: number[] = [];
-    for (const [i, pending] of ctx.state.packetsWaitingForARP.entries()) {
-      if (pending.destination == packet.senderIP) {
-        sendIPv4Packet(
-          ctx,
-          pending.destination,
-          pending.protocol,
-          pending.payload,
-        );
-        toRemove.push(i);
-      }
-    }
-    ctx.state.packetsWaitingForARP.filter((_, i) => !toRemove.includes(i));
-    ctx.updateState();
-    return;
-  }
-
-  if (!ctx.state.l3Ifs[intf] || ctx.state.l3Ifs[intf].ip != packet.targetIP)
-    return;
-
-  ctx.state.macTable.set(packet.senderIP, packet.senderMAC);
-  ctx.sendOnIf(
-    intf,
-    packet.respondWith(ctx.state.netInterfaces[intf].mac).toL2().toBytes(),
-  );
-  // ctx.updateState();
-
-  return;
-}
