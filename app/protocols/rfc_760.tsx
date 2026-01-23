@@ -27,8 +27,7 @@
  */
 
 import { EmulatorContext, InternalState } from "../emulators/DeviceEmulator";
-import { Layer2Packet, MacAddress } from "./802_3";
-import { ARPPacket } from "./rfc_826";
+import { MacAddress } from "./802_3";
 
 // NOTE: Implementazione parziale, ad esempio IHL è sempre uguale a 5
 export type IPv4Address = number;
@@ -302,59 +301,4 @@ export function targetIP(
     if (intf == -1) return { intf: 0, targetIp: 0, ok: false };
   }
   return { targetIp, intf, ok: true };
-}
-
-export function sendIPv4Packet(
-  ctx: Pick<
-    EmulatorContext<L3InternalState<object>>,
-    "state" | "sendOnIf" | "schedule"
-  >,
-  destination: IPv4Address,
-  protocol: ProtocolCode,
-  data: Buffer,
-  ttl: number = 255,
-): boolean {
-  const { targetIp, intf, ok } = targetIP(ctx.state, destination);
-  if (!ok) return false;
-
-  const packet = new IPv4Packet(
-    protocol,
-    data,
-    ctx.state.l3Ifs[intf].ip,
-    destination,
-    ttl,
-  );
-
-  if (!ctx.state.macTable.has(targetIp)) {
-    ctx.sendOnIf(
-      intf,
-      new ARPPacket(
-        ctx.state.netInterfaces[intf].mac,
-        ctx.state.l3Ifs[intf].ip,
-        targetIp,
-      )
-        .toL2()
-        .toBytes(),
-    );
-    ctx.state.packetsWaitingForARP.push(packet);
-    ctx.schedule(10, (ctx: EmulatorContext<L3InternalState<object>>) => {
-      ctx.state.packetsWaitingForARP = ctx.state.packetsWaitingForARP.filter(
-        (it) => it.destination != destination,
-      );
-    });
-    return false;
-  }
-
-  const payloads = packet.toFragmentedBytes();
-  for (const p of payloads) {
-    ctx.sendOnIf(
-      intf,
-      new Layer2Packet(
-        p,
-        ctx.state.netInterfaces[intf].mac,
-        ctx.state.macTable.get(targetIp),
-      ).toBytes(),
-    );
-  }
-  return true;
 }

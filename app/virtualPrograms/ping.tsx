@@ -1,11 +1,11 @@
 import { EmulatorContext, SubCommand } from "../emulators/DeviceEmulator";
+import { sendIPv4Packet } from "../emulators/utils/sendIPv4Packet";
 import { ICMPPacket } from "../protocols/icmp";
 import {
   parseIpv4,
   ipv4ToString,
   L3InternalState,
   ProtocolCode,
-  sendIPv4Packet,
 } from "../protocols/rfc_760";
 
 export const ping = {

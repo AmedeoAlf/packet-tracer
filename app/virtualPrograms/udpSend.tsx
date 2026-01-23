@@ -1,9 +1,9 @@
 import { SubCommand } from "../emulators/DeviceEmulator";
+import { sendIPv4Packet } from "../emulators/utils/sendIPv4Packet";
 import {
   L3InternalStateBase,
   parseIpv4,
   ProtocolCode,
-  sendIPv4Packet,
 } from "../protocols/rfc_760";
 import { UDPPacket } from "../protocols/udp";
 

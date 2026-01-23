@@ -6,7 +6,6 @@ import {
   IPv4Address,
   PartialIPv4Packet,
   ProtocolCode,
-  sendIPv4Packet,
 } from "../../protocols/rfc_760";
 import { hello } from "../../virtualPrograms/hello";
 import { interfacesL3 } from "../../virtualPrograms/interfacesl3";
@@ -17,7 +16,8 @@ import { arptable } from "@/app/virtualPrograms/arptable";
 import { udpSend } from "@/app/virtualPrograms/udpSend";
 import { UDPPacket } from "@/app/protocols/udp";
 import { OSInternalState } from "@/app/devices/list/Computer";
-import { handleArpPacket } from "./routerEmulator";
+import { handleArpPacket } from "../utils/handleArpPacket";
+import { sendIPv4Packet } from "../utils/sendIPv4Packet";
 
 export type OSUDPPacket = {
   from: IPv4Address;

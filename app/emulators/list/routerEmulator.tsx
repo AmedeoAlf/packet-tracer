@@ -5,19 +5,19 @@ import { ICMPPacket, ICMPType } from "../../protocols/icmp";
 import {
   getMatchingInterface,
   ipv4ToString,
-  L3InternalStateBase,
   PartialIPv4Packet,
   ProtocolCode,
-  sendIPv4Packet,
 } from "../../protocols/rfc_760";
 import { hello } from "../../virtualPrograms/hello";
 import { interfacesL3 } from "../../virtualPrograms/interfacesl3";
 import { l2send } from "../../virtualPrograms/l2send";
 import { ping } from "../../virtualPrograms/ping";
-import { DeviceEmulator, EmulatorContext } from "../DeviceEmulator";
+import { DeviceEmulator } from "../DeviceEmulator";
 import { arptable } from "@/app/virtualPrograms/arptable";
 import { udpSend } from "@/app/virtualPrograms/udpSend";
 import { UDPPacket } from "@/app/protocols/udp";
+import { handleArpPacket } from "../utils/handleArpPacket";
+import { sendIPv4Packet } from "../utils/sendIPv4Packet";
 
 export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   configPanel: {
@@ -144,45 +144,3 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
     },
   },
 };
-
-export function handleArpPacket(
-  ctx: EmulatorContext<L3InternalStateBase>,
-  packet: ARPPacket,
-  intf: number,
-) {
-  if (packet.response) {
-    if (
-      packet.targetMAC != ctx.state.netInterfaces[intf].mac ||
-      packet.targetIP != ctx.state.l3Ifs[intf].ip
-    )
-      return;
-    ctx.state.macTable.set(packet.senderIP, packet.senderMAC);
-    const toRemove: number[] = [];
-    for (const [i, pending] of ctx.state.packetsWaitingForARP.entries()) {
-      if (pending.destination == packet.senderIP) {
-        sendIPv4Packet(
-          ctx,
-          pending.destination,
-          pending.protocol,
-          pending.payload,
-        );
-        toRemove.push(i);
-      }
-    }
-    ctx.state.packetsWaitingForARP.filter((_, i) => !toRemove.includes(i));
-    ctx.updateState();
-    return;
-  }
-
-  if (!ctx.state.l3Ifs[intf] || ctx.state.l3Ifs[intf].ip != packet.targetIP)
-    return;
-
-  ctx.state.macTable.set(packet.senderIP, packet.senderMAC);
-  ctx.sendOnIf(
-    intf,
-    packet.respondWith(ctx.state.netInterfaces[intf].mac).toL2().toBytes(),
-  );
-  // ctx.updateState();
-
-  return;
-}
