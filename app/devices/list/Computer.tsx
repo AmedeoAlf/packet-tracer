@@ -20,7 +20,7 @@ export type UDPCallbackParams = [
 ];
 export type OSInternalState = L3InternalState<{
   filesystem: OSDir;
-  udpSockets: Map<number, (params: UDPCallbackParams) => void>;
+  udpSockets: Map<number, (params: UDPCallbackParams) => boolean>;
 }>;
 
 export const Computer: DeviceFactory<OSInternalState> = {
