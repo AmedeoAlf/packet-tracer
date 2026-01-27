@@ -1,8 +1,12 @@
 // Every packet is a valid DNS packet in the real world, BUT most fields are hardcoded
+// and simplified
 
 import { IPv4Address } from "./rfc_760";
 
-// and simplified
+export enum RRType {
+  A = 1
+}
+
 export enum ResponseCode {
   NoError = 0,
   NXDomain = 2,
@@ -39,7 +43,8 @@ export class ResourceRecord {
   constructor(
     public name: string,
     public rdata: Buffer,
-  ) {}
+    public type = RRType.A
+  ) { }
 
   toBytes(): Buffer {
     if (this.rdata.length >= 1 << 16)
@@ -50,7 +55,7 @@ export class ResourceRecord {
     buf.set(name);
     let cursor = name.length;
 
-    buf.writeUInt16BE(1, cursor); // Type = A
+    buf.writeUInt16BE(this.type, cursor);
     buf.writeUInt16BE(1, (cursor += 2)); // Class = internet
     buf.writeUInt32BE(86400, (cursor += 2)); // TTL
     buf.writeUInt16BE(this.rdata.length, (cursor += 4));
@@ -63,12 +68,14 @@ export class ResourceRecord {
     const nameLen = bytes.indexOf(0) + 1;
     const name = parseNameField(bytes.subarray(0, nameLen)).join(".");
 
+    const type = bytes.readUInt16BE(nameLen);
     const rdataLen = bytes.readUInt16BE(nameLen + 8);
 
     return [
       new ResourceRecord(
         name,
         bytes.subarray(nameLen + 10, nameLen + 10 + rdataLen),
+        type
       ),
       nameLen + 10 + rdataLen,
     ];
@@ -76,7 +83,7 @@ export class ResourceRecord {
 }
 
 export class DNSQuestion {
-  constructor(public name: string) {}
+  constructor(public name: string) { }
 
   toBytes() {
     const name = serializeNameField(this.name.split("."));
@@ -105,7 +112,7 @@ export class DNSPacket {
     public id: number,
     public questions: DNSQuestion[],
     public answers: ResourceRecord[],
-  ) {}
+  ) { }
 
   // Non imposta le flag!!! È responsabilità dell classi figlie
   protected _toBytes(): Buffer {

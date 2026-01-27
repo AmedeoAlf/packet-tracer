@@ -47,13 +47,36 @@ export function readFile(
 
 export function writeFile(
   filesystem: OSInternalState["filesystem"],
-  file: string,
+  path: string,
   content: string,
 ): OSError {
-  const folders = file.split("/");
+  const folders = path.split("/");
   const filename = folders.pop()!;
   const folder = getDir(filesystem, folders.join("/"));
   if (isError(folder)) return folder;
   folder[filename] = content;
   return OSError.NoErr;
+}
+
+export function writeFileInLocation(
+  filesystem: OSInternalState["filesystem"],
+  path: string,
+  content: string,
+) {
+  const folders = path.split("/");
+  const filename = folders.pop()!;
+  let node = filesystem;
+  for (const f of folders) {
+    if (typeof node != 'object') node = {};
+    node = node[f];
+  }
+  if (typeof node != 'object') node = {};
+  node[filename] = content;
+}
+
+export function listAll(filesystem: OSInternalState['filesystem']): string[] {
+  return Object.keys(filesystem).flatMap((file) => {
+    if (!isDirectory(file)) return file;
+    return listAll(file);
+  })
 }

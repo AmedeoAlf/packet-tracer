@@ -18,6 +18,7 @@ import { UDPPacket } from "@/app/protocols/udp";
 import { OSInternalState } from "@/app/devices/list/Computer";
 import { handleArpPacket } from "../utils/handleArpPacket";
 import { sendIPv4Packet } from "../utils/sendIPv4Packet";
+import { nslookup } from "@/app/virtualPrograms/nslookup";
 
 export type OSUDPPacket = {
   from: IPv4Address;
@@ -111,6 +112,7 @@ export const computerEmulator: DeviceEmulator<OSInternalState> = {
         ping: ping as any,
         arptable: arptable,
         "udp-send": udpSend,
+        nslookup: nslookup,
       },
     },
   },
