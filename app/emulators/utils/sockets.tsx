@@ -2,7 +2,7 @@ import { OSInternalState } from "@/app/devices/list/Computer";
 import { EmulatorContext } from "../DeviceEmulator";
 import { OSUDPPacket } from "../list/computerEmulator";
 
-export function readUDP(state: OSInternalState, callback: (ctx: EmulatorContext<OSInternalState>, p: OSUDPPacket) => void, port?: number): number {
+export function readUDP(state: OSInternalState, callback: (ctx: EmulatorContext<OSInternalState>, p: OSUDPPacket) => boolean, port?: number) {
     if (port === undefined) {
         port = 0xC000;
         while (state.udpSockets.has(++port));

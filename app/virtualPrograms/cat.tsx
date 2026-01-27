@@ -12,6 +12,7 @@ export const cat = {
     then: {
         run(ctx: EmulatorContext<OSInternalState>) {
             const file = readFile(ctx.state.filesystem, ctx.args![1])
+            console.log(ctx.state.filesystem, file)
             ctx.write(typeof file == "string" ? file : "File not found");
         },
     }

@@ -11,14 +11,14 @@ import {
   OSUDPPacket,
 } from "@/app/emulators/list/computerEmulator";
 import { EmulatorContext } from "@/app/emulators/DeviceEmulator";
-import { OSFile } from "@/app/emulators/utils/osFiles";
+import { OSDir } from "@/app/emulators/utils/osFiles";
 import { trustMeBroCast } from "@/app/common";
 
 export type OSInternalState = L3InternalState<{
-  filesystem: OSFile;
+  filesystem: OSDir;
   udpSockets: Map<
     number,
-    (ctx: EmulatorContext<OSInternalState>, p: OSUDPPacket) => void
+    (ctx: EmulatorContext<OSInternalState>, p: OSUDPPacket) => boolean
   >;
 }>;
 
