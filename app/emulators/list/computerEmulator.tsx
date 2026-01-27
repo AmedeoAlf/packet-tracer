@@ -94,12 +94,15 @@ export const computerEmulator: DeviceEmulator<OSInternalState> = {
           }
         case ProtocolCode.udp:
           const udpPacket = UDPPacket.fromBytes(packet.payload);
-          ctx.state.udpSockets.get(udpPacket.destination)?.call(null, ctx, {
-            from: packet.source,
-            fromPort: udpPacket.source,
-            toPort: udpPacket.destination,
-            payload: udpPacket.payload,
-          });
+          ctx.state.udpSockets.get(udpPacket.destination)?.call(null, [
+            ctx,
+            {
+              from: packet.source,
+              fromPort: udpPacket.source,
+              toPort: udpPacket.destination,
+              payload: udpPacket.payload,
+            },
+          ]);
       }
       ctx.updateState();
     } catch (e) {
