@@ -4,7 +4,7 @@
 import { IPv4Address } from "./rfc_760";
 
 export enum RRType {
-  A = 1
+  A = 1,
 }
 
 export enum ResponseCode {
@@ -43,8 +43,8 @@ export class ResourceRecord {
   constructor(
     public name: string,
     public rdata: Buffer,
-    public type = RRType.A
-  ) { }
+    public type = RRType.A,
+  ) {}
 
   toBytes(): Buffer {
     if (this.rdata.length >= 1 << 16)
@@ -75,7 +75,7 @@ export class ResourceRecord {
       new ResourceRecord(
         name,
         bytes.subarray(nameLen + 10, nameLen + 10 + rdataLen),
-        type
+        type,
       ),
       nameLen + 10 + rdataLen,
     ];
@@ -83,7 +83,7 @@ export class ResourceRecord {
 }
 
 export class DNSQuestion {
-  constructor(public name: string) { }
+  constructor(public name: string) {}
 
   toBytes() {
     const name = serializeNameField(this.name.split("."));
@@ -112,7 +112,7 @@ export class DNSPacket {
     public id: number,
     public questions: DNSQuestion[],
     public answers: ResourceRecord[],
-  ) { }
+  ) {}
 
   // Non imposta le flag!!! È responsabilità dell classi figlie
   protected _toBytes(): Buffer {

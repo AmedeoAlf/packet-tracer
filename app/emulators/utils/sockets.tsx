@@ -1,14 +1,19 @@
-import { OSInternalState } from "@/app/devices/list/Computer";
-import { EmulatorContext } from "../DeviceEmulator";
-import { OSUDPPacket } from "../list/computerEmulator";
+import {
+  OSInternalState,
+  UDPCallbackParams,
+} from "@/app/devices/list/Computer";
 
-export function readUDP(state: OSInternalState, callback: (ctx: EmulatorContext<OSInternalState>, p: OSUDPPacket) => boolean, port?: number) {
-    if (port === undefined) {
-        port = 0xC000;
-        while (state.udpSockets.has(++port));
-    } else if (state.udpSockets.has(port)) {
-        return -1;
-    }
-    state.udpSockets.set(port, callback);
-    return port;
+export function readUDP(
+  state: OSInternalState,
+  callback: (params: UDPCallbackParams) => boolean,
+  port?: number,
+) {
+  if (port === undefined) {
+    port = 0xc000;
+    while (state.udpSockets.has(++port));
+  } else if (state.udpSockets.has(port)) {
+    return -1;
+  }
+  state.udpSockets.set(port, callback);
+  return port;
 }

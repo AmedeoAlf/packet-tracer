@@ -14,12 +14,13 @@ import { EmulatorContext } from "@/app/emulators/DeviceEmulator";
 import { OSDir } from "@/app/emulators/utils/osFiles";
 import { trustMeBroCast } from "@/app/common";
 
+export type UDPCallbackParams = [
+  ctx: EmulatorContext<OSInternalState>,
+  p: OSUDPPacket,
+];
 export type OSInternalState = L3InternalState<{
   filesystem: OSDir;
-  udpSockets: Map<
-    number,
-    (ctx: EmulatorContext<OSInternalState>, p: OSUDPPacket) => boolean
-  >;
+  udpSockets: Map<number, (params: UDPCallbackParams) => void>;
 }>;
 
 export const Computer: DeviceFactory<OSInternalState> = {

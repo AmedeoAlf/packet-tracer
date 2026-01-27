@@ -3,9 +3,9 @@ import { SubCommand, EmulatorContext } from "../emulators/DeviceEmulator";
 import { listAll, readFile } from "../emulators/utils/osFiles";
 
 export const ls = {
-    desc: 'Lists all file in the system',
-    run(ctx: EmulatorContext<OSInternalState>) {
-        const files = listAll(ctx.state.filesystem);
-        ctx.write(files.join("\n"));
-    },
+  desc: "Lists all file in the system",
+  run(ctx: EmulatorContext<OSInternalState>) {
+    const files = listAll(ctx.state.filesystem);
+    ctx.write(files.join("\n"));
+  },
 } satisfies SubCommand<OSInternalState>;

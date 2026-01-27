@@ -118,7 +118,7 @@ export const computerEmulator: DeviceEmulator<OSInternalState> = {
         nslookup: nslookup,
         cat: cat,
         writeFile: writeFile,
-        ls: ls
+        ls: ls,
       },
     },
   },

@@ -24,7 +24,7 @@ export function getDir(
 ): OSDir | OSError {
   const folders = file.split("/");
   let curr = filesystem;
-  for (const f of folders.filter(it => it)) {
+  for (const f of folders.filter((it) => it)) {
     if (!isDirectory(curr[f])) return OSError.FileNotFound;
     curr = curr[f];
   }
@@ -67,16 +67,16 @@ export function writeFileInLocation(
   const filename = folders.pop()!;
   console.log("write in: folders", folders, "file", filename);
   let node = filesystem as OSDir;
-  for (const f of folders.filter(it => it)) {
-    if (typeof node[f] != 'object') node[f] = {};
+  for (const f of folders.filter((it) => it)) {
+    if (typeof node[f] != "object") node[f] = {};
     node = node[f];
   }
   node[filename] = content;
 }
 
-export function listAll(filesystem: OSDir, prefix = '/'): string[] {
+export function listAll(filesystem: OSDir, prefix = "/"): string[] {
   return Object.keys(filesystem).flatMap((file) => {
     if (!isDirectory(filesystem[file])) return prefix + file;
     return listAll(filesystem[file], prefix + file + "/");
-  })
+  });
 }
