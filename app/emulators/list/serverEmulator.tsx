@@ -60,8 +60,12 @@ export const serverEmulator: DeviceEmulator<OSInternalState> = {
     },
   },
   packetHandler(ctx, data, intf) {
-    const packet = recvIPv4Packet(ctx, data, intf);
-    if (!packet) return;
+    try {
+      const packet = recvIPv4Packet(ctx, data, intf);
+      if (packet) serverPacketHandler(ctx, packet);
+    } catch (e) {
+      console.log(e);
+    }
   },
   cmdInterpreter: {
     shell: {
@@ -85,6 +89,7 @@ export function serverPacketHandler(
   ctx: EmulatorContext<OSInternalState>,
   packet: IPv4Packet,
 ) {
+  console.log("Inside serverPacket");
   switch (packet.protocol) {
     case ProtocolCode.udp:
       const udpPacket = UDPPacket.fromBytes(packet.payload);
@@ -116,19 +121,24 @@ function dnsPacketHandler(
   udpPacket: UDPPacket,
   ipSource: IPv4Address,
 ) {
+  console.log("Handling dns packet");
   const dnsserverStr = readFile(ctx.state.filesystem, "/etc/dnsserver");
   if (typeof dnsserverStr != "string") return;
   const config = JSON.parse(dnsserverStr);
   if (!config.on) return;
   if (typeof config.domains != "object") return;
+  console.log("Config.domains is ok");
 
   const dnsPacket = DNSPacket.fromBytes(udpPacket.payload);
   if (dnsPacket instanceof DNSResponsePacket) return;
+  console.log("Got a dns request");
 
   let code = ResponseCode.NoError;
+  console.log(dnsPacket.questions);
   const answers = dnsPacket.questions
     .map((q) => {
       if (!Array.isArray(config.domains[q.name])) {
+        console.log(config.domains, q.name);
         code = ResponseCode.NXDomain;
         return;
       }
@@ -137,6 +147,7 @@ function dnsPacketHandler(
       );
     })
     .filter((it) => it) as ResourceRecord[];
+  console.log("Code is", code);
 
   const response = new DNSResponsePacket(
     dnsPacket.id,
@@ -144,6 +155,7 @@ function dnsPacketHandler(
     dnsPacket.questions,
     answers,
   );
+  console.log(response);
 
   sendIPv4Packet(
     ctx as any,

@@ -18,7 +18,7 @@ function parseNameField(nullTerminated: Buffer): string[] {
   while (cursor < nullTerminated.length && nullTerminated[cursor] != 0) {
     words.push(
       nullTerminated
-        .subarray(cursor + 1, cursor + nullTerminated[cursor])
+        .subarray(cursor + 1, cursor + nullTerminated[cursor] + 1)
         .toString("ascii"),
     );
     cursor += nullTerminated[cursor] + 1;
@@ -88,6 +88,7 @@ export class DNSQuestion {
   toBytes() {
     const name = serializeNameField(this.name.split("."));
     const bytes = Buffer.alloc(name.length + 4);
+    bytes.set(name);
     bytes.writeUInt16BE(1, name.length); // type = A
     bytes.writeUInt16BE(1, name.length + 2); // Class = internet
     return bytes;
@@ -194,7 +195,7 @@ export class DNSResponsePacket extends DNSPacket {
   toBytes(): Buffer {
     const buf = this._toBytes();
     const flags = (1 << 15) | (this.responseCode & 0b1111);
-    buf.writeUint16BE(flags, 2);
+    buf.writeUInt16BE(flags, 2);
     return buf;
   }
 }

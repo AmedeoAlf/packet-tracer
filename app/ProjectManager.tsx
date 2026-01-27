@@ -240,7 +240,12 @@ export class ProjectManager {
     const toClear: number[] = [];
     for (const [i, { onTick, fn }] of this.callbacks.entries()) {
       if (onTick != this.project.currTick) continue;
-      fn(toolCtx);
+      try {
+        fn(toolCtx);
+      } catch (e) {
+        console.log("A callback shouldn't throw errors, but it threw");
+        console.log(e);
+      }
       toClear.push(i);
     }
     if (toClear.length == 0) return;
