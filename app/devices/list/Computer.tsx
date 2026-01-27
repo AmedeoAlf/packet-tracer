@@ -46,7 +46,6 @@ export const Computer: DeviceFactory<OSInternalState> = {
     },
   },
 
-  // Default State Switch da Cambiare
   defaultState() {
     return {
       ...defaultL3InternalState(),
