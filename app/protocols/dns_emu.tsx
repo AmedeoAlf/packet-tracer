@@ -100,10 +100,11 @@ export class DNSQuestion {
     return [new DNSQuestion(name), nameLen];
   }
 
-  answerTypeA(ip: IPv4Address): ResourceRecord {
-    const data = Buffer.alloc(4);
-    data.writeUInt32BE(ip);
-    return new ResourceRecord(this.name, data);
+  answerTypeA(ips: IPv4Address[]): ResourceRecord {
+    return new ResourceRecord(
+      this.name,
+      Buffer.from(new Uint32Array(ips).buffer),
+    );
   }
 }
 

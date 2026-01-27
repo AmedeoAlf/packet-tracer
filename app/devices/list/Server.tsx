@@ -1,8 +1,12 @@
-import { serverEmulator } from "@/app/emulators/list/serverEmulator";
+import {
+  defaultServerFS,
+  serverEmulator,
+} from "@/app/emulators/list/serverEmulator";
 import { randomMAC } from "../../protocols/802_3";
 import { DeviceFactory } from "../Device";
 import { OSInternalState } from "./Computer";
 import { defaultL3InternalState } from "@/app/protocols/rfc_760";
+import { deepCopy } from "@/app/common";
 
 export const Server: DeviceFactory<OSInternalState> = {
   proto: {
@@ -17,7 +21,7 @@ export const Server: DeviceFactory<OSInternalState> = {
       netInterfaces: [
         { name: "if0", maxMbps: 100, type: "copper", mac: randomMAC() },
       ],
-      filesystem: {},
+      filesystem: deepCopy(defaultServerFS),
       udpSockets: new Map(),
     };
   },
