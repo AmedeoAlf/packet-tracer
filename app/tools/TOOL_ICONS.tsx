@@ -1,7 +1,7 @@
-import { JSX, ReactNode } from "react";
+import { JSX } from "react";
 import { TOOLS } from "./Tool";
 
-export function wrapIcon(icon: ReactNode) {
+export function WrapToolIcon({ icon }: { icon: keyof typeof TOOL_ICONS }) {
   return (
     <svg
       width="50"
@@ -10,7 +10,7 @@ export function wrapIcon(icon: ReactNode) {
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {icon}
+      {TOOL_ICONS[icon]}
     </svg>
   );
 }

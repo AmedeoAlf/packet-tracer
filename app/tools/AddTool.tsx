@@ -1,6 +1,8 @@
 import { Tool } from "./Tool";
 import { DeviceType, deviceTypesDB } from "../devices/deviceTypesDB";
-import { Coords } from "../common";
+import { capitalize, Coords, trustMeBroCast } from "../common";
+import { MouseEventHandler, ReactNode } from "react";
+import { ICONS } from "../devices/ICONS";
 
 export type AddTool = Tool<{
   deviceType: keyof typeof deviceTypesDB;
@@ -15,22 +17,38 @@ export function makeAddTool(prev: AddTool | object = {}): AddTool {
     toolname: "add",
     panel: (ctx) => {
       return (
-        <div className="h-8 rounded-md font-bold m-2 px-2 p-1 bg-gray-700 text-gray-400">
-          Device type:&nbsp;
-          <select
-            className="rounded-md bg-gray-800"
-            defaultValue={ctx.tool.deviceType}
-            onChange={(ev) => {
-              ctx.tool.deviceType = ev.target.value as DeviceType;
-              ctx.updateTool();
-            }}
-          >
-            {Object.keys(deviceTypesDB).map((it) => (
-              <option className="bg-sky-700" key={it} value={it}>
-                {it}
-              </option>
-            ))}
-          </select>
+        <div className="m-2">
+          <div className="h-8 rounded-md font-bold px-2 p-1 bg-gray-700 text-gray-400">
+            Usa shift+click per aggiungere rapidamente
+          </div>
+          <p className="mt-2">Dispositivo selezionato:</p>
+          <div className="flex-wrap flex w-max max-w-full gap-2">
+            {Object.keys(deviceTypesDB).map((it) => {
+              trustMeBroCast<keyof typeof deviceTypesDB>(it);
+              return (
+                <DeviceTypeComponent
+                  type={it}
+                  isSelected={it == ctx.tool.deviceType}
+                  onClick={(ev) => {
+                    if (ev.shiftKey) {
+                      ctx.project.createDevice(
+                        deviceTypesDB[it].proto.deviceType,
+                        [
+                          (ctx.project.lastId % 5) * 100 - 600,
+                          Math.floor(ctx.project.lastId / 5) * 100 - 350,
+                        ],
+                      );
+                      ctx.updateProject();
+                    }
+                    ctx.tool.deviceType = it;
+                    ctx.updateTool();
+                  }}
+                  key={it}
+                  className="block-inline w-20 "
+                />
+              );
+            })}
+          </div>
         </div>
       );
     },
@@ -57,4 +75,27 @@ export function makeAddTool(prev: AddTool | object = {}): AddTool {
       );
     },
   };
+}
+
+function DeviceTypeComponent({
+  type,
+  isSelected,
+  onClick,
+  className,
+}: {
+  type: keyof typeof deviceTypesDB;
+  isSelected: boolean;
+  onClick: MouseEventHandler;
+  className?: string;
+}): ReactNode {
+  className = "p-2 rounded-sm border-2 " + className;
+  if (isSelected) className += " bg-slate-700 ";
+  return (
+    <div className={className} onClick={onClick}>
+      <svg viewBox="-35 -30 70 60" className="w-full">
+        {ICONS[deviceTypesDB[type].proto.iconId]}
+      </svg>
+      <p className="text-center truncate w-full">{capitalize(type)}</p>
+    </div>
+  );
 }

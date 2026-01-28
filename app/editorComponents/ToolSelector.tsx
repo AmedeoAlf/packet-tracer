@@ -1,6 +1,6 @@
 import { memo, ReactNode } from "react";
 import { TOOL_LIST, TOOLS } from "../tools/Tool";
-import { TOOL_ICONS, wrapIcon } from "../tools/TOOL_ICONS";
+import { WrapToolIcon } from "../tools/TOOL_ICONS";
 
 // Il selettore del tool in uso
 export const ToolSelector = memo(
@@ -24,7 +24,7 @@ export const ToolSelector = memo(
                 " w-16 border-solid border-[.1em] border-white m-[2.5%] "
               }
             >
-              {wrapIcon(TOOL_ICONS[it])}
+              <WrapToolIcon icon={it} />
               {it}
             </button>
           ))}
