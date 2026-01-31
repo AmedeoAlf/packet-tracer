@@ -45,7 +45,6 @@ export function makeAddTool(prev: AddTool | object = {}): AddTool {
                     ctx.updateTool();
                   }}
                   key={it}
-                  className="block-inline w-20 "
                 />
               );
             })}
@@ -82,20 +81,18 @@ function DeviceTypeComponent({
   type,
   isSelected,
   onClick,
-  className,
 }: {
   type: keyof typeof deviceTypesDB;
   isSelected: boolean;
   onClick: MouseEventHandler;
-  className?: string;
 }): ReactNode {
   return (
     <SelectableCard
       onClick={onClick}
-      className={className}
+      className="p-1 size-22"
       isSelected={isSelected}
     >
-      <svg viewBox="-35 -30 70 60" className="w-full">
+      <svg viewBox="-35 -30 70 60" className="h-auto">
         {ICONS[deviceTypesDB[type].proto.iconId]}
       </svg>
       <p className="text-center truncate w-full">{capitalize(type)}</p>
