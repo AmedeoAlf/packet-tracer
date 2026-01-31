@@ -15,11 +15,7 @@ export const ping = {
     return [];
   },
   validate(_, past) {
-    // TODO: "." è un ip valido
-    return past[1]
-      .split(".")
-      .map((n) => +n)
-      .every((it) => 0 <= it && it < 256);
+    return parseIpv4(past[1]) !== undefined;
   },
   then: {
     run(ctx: EmulatorContext<L3InternalState<object>>) {
@@ -28,14 +24,14 @@ export const ping = {
         ctx.write(`Invalid address ${ctx.args![1]}`);
         return;
       }
-      const start = Date.now();
+      const start = ctx.currTick;
       let done = false;
       ctx.state.rawSocketFd = (ctx, packet) => {
         done = true;
         const seq = ICMPPacket.fromBytes(packet.payload).echoResponseHeader()
           .seq;
         ctx.write(
-          `From ${ipv4ToString(packet.source)}: icmp_seq=${seq} ttl=${packet.ttl} time=${Date.now() - start} ms`,
+          `From ${ipv4ToString(packet.source)}: icmp_seq=${seq} ttl=${packet.ttl} time=${ctx.currTick - start} ms`,
         );
         ctx.state.rawSocketFd = undefined;
       };

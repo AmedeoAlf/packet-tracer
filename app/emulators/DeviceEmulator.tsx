@@ -48,6 +48,7 @@ export type Interpreter<State extends InternalState<object>> = {
 
 export type EmulatorContext<State extends InternalState<object>> = {
   interpreter: Interpreter<State>;
+  currTick: number;
   sendOnIf: (ifIdx: number, data: Buffer) => void;
   schedule: (after: number, fn: (ctx: EmulatorContext<any>) => void) => void;
   state: State;
@@ -209,5 +210,6 @@ export function buildEmulatorContext(
       : (msg) => {
           console.log("Impossibile scrivere sul terminale", msg);
         },
+    currTick: toolCtx.project.currTick,
   };
 }
