@@ -46,8 +46,8 @@ export function ipv4ToString(ip: IPv4Address): string {
 export function parseIpv4(s: string): IPv4Address | undefined {
   const octects = s.split(".");
   if (octects.length != 4) return;
-  const numbers = octects.map(it => +it);
-  if (!numbers.every(it => 0 <= it && it < 256)) return;
+  const numbers = octects.map((it) => +it);
+  if (!numbers.every((it) => 0 <= it && it < 256)) return;
   return numbers.reduce((acc, val) => acc * 256 + val);
 }
 
@@ -187,7 +187,7 @@ export class IPv4Packet {
       header.writeUInt16BE(packet.byteLength, 2); // Total length
       header.writeUInt16BE(
         (+moreFragments << 29) | // More fragments flag
-        ((offs + this.offset) >> 3), // Fragment offset
+          ((offs + this.offset) >> 3), // Fragment offset
         6,
       );
       packet.set(header);
