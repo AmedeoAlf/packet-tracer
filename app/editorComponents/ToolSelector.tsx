@@ -13,17 +13,19 @@ export const ToolSelector = memo(
     setToolTo: (t: keyof typeof TOOLS) => void;
   }): ReactNode {
     return (
-      <div className="fixed bottom-1 left-[35.3%] bg-slate-800 rounded-md w-max h-min flex flex-wrap justify-center gap-1 p-1">
-        {TOOL_LIST.map((it) => (
-          <SelectableCard
-            key={it}
-            onClick={() => setToolTo(it)}
-            isSelected={it == toolname}
-            className="h-min"
-          >
-            <WrapToolIcon icon={it} />
-          </SelectableCard>
-        ))}
+      <div className="fixed bottom-1 w-full flex justify-center pointer-events-none">
+        <div className="bg-slate-800 w-max h-min flex flex-wrap justify-center gap-1 p-1 rounded-md pointer-events-auto">
+          {TOOL_LIST.map((it) => (
+            <SelectableCard
+              key={it}
+              onClick={() => setToolTo(it)}
+              isSelected={it == toolname}
+              className="h-min"
+            >
+              <WrapToolIcon icon={it} />
+            </SelectableCard>
+          ))}
+        </div>
       </div>
     );
   },

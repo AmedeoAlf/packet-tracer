@@ -3,7 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --h-spec-cont: calc(100vh - 200px);
+  --h-spec-cont: calc(100vh - 50px);
   --h-spec-cont-opt: calc(100vh - 200px - 20px);
 }
 
