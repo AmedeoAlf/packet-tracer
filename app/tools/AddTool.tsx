@@ -3,6 +3,7 @@ import { DeviceType, deviceTypesDB } from "../devices/deviceTypesDB";
 import { capitalize, Coords, trustMeBroCast } from "../common";
 import { MouseEventHandler, ReactNode } from "react";
 import { ICONS } from "../devices/ICONS";
+import { SelectableCard } from "../editorComponents/SelectableCard";
 
 export type AddTool = Tool<{
   deviceType: keyof typeof deviceTypesDB;
@@ -22,7 +23,7 @@ export function makeAddTool(prev: AddTool | object = {}): AddTool {
             Usa shift+click per aggiungere rapidamente
           </div>
           <p className="mt-2">Dispositivo selezionato:</p>
-          <div className="flex-wrap flex w-max max-w-full gap-2">
+          <div className="flex-wrap flex w-max max-w-full gap-1">
             {Object.keys(deviceTypesDB).map((it) => {
               trustMeBroCast<keyof typeof deviceTypesDB>(it);
               return (
@@ -88,14 +89,16 @@ function DeviceTypeComponent({
   onClick: MouseEventHandler;
   className?: string;
 }): ReactNode {
-  className = "p-2 rounded-sm border-2 " + className;
-  if (isSelected) className += " bg-slate-700 ";
   return (
-    <div className={className} onClick={onClick}>
+    <SelectableCard
+      onClick={onClick}
+      className={className}
+      isSelected={isSelected}
+    >
       <svg viewBox="-35 -30 70 60" className="w-full">
         {ICONS[deviceTypesDB[type].proto.iconId]}
       </svg>
       <p className="text-center truncate w-full">{capitalize(type)}</p>
-    </div>
+    </SelectableCard>
   );
 }
