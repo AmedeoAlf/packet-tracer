@@ -4,8 +4,8 @@ import { TOOLS } from "./Tool";
 export function WrapToolIcon({ icon }: { icon: keyof typeof TOOL_ICONS }) {
   return (
     <svg
-      width="50"
-      height="50"
+      width="40"
+      height="40"
       viewBox="0 0 50 50"
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"

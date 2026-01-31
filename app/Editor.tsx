@@ -21,7 +21,6 @@ import { Cables } from "./editorComponents/Cables";
 import { SideBar } from "./editorComponents/SideBar";
 import { ToolSelector } from "./editorComponents/ToolSelector";
 import { Devices } from "./editorComponents/Devices";
-import { deviceTypesDB } from "./devices/deviceTypesDB";
 import { ProjectManager } from "./ProjectManager";
 import { Decal } from "./Project";
 import { TopBarBtns, TopBarBtnsParams } from "./editorComponents/TopBarBtns";
@@ -138,51 +137,6 @@ export function Editor({
       </div>
 
       <SideBar toolCtx={toolCtx} />
-
-      <div
-        id="left-side-bar"
-        className="fixed bottom-0 left-0 w-[35.3%] h-[150px] indent-[1,5em] border-solid border-t-[.1em] border-r-[.1em] border-sky-800"
-      >
-        <div className="h-[20%] bg-sky-700"></div>
-        <div className="h-[80%] bg-zinc-900 flex flex-wrap justify-center">
-          {Object.values(deviceTypesDB).map((it) => (
-            <button
-              className="h-16 w-16 m-[2.5%] border-solid border-[.1em] border-white"
-              key={it.proto.deviceType}
-            >
-              <svg
-                viewBox="-35 -35 70 70"
-                onClick={() => {
-                  project.createDevice(it.proto.deviceType, [
-                    (project.lastId % 5) * 100 - 600,
-                    Math.floor(project.lastId / 5) * 100 - 350,
-                  ]);
-                  toolCtx.updateProject();
-                }}
-              >
-                {ICONS[it.proto.iconId]}
-                {/* il bordo che devono rispettare le icone dopo l'applicazione di scale() e traslate()
-                    <rect x="-30" y="-30" width="60" height="60" stroke="red" fill="none" />*/}
-              </svg>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div
-        id="right-side-bar"
-        className="fixed bottom-0 right-0 w-[35.3%] h-[150px] indent-[1,5em] border-solid border-t-[.1em] border-l-[.1em] border-sky-800"
-      >
-        <div className="h-[20%] bg-sky-700"></div>
-        <div className="h-[80%] bg-zinc-900 flex flex-wrap justify-center">
-          {[0, 1, 2, 3, 4].map((k) => (
-            <button
-              className="h-16 w-16 border-solid border-[.1em] border-white m-[2.5%] "
-              key={k}
-            ></button>
-          ))}
-        </div>
-      </div>
 
       <ToolSelector
         toolname={tool.toolname}
