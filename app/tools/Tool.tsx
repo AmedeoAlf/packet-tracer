@@ -42,7 +42,7 @@ export type CanvasEvent =
 export type Tool<Ext extends object> = {
   readonly toolname: keyof typeof TOOLS;
   readonly onEvent: (ctx: ToolCtx<Tool<Ext>>, ev: CanvasEvent) => void;
-  readonly panel: (ctx: ToolCtx<Tool<Ext>>) => ReactNode;
+  readonly panel: (ctx: ToolCtx<Tool<Ext>>) => ReactNode | undefined;
   readonly svgElements: (ctx: ToolCtx<Tool<Ext>>) => ReactNode;
 } & Ext;
 

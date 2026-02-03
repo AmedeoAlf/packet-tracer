@@ -9,6 +9,8 @@ export const SideBar = memo(function SideBar({
   toolCtx: ToolCtx<Tool<object>>;
 }): ReactNode {
   const [open, setOpen] = useState(true);
+  const panel = toolCtx.tool.panel(toolCtx);
+  if (!panel) return <></>;
   return open ? (
     <div className="bg-zinc-900 fixed top-[50px] right-0 w-1/3 min-w-80 max-w-120 h-(--h-spec-cont) border-sky-800 border-solid border-t-[.1em] border-l-[.1em]">
       <div className="bg-sky-700 h-[20px] indent-0">
