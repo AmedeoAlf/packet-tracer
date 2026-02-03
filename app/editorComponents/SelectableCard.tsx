@@ -12,7 +12,7 @@ export function SelectableCard({
   children: ReactNode;
 }): ReactNode {
   className =
-    "p-1 rounded-sm border-3 select-none flex flex-col items-center " +
+    "transition p-1 rounded-sm border-3 select-none flex flex-col items-center " +
     (isSelected
       ? "bg-sky-900 border-sky-800 "
       : "bg-slate-800 border-slate-700 hover:bg-slate-700 ") +

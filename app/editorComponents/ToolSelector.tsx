@@ -14,13 +14,16 @@ export const ToolSelector = memo(
   }): ReactNode {
     return (
       <div className="fixed bottom-1 w-full flex justify-center pointer-events-none">
-        <div className="bg-slate-800 w-max h-min flex flex-wrap justify-center gap-1 p-1 rounded-md pointer-events-auto">
+        <div className="bg-slate-800 w-max h-min flex flex-wrap justify-center gap-1 p-2 rounded-2xl pointer-events-auto">
           {TOOL_LIST.map((it) => (
             <SelectableCard
               key={it}
               onClick={() => setToolTo(it)}
               isSelected={it == toolname}
-              className="h-min"
+              className={
+                "h-min p-2 rounded-xl" +
+                (it == toolname ? "" : " border-transparent")
+              }
             >
               <WrapToolIcon icon={it} />
             </SelectableCard>
