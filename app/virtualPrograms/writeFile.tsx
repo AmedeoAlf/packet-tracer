@@ -1,14 +1,6 @@
 import { OSInternalState } from "../devices/list/Computer";
-import {
-  SubCommand,
-  InternalState,
-  EmulatorContext,
-} from "../emulators/DeviceEmulator";
-import {
-  listAll,
-  readFile,
-  writeFileInLocation,
-} from "../emulators/utils/osFiles";
+import { SubCommand, EmulatorContext } from "../emulators/DeviceEmulator";
+import { listAll, writeFileInLocation } from "../emulators/utils/osFiles";
 
 export const writeFile = {
   desc: "Write a file (overwrites and creates intermediate directories)",

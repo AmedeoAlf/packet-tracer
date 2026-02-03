@@ -243,8 +243,7 @@ export class ProjectManager {
       try {
         fn(toolCtx);
       } catch (e) {
-        console.log("A callback shouldn't throw errors, but it threw");
-        console.log(e);
+        console.log("A callback shouldn't throw errors, but it threw", e);
       }
       toClear.push(i);
     }

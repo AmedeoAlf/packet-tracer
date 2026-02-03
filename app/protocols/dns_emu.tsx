@@ -53,13 +53,12 @@ export class ResourceRecord {
 
     const buf = Buffer.alloc(name.length + 10 + this.rdata.length);
     buf.set(name);
-    let cursor = name.length;
 
-    buf.writeUInt16BE(this.type, cursor);
-    buf.writeUInt16BE(1, (cursor += 2)); // Class = internet
-    buf.writeUInt32BE(86400, (cursor += 2)); // TTL
-    buf.writeUInt16BE(this.rdata.length, (cursor += 4));
-    buf.set(this.rdata, (cursor += 2));
+    buf.writeUInt16BE(this.type, name.length);
+    buf.writeUInt16BE(1, name.length + 2); // Class = internet
+    buf.writeUInt32BE(86400, name.length + 4); // TTL
+    buf.writeUInt16BE(this.rdata.length, name.length + 8);
+    buf.set(this.rdata, name.length + 10);
 
     return buf;
   }
@@ -96,15 +95,19 @@ export class DNSQuestion {
 
   static fromBytes(bytes: Buffer): [question: DNSQuestion, offset: number] {
     const nameLen = bytes.indexOf(0) + 1;
+
+    // bytes.readUInt16BE(nameLen) // type = A
+    // bytes.readUInt16BE(nameLen + 2) // Class = internet
     const name = parseNameField(bytes.subarray(0, nameLen)).join(".");
 
-    return [new DNSQuestion(name), nameLen];
+    return [new DNSQuestion(name), nameLen + 4];
   }
 
   answerTypeA(ips: IPv4Address[]): ResourceRecord {
     return new ResourceRecord(
       this.name,
       Buffer.from(new Uint32Array(ips).buffer),
+      RRType.A,
     );
   }
 }
@@ -165,7 +168,7 @@ export class DNSPacket {
       cursor += len;
     }
 
-    if (flags & 0x80) {
+    if (flags & (1 << 15)) {
       return new DNSResponsePacket(id, flags & 0b1111, questions, answers);
     } else {
       return new DNSQueryPacket(id, questions);

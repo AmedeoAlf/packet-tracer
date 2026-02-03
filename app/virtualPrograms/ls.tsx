@@ -1,6 +1,6 @@
 import { OSInternalState } from "../devices/list/Computer";
 import { SubCommand, EmulatorContext } from "../emulators/DeviceEmulator";
-import { listAll, readFile } from "../emulators/utils/osFiles";
+import { listAll } from "../emulators/utils/osFiles";
 
 export const ls = {
   desc: "Lists all file in the system",

@@ -1,9 +1,5 @@
 import { OSInternalState } from "../devices/list/Computer";
-import {
-  SubCommand,
-  InternalState,
-  EmulatorContext,
-} from "../emulators/DeviceEmulator";
+import { SubCommand, EmulatorContext } from "../emulators/DeviceEmulator";
 import { listAll, readFile } from "../emulators/utils/osFiles";
 
 export const cat = {

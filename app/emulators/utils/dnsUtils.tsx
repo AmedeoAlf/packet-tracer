@@ -32,40 +32,48 @@ export function getDns(
 }
 
 export type ResolvedARecord = [string, IPv4Address[]];
-export type ResolvedAddressesReturnV = [
+export type ResolvedAddressesCallback = (
   ctx: EmulatorContext<OSInternalState>,
   answers: (ResolvedARecord | ResourceRecord)[],
-];
+  error?: string,
+) => void;
 
 export async function resolveAddresses(
   ctx: EmulatorContext<OSInternalState>,
   dns: IPv4Address,
   dnsQuestions: DNSQuestion[],
-): Promise<ResolvedAddressesReturnV> {
-  return new Promise((resolve, reject) => {
-    const port = readUDP(ctx.state, ([ctx, packet]) => {
-      if (packet.from != dns) {
-        return false;
-      }
-      const dnsPacket = DNSPacket.fromBytes(packet.payload);
-      if (!(dnsPacket instanceof DNSResponsePacket)) return false;
-      if (dnsPacket.responseCode != ResponseCode.NoError) {
-        reject(`Server returned error ${dnsPacket.responseCode}`);
-        return true;
-      }
-      const answers = dnsPacket.answers.map((a) => {
-        switch (a.type) {
-          case RRType.A:
-            return [a.name, [...new Uint32Array(a.rdata)]] as ResolvedARecord;
-          default:
-            return a;
-        }
-      });
-      resolve([ctx, answers]);
+  callback: ResolvedAddressesCallback,
+) {
+  const port = readUDP(ctx.state, ([ctx, packet]) => {
+    if (packet.from != dns) {
+      return false;
+    }
+    const dnsPacket = DNSPacket.fromBytes(packet.payload);
+    if (!(dnsPacket instanceof DNSResponsePacket)) return false;
+    if (dnsPacket.responseCode != ResponseCode.NoError) {
+      callback(
+        ctx,
+        [],
+        `Server returned error ${ResponseCode[dnsPacket.responseCode]}`,
+      );
       return true;
+    }
+    const answers = dnsPacket.answers.map((a) => {
+      const start = a.rdata.byteOffset;
+      const asIntArray = new Uint32Array(
+        a.rdata.buffer.slice(start, start + a.rdata.length),
+      );
+      switch (a.type) {
+        case RRType.A:
+          return [a.name, [...asIntArray]] as ResolvedARecord;
+        default:
+          return a;
+      }
     });
-    const query = new DNSQueryPacket(0, dnsQuestions);
-    const udpPacket = new UDPPacket(port, 53, query.toBytes());
-    sendIPv4Packet(ctx as any, dns, ProtocolCode.udp, udpPacket.toBytes());
+    callback(ctx, answers);
+    return true;
   });
+  const query = new DNSQueryPacket(0, dnsQuestions);
+  const udpPacket = new UDPPacket(port, 53, query.toBytes());
+  sendIPv4Packet(ctx as any, dns, ProtocolCode.udp, udpPacket.toBytes());
 }
