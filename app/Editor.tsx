@@ -43,6 +43,7 @@ export function Editor({
   const [shouldSave, setShouldSave] = useState(false);
   const [project, setProject] = useState(initialProject);
   const [tool, setTool] = useState<Tool<any>>(makeSelectTool());
+  const [lastTool, setLastTool] = useState<keyof typeof TOOLS>("select");
   const toolRef = useRef(tool);
   toolRef.current = tool;
 
@@ -59,7 +60,7 @@ export function Editor({
       setTool({ ...toolCtx.toolRef.current });
     },
     revertTool() {
-      setTool(makeSelectTool(toolRef.current));
+      setTool(TOOLS[lastTool](toolRef.current));
     },
   };
 
@@ -144,6 +145,8 @@ export function Editor({
       <ToolSelector
         toolname={tool.toolname}
         setToolTo={(t) => setTool(TOOLS[t](toolRef.current))}
+        anchor={lastTool}
+        setAnchor={setLastTool}
       />
 
       <svg

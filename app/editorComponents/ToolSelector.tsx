@@ -8,9 +8,13 @@ export const ToolSelector = memo(
   function ToolSelector({
     toolname,
     setToolTo,
+    anchor,
+    setAnchor,
   }: {
     toolname: keyof typeof TOOLS;
     setToolTo: (t: keyof typeof TOOLS) => void;
+    anchor: keyof typeof TOOLS;
+    setAnchor: (t: keyof typeof TOOLS) => void;
   }): ReactNode {
     return (
       <div className="fixed bottom-1 w-full flex justify-center pointer-events-none">
@@ -18,11 +22,18 @@ export const ToolSelector = memo(
           {TOOL_LIST.map((it) => (
             <SelectableCard
               key={it}
-              onClick={() => setToolTo(it)}
+              onClick={(ev) => {
+                if (!ev.shiftKey) setAnchor(it);
+                setToolTo(it);
+              }}
               isSelected={it == toolname}
               className={
                 "h-min p-2 rounded-xl" +
-                (it == toolname ? "" : " border-transparent")
+                (it == toolname
+                  ? ""
+                  : it == anchor
+                    ? " border-sky-800"
+                    : " border-transparent")
               }
             >
               <WrapToolIcon icon={it} />
