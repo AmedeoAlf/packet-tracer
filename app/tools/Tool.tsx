@@ -55,6 +55,9 @@ export type ToolCtx<T extends Tool<any>> = {
   toolRef: RefObject<T>;
   // Triggers a React rerender with changes applied to the ctx, any further edit won't be applied
   updateTool: () => void;
+
+  // Revert to last tool (should be called on completed actions)
+  revertTool: () => void;
 };
 export const TOOLS = {
   select: makeSelectTool,

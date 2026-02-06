@@ -58,6 +58,9 @@ export function Editor({
     updateTool() {
       setTool({ ...toolCtx.toolRef.current });
     },
+    revertTool() {
+      setTool(makeSelectTool(toolRef.current));
+    },
   };
 
   useEffect(() => {

@@ -8,19 +8,29 @@ import { SelectableCard } from "../editorComponents/SelectableCard";
 export type AddTool = Tool<{
   deviceType: keyof typeof deviceTypesDB;
   cursorPos: Coords;
+  massAdd: boolean;
 }>;
 
 export function makeAddTool(prev: AddTool | object = {}): AddTool {
   return {
-    cursorPos: [0, 0],
+    cursorPos: [-10000, 0],
     deviceType: Object.keys(deviceTypesDB)[0] as DeviceType,
+    massAdd: false,
     ...prev,
     toolname: "add",
     panel: (ctx) => {
       return (
         <div className="m-2">
-          <div className="h-8 rounded-md font-bold px-2 p-1 bg-gray-700 text-gray-400">
-            Usa shift+click per aggiungere rapidamente
+          <div className="rounded-md font-bold px-2 p-1 bg-gray-700 text-gray-400">
+            Aggiunta in massa{" "}
+            <input
+              type="checkbox"
+              checked={ctx.tool.massAdd}
+              onChange={(ev) => {
+                ctx.toolRef.current.massAdd = ev.target.checked;
+                ctx.updateTool();
+              }}
+            />
           </div>
           <p className="mt-2">Dispositivo selezionato:</p>
           <div className="flex-wrap flex w-max max-w-full gap-1">
@@ -49,6 +59,9 @@ export function makeAddTool(prev: AddTool | object = {}): AddTool {
               );
             })}
           </div>
+          <p className="text-center p-2">
+            Usa shift+click per aggiungere rapidamente
+          </p>
         </div>
       );
     },
@@ -57,6 +70,7 @@ export function makeAddTool(prev: AddTool | object = {}): AddTool {
         case "click":
           ctx.project.createDevice(ctx.tool.deviceType, ev.pos);
           ctx.updateProject();
+          if (!ctx.tool.massAdd) ctx.revertTool();
           break;
         case "mousemove":
           ctx.tool.cursorPos = ev.pos;
