@@ -60,7 +60,8 @@ export function Editor({
       setTool({ ...toolCtx.toolRef.current });
     },
     revertTool() {
-      setTool(TOOLS[lastTool](toolRef.current));
+      if (lastTool != toolCtx.tool.toolname)
+        setTool(TOOLS[lastTool](toolRef.current));
     },
   };
 
