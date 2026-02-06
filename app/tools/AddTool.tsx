@@ -1,7 +1,7 @@
-import { Tool } from "./Tool";
+import { Tool, ToolCtx } from "./Tool";
 import { DeviceType, deviceTypesDB } from "../devices/deviceTypesDB";
 import { capitalize, Coords, trustMeBroCast } from "../common";
-import { MouseEventHandler, ReactNode } from "react";
+import { memo, MouseEventHandler, ReactNode } from "react";
 import { ICONS } from "../devices/ICONS";
 import { SelectableCard } from "../editorComponents/SelectableCard";
 
@@ -16,42 +16,17 @@ export function makeAddTool(prev: AddTool | object = {}): AddTool {
     deviceType: Object.keys(deviceTypesDB)[0] as DeviceType,
     ...prev,
     toolname: "add",
-    panel: (ctx) => {
-      return (
-        <div className="m-2">
-          <div className="rounded-md font-bold px-2 p-1 bg-gray-700 text-gray-400">
-            Usa shift+click per aggiungere rapidamente
-          </div>
-          <p className="mt-2">Dispositivo selezionato:</p>
-          <div className="flex-wrap flex w-max max-w-full gap-1">
-            {Object.keys(deviceTypesDB).map((it) => {
-              trustMeBroCast<keyof typeof deviceTypesDB>(it);
-              return (
-                <DeviceTypeComponent
-                  type={it}
-                  isSelected={it == ctx.tool.deviceType}
-                  onClick={(ev) => {
-                    if (ev.shiftKey) {
-                      ctx.project.createDevice(
-                        deviceTypesDB[it].proto.deviceType,
-                        [
-                          (ctx.project.lastId % 5) * 100 - 600,
-                          Math.floor(ctx.project.lastId / 5) * 100 - 350,
-                        ],
-                      );
-                      ctx.updateProject();
-                    }
-                    ctx.tool.deviceType = it;
-                    ctx.updateTool();
-                  }}
-                  key={it}
-                />
-              );
-            })}
-          </div>
+    panel: (ctx) => (
+      <div className="m-2">
+        <div className="rounded-md font-bold px-2 p-1 bg-gray-700 text-gray-400">
+          Usa shift+click per aggiungere rapidamente
         </div>
-      );
-    },
+        <p className="mt-2">Dispositivo selezionato:</p>
+        <div className="flex-wrap flex w-max max-w-full gap-1">
+          <DeviceTypeSelector {...ctx} />
+        </div>
+      </div>
+    ),
     onEvent: (ctx, ev) => {
       switch (ev.type) {
         case "click":
@@ -100,3 +75,30 @@ function DeviceTypeComponent({
     </SelectableCard>
   );
 }
+
+const DeviceTypeSelector = memo(
+  function DeviceTypeSelector(ctx: ToolCtx<AddTool>) {
+    return Object.keys(deviceTypesDB).map((it) => {
+      trustMeBroCast<keyof typeof deviceTypesDB>(it);
+      return (
+        <DeviceTypeComponent
+          type={it}
+          isSelected={it == ctx.tool.deviceType}
+          onClick={(ev) => {
+            if (ev.shiftKey) {
+              ctx.project.createDevice(deviceTypesDB[it].proto.deviceType, [
+                (ctx.project.lastId % 5) * 100 - 600,
+                Math.floor(ctx.project.lastId / 5) * 100 - 350,
+              ]);
+              ctx.updateProject();
+            }
+            ctx.toolRef.current.deviceType = it;
+            ctx.updateTool();
+          }}
+          key={it}
+        />
+      );
+    });
+  },
+  (p, n) => p.tool == n.tool,
+);
