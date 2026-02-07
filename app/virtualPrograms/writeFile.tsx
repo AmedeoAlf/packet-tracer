@@ -13,6 +13,7 @@ export const writeFile = {
     }));
   },
   then: {
+    done: true,
     run(ctx: EmulatorContext<OSInternalState>) {
       writeFileInLocation(ctx.state.filesystem, ctx.args![1], ctx.args![2]);
       ctx.updateState();

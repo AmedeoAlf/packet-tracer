@@ -4,6 +4,7 @@ import { listAll } from "../emulators/utils/osFiles";
 
 export const ls = {
   desc: "Lists all file in the system",
+  done: true,
   run(ctx: EmulatorContext<OSInternalState>) {
     const files = listAll(ctx.state.filesystem);
     ctx.write(files.join("\n"));

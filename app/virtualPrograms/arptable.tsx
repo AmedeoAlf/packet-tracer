@@ -4,6 +4,7 @@ import { ipv4ToString, L3InternalStateBase } from "../protocols/rfc_760";
 
 export const arptable = {
   desc: "Dumps the device ARP table",
+  done: true,
   run: (ctx: EmulatorContext<L3InternalStateBase>) =>
     ctx.write(
       ctx.state.macTable

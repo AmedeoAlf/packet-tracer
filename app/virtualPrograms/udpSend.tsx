@@ -30,18 +30,23 @@ export const udpSend = {
       },
       then: {
         paramDesc: "Payload (raw)",
-        run(ctx) {
-          const toIp = parseIpv4(ctx.args![1])!;
-          sendIPv4Packet(
-            ctx,
-            toIp,
-            ProtocolCode.udp,
-            new UDPPacket(
-              +ctx.args![2],
-              +ctx.args![3],
-              Buffer.from(ctx.args![4]),
-            ).toBytes(),
-          );
+        autocomplete: () => [],
+        validate: () => true,
+        then: {
+          done: true,
+          run(ctx) {
+            const toIp = parseIpv4(ctx.args![1])!;
+            sendIPv4Packet(
+              ctx,
+              toIp,
+              ProtocolCode.udp,
+              new UDPPacket(
+                +ctx.args![2],
+                +ctx.args![3],
+                Buffer.from(ctx.args!.at(4) ?? []),
+              ).toBytes(),
+            );
+          },
         },
       },
     },

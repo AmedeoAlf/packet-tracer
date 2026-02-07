@@ -21,22 +21,22 @@ interface AutoCompleteOption {
   option: string;
   desc: string;
 }
-export type Command<State extends InternalState<object>> = (
+export type Command<State extends InternalState<object>> =
   | {
       autocomplete: (state: State, past: string[]) => AutoCompleteOption[];
       validate: (state: State, past: string[]) => boolean;
       paramDesc: string;
       then: Command<State>;
+      run?: (ctx: EmulatorContext<any>) => void;
     }
   | {
       subcommands: Record<string, SubCommand<State>>;
+      run?: (ctx: EmulatorContext<any>) => void;
     }
   | {
       run: (ctx: EmulatorContext<any>) => void;
-    }
-) & {
-  run?: (ctx: EmulatorContext<any>) => void;
-};
+      done: true;
+    };
 
 export type SubCommand<State extends InternalState<object>> = Command<State> & {
   desc: string;
@@ -84,6 +84,7 @@ export function runOnInterpreter<State extends InternalState<object>>(
     }
   }
   if ("run" in cmd && cmd.run) cmd.run(ctx);
+  else if ("done" in cmd) cmd.run(ctx);
   else ctx.write(`ERROR: incomplete command`);
 }
 
@@ -94,7 +95,12 @@ export function getAutoComplete<State extends InternalState<object>>(
   if (ctx.args == undefined) return;
   let cmd = ctx.interpreter.shell;
 
-  const writeOrComplete = (opts: AutoCompleteOption[], desc: string = "") => {
+  const writeOrComplete = (
+    written: string,
+    opts: AutoCompleteOption[],
+    desc: string = "",
+  ) => {
+    opts = opts.filter(({ option }) => option.startsWith(written));
     switch (opts.length) {
       case 0:
         if (desc) ctx.write(`<${desc}>`);
@@ -120,44 +126,43 @@ export function getAutoComplete<State extends InternalState<object>>(
   };
 
   for (const arg of ctx.args.keys()) {
-    const autocompleteIfLast = (opts: AutoCompleteOption[], desc?: string) => {
-      if (arg == ctx.args!.length - 1) {
-        return writeOrComplete(
-          opts.filter(({ option }) => option.startsWith(ctx.args![arg])),
-          desc,
-        );
-      } else {
-        ctx.write(
-          `ERROR: Invalid argument in position ${arg} "${ctx.args![arg]}" in command`,
-        );
-      }
-    };
+    const fail = () =>
+      ctx.write(
+        `ERROR: Invalid argument in position ${arg} "${ctx.args![arg]}" in command`,
+      );
+
+    const isLastArg = arg == ctx.args!.length - 1;
     switch (true) {
       case "subcommands" in cmd && !!cmd.subcommands:
         if (ctx.args[arg] in cmd.subcommands) {
           cmd = cmd.subcommands[ctx.args[arg]];
-        } else
-          return autocompleteIfLast(
-            Object.entries(cmd.subcommands!).map(([option, { desc }]) => ({
-              option,
-              desc,
-            })),
-          );
-        continue;
-      case "validate" in cmd:
+          continue;
+        }
+        return isLastArg
+          ? writeOrComplete(
+              ctx.args![arg],
+              Object.entries(cmd.subcommands)
+                .filter(([name]) => name.startsWith(ctx.args![arg]))
+                .map(([name, cmd]) => ({ option: name, desc: cmd.desc })),
+            )
+          : fail();
+      case "autocomplete" in cmd:
         const args = ctx.args.slice(0, arg + 1);
-        if (args[arg] != "" && cmd.validate(ctx.state, args)) {
-          cmd = cmd.then;
-        } else
-          return autocompleteIfLast(
+        if (isLastArg)
+          return writeOrComplete(
+            ctx.args![arg],
             cmd.autocomplete(ctx.state, args),
             cmd.paramDesc,
           );
-        continue;
+
+        if (!cmd.validate(ctx.state, args)) return fail();
+        cmd = cmd.then;
+        break;
       default:
         ctx.write(
           `ERROR: Command finished with ${arg} "${ctx.args![arg]}" in command`,
         );
+        return;
     }
   }
   return;

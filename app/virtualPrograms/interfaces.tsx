@@ -40,6 +40,7 @@ export const interfaces = {
             if (intf) intf.name = newName;
             ctx.updateState();
           },
+          done: true,
         },
       },
     },

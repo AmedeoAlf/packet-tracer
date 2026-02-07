@@ -60,6 +60,7 @@ export const l2send = {
               ).toBytes(),
             );
           },
+          done: true,
         },
       },
     },

@@ -90,6 +90,7 @@ export const exampleDeviceEmulator: DeviceEmulator<ExampleDeviceInternalState> =
                 .reduce((acc, val) => +val + acc, 0);
               ctx.write(result.toString());
             },
+            done: true,
           },
           editprop: {
             desc: "Sets a prop of internalState to a json value",
@@ -115,6 +116,7 @@ export const exampleDeviceEmulator: DeviceEmulator<ExampleDeviceInternalState> =
                 return true;
               },
               then: {
+                done: true,
                 run(ctx) {
                   const prop = ctx.args![1];
                   const val = JSON.parse(ctx.args![2]);

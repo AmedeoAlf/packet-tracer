@@ -11,6 +11,7 @@ export const nslookup = {
   autocomplete: () => [],
   paramDesc: "Domain to resolve",
   then: {
+    done: true,
     run(ctx: EmulatorContext<OSInternalState>) {
       const dns = getDns(ctx);
       if (dns === undefined) return;
