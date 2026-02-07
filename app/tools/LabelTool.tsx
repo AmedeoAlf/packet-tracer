@@ -1,5 +1,5 @@
 import { Coords } from "../common";
-import { Tool } from "./Tool";
+import { Tool, ToolCtx } from "./Tool";
 
 export type LabelTool = Tool<{
   currInput?: {
@@ -7,6 +7,17 @@ export type LabelTool = Tool<{
     pos: Coords;
   };
 }>;
+
+function finalizeCurrinput(ctx: ToolCtx<LabelTool>) {
+  ctx.project.addDecal({
+    type: "text",
+    ...ctx.tool.currInput!,
+  });
+  ctx.updateProject();
+  ctx.tool.currInput = undefined;
+  ctx.updateTool();
+  ctx.revertTool();
+}
 
 export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
   return {
@@ -26,15 +37,7 @@ export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
                 ctx.updateTool();
               }}
               onKeyDown={(ev) => {
-                if (ev.key == "Enter") {
-                  ctx.project.addDecal({
-                    type: "text",
-                    ...ctx.tool.currInput!,
-                  });
-                  ctx.updateProject();
-                  ctx.tool.currInput = undefined;
-                  ctx.updateTool();
-                }
+                if (ev.key == "Enter") finalizeCurrinput(ctx);
               }}
               autoFocus
             />
@@ -46,11 +49,7 @@ export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
       switch (ev.type) {
         case "click":
           if (ctx.tool.currInput) {
-            if (ctx.tool.currInput.text.trim() != "") {
-              ctx.project.addDecal({ type: "text", ...ctx.tool.currInput });
-              ctx.updateProject();
-            }
-            ctx.tool.currInput = undefined;
+            finalizeCurrinput(ctx);
           } else if (ev.decal && ev.decal.type == "text") {
             ctx.tool.currInput = { text: ev.decal.text, pos: ev.decal.pos };
             ctx.project.removeDecal(ev.decal.id);

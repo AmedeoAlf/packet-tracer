@@ -46,6 +46,7 @@ function connect(c: ToolCtx<ConnectTool>) {
   );
   clearSelection(c);
   c.updateProject();
+  c.revertTool();
 }
 function intfType(dev: Device, intf: number) {
   return dev.internalState.netInterfaces[intf].type;

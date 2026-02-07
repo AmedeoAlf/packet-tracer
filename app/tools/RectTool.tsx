@@ -79,6 +79,7 @@ export function makeRectTool(prev: RectTool | object = {}): RectTool {
               stroke: ctx.tool.stroke,
             });
             ctx.updateProject();
+            ctx.revertTool();
           }
           return;
         default:

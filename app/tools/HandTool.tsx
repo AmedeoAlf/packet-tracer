@@ -35,6 +35,7 @@ export function makeHandTool(prev: HandTool | object = {}): HandTool {
           break;
         case "mouseup":
           ctx.tool.holding = false;
+          ctx.revertTool();
           break;
         case "mousemove":
           if (ctx.tool.holding) {
