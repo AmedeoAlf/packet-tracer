@@ -100,7 +100,6 @@ export function makeConnectTool(prev: ConnectTool | object = {}): ConnectTool {
                 )}
               </>
             )}
-            <button></button>
           </div>
         </>
       );
@@ -204,8 +203,8 @@ export function makeConnectTool(prev: ConnectTool | object = {}): ConnectTool {
 
 const InterfaceSelector = memo(
   function InterfaceSelector({
-    device,
     intfIdx,
+    device,
     selectIntf,
     ctx,
   }: {
