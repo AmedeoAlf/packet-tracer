@@ -3,7 +3,7 @@ import { Layer2Packet } from "../protocols/802_3";
 
 function parseInterface(
   from: string,
-  state: InternalState<object>,
+  state: InternalState,
 ): number | undefined {
   switch (true) {
     case !isNaN(+from): {
@@ -65,4 +65,4 @@ export const l2send = {
       },
     },
   },
-} satisfies SubCommand<InternalState<object>>;
+} satisfies SubCommand<InternalState>;

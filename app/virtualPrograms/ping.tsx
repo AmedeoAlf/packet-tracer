@@ -19,7 +19,7 @@ export const ping = {
   },
   then: {
     done: true,
-    run(ctx: EmulatorContext<L3InternalState<object>>) {
+    run(ctx: EmulatorContext<L3InternalState>) {
       const addr = parseIpv4(ctx.args![1]);
       if (addr == undefined) {
         ctx.write(`Invalid address ${ctx.args![1]}`);
@@ -45,4 +45,4 @@ export const ping = {
       });
     },
   },
-} satisfies SubCommand<L3InternalState<object>>;
+} satisfies SubCommand<L3InternalState>;

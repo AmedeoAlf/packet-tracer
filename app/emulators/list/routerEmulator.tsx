@@ -119,7 +119,8 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
                 ICMPPacket.echoResponse(icmpPacket).toBytes(),
               );
             default:
-              if (ctx.state.rawSocketFd) ctx.state.rawSocketFd(ctx, packet);
+              if (ctx.state.rawSocketFd)
+                ctx.state.rawSocketFd(ctx as any, packet);
           }
         case ProtocolCode.udp:
           const udpPacket = UDPPacket.fromBytes(packet.payload);

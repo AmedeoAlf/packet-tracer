@@ -10,7 +10,7 @@ import { interfaces } from "./interfaces";
 
 export const interfacesL3 = {
   desc: "Manages interfaces",
-  run: (ctx: EmulatorContext<L3InternalState<object>>) =>
+  run: (ctx: EmulatorContext<L3InternalState>) =>
     ctx.write(
       ctx.state.netInterfaces
         .map((l2Intf, idx) => {

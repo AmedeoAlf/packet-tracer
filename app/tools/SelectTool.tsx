@@ -328,7 +328,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
 }
 
 // TODO: separate correctly args
-function TerminalEmulator<State extends InternalState<object>>(
+function TerminalEmulator<State extends InternalState>(
   inputBar: string,
   setInputBar: (s: string) => void,
   content: string,

@@ -68,15 +68,13 @@ type L3InternalStateProps = {
   macTable: Map<IPv4Address, MacAddress>;
   packetsWaitingForARP: IPv4Packet[];
 };
-export type L3InternalStateBase = InternalState<L3InternalStateProps>;
-export type L3InternalState<T extends object> = InternalState<
-  T & {
-    rawSocketFd?: (
-      ctx: EmulatorContext<L3InternalState<T>>,
-      packet: IPv4Packet,
-    ) => void;
-  } & L3InternalStateProps
->;
+export type L3InternalStateBase = InternalState & L3InternalStateProps;
+export type L3InternalState = InternalState & {
+  rawSocketFd?: (
+    ctx: EmulatorContext<L3InternalState>,
+    packet: IPv4Packet,
+  ) => void;
+} & L3InternalStateProps;
 
 export function defaultL3InternalState(): L3InternalStateBase {
   return {
@@ -89,7 +87,7 @@ export function defaultL3InternalState(): L3InternalStateBase {
   };
 }
 
-export function serializeL3InternalState(s: L3InternalState<object>) {
+export function serializeL3InternalState(s: L3InternalState) {
   return {
     ...s,
     macTable: Object.fromEntries(s.macTable.entries()),
@@ -287,7 +285,7 @@ export class PartialIPv4Packet extends IPv4Packet {
 }
 
 export function targetIP(
-  state: L3InternalState<object>,
+  state: L3InternalState,
   destination: IPv4Address,
 ): { intf: number; ok: boolean; targetIp: IPv4Address } {
   let targetIp = destination;
