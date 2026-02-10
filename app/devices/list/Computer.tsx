@@ -18,10 +18,10 @@ export type UDPCallbackParams = [
   ctx: EmulatorContext<OSInternalState>,
   p: OSUDPPacket,
 ];
-export type OSInternalState = L3InternalState<{
+export type OSInternalState = L3InternalState & {
   filesystem: OSDir;
   udpSockets: Map<number, (params: UDPCallbackParams) => boolean>;
-}>;
+};
 
 export const Computer: DeviceFactory<OSInternalState> = {
   proto: {
@@ -33,7 +33,7 @@ export const Computer: DeviceFactory<OSInternalState> = {
       const state = this.internalState as OSInternalState;
       return {
         ...state,
-        ...serializeL3InternalState(state as L3InternalState<object>),
+        ...serializeL3InternalState(state as L3InternalState),
         udpSockets: undefined,
       };
     },

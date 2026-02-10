@@ -11,7 +11,7 @@ import { Layer2Packet } from "@/app/protocols/802_3";
 
 export function sendIPv4Packet(
   ctx: Pick<
-    EmulatorContext<L3InternalState<object>>,
+    EmulatorContext<L3InternalState>,
     "state" | "sendOnIf" | "schedule"
   >,
   destination: IPv4Address,
@@ -42,7 +42,7 @@ export function sendIPv4Packet(
         .toBytes(),
     );
     ctx.state.packetsWaitingForARP.push(packet);
-    ctx.schedule(10, (ctx: EmulatorContext<L3InternalState<object>>) => {
+    ctx.schedule(10, (ctx: EmulatorContext<L3InternalState>) => {
       ctx.state.packetsWaitingForARP = ctx.state.packetsWaitingForARP.filter(
         (it) => it.destination != destination,
       );

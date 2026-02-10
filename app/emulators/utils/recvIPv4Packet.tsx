@@ -69,7 +69,7 @@ export function recvIPv4Packet(
             ICMPPacket.echoResponse(icmpPacket).toBytes(),
           );
         default:
-          if (ctx.state.rawSocketFd) ctx.state.rawSocketFd(ctx, packet);
+          if (ctx.state.rawSocketFd) ctx.state.rawSocketFd(ctx as any, packet);
       }
       return;
     }

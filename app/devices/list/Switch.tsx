@@ -3,7 +3,7 @@ import { switchEmulator } from "../../emulators/list/switchEmulator";
 import { randomMAC } from "../../protocols/802_3";
 import { DeviceFactory } from "../Device";
 
-export const Switch: DeviceFactory<InternalState<object>> = {
+export const Switch: DeviceFactory<InternalState> = {
   proto: {
     iconId: "#switch-icon",
     emulator: switchEmulator,

@@ -12,16 +12,16 @@ export interface NetworkInterface {
   mac: MacAddress;
 }
 
-export type InternalState<Ext extends object> = {
+export type InternalState = {
   netInterfaces: Array<NetworkInterface>;
-  currShell?: Command<InternalState<object>>;
-} & Ext;
+  currShell?: Command<InternalState>;
+};
 
 interface AutoCompleteOption {
   option: string;
   desc: string;
 }
-export type Command<State extends InternalState<object>> =
+export type Command<State extends InternalState> =
   | {
       autocomplete: (state: State, past: string[]) => AutoCompleteOption[];
       validate: (state: State, past: string[]) => boolean;
@@ -38,26 +38,26 @@ export type Command<State extends InternalState<object>> =
       done: true;
     };
 
-export type SubCommand<State extends InternalState<object>> = Command<State> & {
+export type SubCommand<State extends InternalState> = Command<State> & {
   desc: string;
 };
 
-export type Interpreter<State extends InternalState<object>> = {
+export type Interpreter<State extends InternalState> = {
   shell: Command<State>;
 };
 
-export type EmulatorContext<State extends InternalState<object>> = {
+export type EmulatorContext<State extends InternalState> = {
   interpreter: Interpreter<State>;
   currTick: number;
   sendOnIf: (ifIdx: number, data: Buffer) => void;
-  schedule: (after: number, fn: (ctx: EmulatorContext<any>) => void) => void;
+  schedule: (after: number, fn: (ctx: EmulatorContext<State>) => void) => void;
   state: State;
   updateState: () => void;
   args?: string[];
   write: (msg: string) => void;
 };
 
-export function runOnInterpreter<State extends InternalState<object>>(
+export function runOnInterpreter<State extends InternalState>(
   ctx: EmulatorContext<State>,
 ) {
   if (!ctx.args) return;
@@ -89,7 +89,7 @@ export function runOnInterpreter<State extends InternalState<object>>(
 }
 
 // last element in ctx.args must be "" to get all autocomplete options
-export function getAutoComplete<State extends InternalState<object>>(
+export function getAutoComplete<State extends InternalState>(
   ctx: EmulatorContext<State>,
 ) {
   if (ctx.args == undefined) return;
@@ -168,11 +168,12 @@ export function getAutoComplete<State extends InternalState<object>>(
   return;
 }
 
-export type DevicePanel<State extends InternalState<object>> = (
+export type DevicePanel<State extends InternalState> = (
   ctx: EmulatorContext<State>,
 ) => ReactNode;
-export interface DeviceEmulator<State extends InternalState<object>> {
-  configPanel: Record<string, DevicePanel<State>>;
+
+export interface DeviceEmulator<State extends InternalState> {
+  configPanel: { [k: string]: DevicePanel<State> };
   cmdInterpreter: Interpreter<State>;
   packetHandler: (
     ctx: EmulatorContext<State>,
@@ -192,7 +193,7 @@ export function buildEmulatorContext(
   }
   const emulator = device.emulator;
   return {
-    interpreter: emulator.cmdInterpreter as Interpreter<InternalState<any>>,
+    interpreter: emulator.cmdInterpreter,
     updateState: () => {
       device.internalState = { ...device.internalState };
       toolCtx.project.mutDevice(device.id);

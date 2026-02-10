@@ -4,7 +4,7 @@ import { interfaces } from "../../virtualPrograms/interfaces";
 import { l2send } from "../../virtualPrograms/l2send";
 import { DeviceEmulator, InternalState } from "../DeviceEmulator";
 
-export const switchEmulator: DeviceEmulator<InternalState<object>> = {
+export const switchEmulator: DeviceEmulator<InternalState> = {
   configPanel: {
     "pannello meme"() {
       return (

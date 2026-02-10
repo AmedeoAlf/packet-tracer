@@ -23,7 +23,7 @@ export const Server: DeviceFactory<OSInternalState> = {
       const state = this.internalState as OSInternalState;
       return {
         ...state,
-        ...serializeL3InternalState(state as L3InternalState<object>),
+        ...serializeL3InternalState(state as L3InternalState),
         udpSockets: undefined,
       };
     },

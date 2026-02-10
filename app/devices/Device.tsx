@@ -15,7 +15,7 @@ import { ICONS } from "./ICONS";
  * prototipo), l'id del tag <g> con la sua icona e l'emulatore del dispositivo
  * virtuale usato.
  */
-export interface DeviceFactory<State extends InternalState<object>> {
+export interface DeviceFactory<State extends InternalState> {
   proto: {
     deviceType: DeviceType;
     iconId: keyof typeof ICONS;
@@ -39,7 +39,7 @@ export type Device = DeviceFactory<any>["proto"] & {
   readonly id: number;
   name: string;
   pos: Coords;
-  internalState: InternalState<object>;
+  internalState: InternalState;
 };
 
 export function makeDevice(

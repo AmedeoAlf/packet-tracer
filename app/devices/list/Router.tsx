@@ -18,10 +18,10 @@ export type RoutingTableEntry = {
   to: IPv4Address;
 };
 
-export type RouterInternalState = L3InternalState<{
+export type RouterInternalState = L3InternalState & {
   routingTables: RoutingTableEntry[];
   udpSocket?: (packet: UDPPacket, from: IPv4Address) => void;
-}>;
+};
 
 export const Router: DeviceFactory<RouterInternalState> = {
   proto: {
@@ -29,9 +29,7 @@ export const Router: DeviceFactory<RouterInternalState> = {
       trustMeBroCast<Device>(this);
       return {
         ...this.internalState,
-        ...serializeL3InternalState(
-          this.internalState as L3InternalState<object>,
-        ),
+        ...serializeL3InternalState(this.internalState as L3InternalState),
       };
     },
     deserializeState(o) {

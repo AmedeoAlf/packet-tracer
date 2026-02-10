@@ -7,7 +7,7 @@ import { MACToString } from "../protocols/802_3";
 
 export const interfaces = {
   desc: "Manages interfaces",
-  run: (ctx: EmulatorContext<InternalState<object>>) =>
+  run: (ctx: EmulatorContext<InternalState>) =>
     ctx.write(
       ctx.state.netInterfaces
         .map(
@@ -32,7 +32,7 @@ export const interfaces = {
         autocomplete: () => [],
         validate: () => true,
         then: {
-          run(ctx: EmulatorContext<InternalState<object>>) {
+          run(ctx: EmulatorContext<InternalState>) {
             const [, , currName, newName] = ctx.args!;
             const intf = ctx.state.netInterfaces.find(
               (it) => it.name == currName,
@@ -45,4 +45,4 @@ export const interfaces = {
       },
     },
   },
-} satisfies SubCommand<InternalState<object>>;
+} satisfies SubCommand<InternalState>;
