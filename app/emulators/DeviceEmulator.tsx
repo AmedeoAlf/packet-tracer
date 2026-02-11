@@ -196,15 +196,15 @@ export function buildEmulatorContext(
     interpreter: emulator.cmdInterpreter,
     updateState: () => {
       device.internalState = { ...device.internalState };
-      toolCtx.project.mutDevice(device.id);
+      toolCtx.projectRef.current.mutDevice(device.id);
       toolCtx.updateProject();
       toolCtx.updateTool();
     },
     sendOnIf(ifIdx, data) {
-      toolCtx.project.sendOn(toInterfaceId(device.id, ifIdx), data);
+      toolCtx.projectRef.current.sendOn(toInterfaceId(device.id, ifIdx), data);
     },
     schedule(after, fn) {
-      toolCtx.project.setTimeout(fn, device, after);
+      toolCtx.projectRef.current.setTimeout(fn, device, after);
     },
     state: device.internalState,
     // NOTE: il print avviene anche con il terminale connesso ad un dispositivo diverso
@@ -216,6 +216,6 @@ export function buildEmulatorContext(
       : (msg) => {
           console.log("Impossibile scrivere sul terminale", msg);
         },
-    currTick: toolCtx.project.currTick,
+    currTick: toolCtx.projectRef.current.currTick,
   };
 }

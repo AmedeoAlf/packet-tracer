@@ -71,7 +71,7 @@ export function makeRectTool(prev: RectTool | object = {}): RectTool {
           ctx.tool.startPos = undefined;
           ctx.updateTool();
           if (ev.pos[0] || ev.pos[1]) {
-            ctx.project.addDecal({
+            ctx.projectRef.current.addDecal({
               type: "rect",
               pos: [x, y],
               size: { width, height },

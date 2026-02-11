@@ -96,7 +96,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
           return;
         case 1:
           if (ctx.tool.selected.size === 1) {
-            const device = ctx.project.immutableDevices.get(
+            const device = ctx.projectRef.current.immutableDevices.get(
               ctx.tool.selected.values().next().value!,
             )!;
             const emulator = device.emulator;
@@ -144,7 +144,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             const decal = ctx.tool.selectedDecals.values().next().value!;
             const offsetSelection = (of: number) => () => {
               ctx.tool.selectedDecals = new Set([
-                ctx.project.moveDecalIdx(decal, of),
+                ctx.projectRef.current.moveDecalIdx(decal, of),
               ]);
               console.log(decal, ctx.tool.selectedDecals.values().next().value);
               ctx.updateProject();
@@ -209,15 +209,15 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
           if (ctx.toolRef.current.lastCursorPos) {
             if (!ctx.toolRef.current.selectionRectangle) {
               for (const dev of ctx.toolRef.current.selected) {
-                ctx.project.mutDevice(dev)!.pos[0] +=
+                ctx.projectRef.current.mutDevice(dev)!.pos[0] +=
                   ev.pos[0] - ctx.toolRef.current.lastCursorPos[0];
-                ctx.project.mutDevice(dev)!.pos[1] +=
+                ctx.projectRef.current.mutDevice(dev)!.pos[1] +=
                   ev.pos[1] - ctx.toolRef.current.lastCursorPos[1];
               }
               for (const dec of ctx.toolRef.current.selectedDecals) {
-                ctx.project.mutDecal(dec)!.pos[0] +=
+                ctx.projectRef.current.mutDecal(dec)!.pos[0] +=
                   ev.pos[0] - ctx.toolRef.current.lastCursorPos[0];
-                ctx.project.mutDecal(dec)!.pos[1] +=
+                ctx.projectRef.current.mutDecal(dec)!.pos[1] +=
                   ev.pos[1] - ctx.toolRef.current.lastCursorPos[1];
               }
               ctx.updateProject();
@@ -238,7 +238,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                 ctx.toolRef.current.lastCursorPos[1],
               ].toSorted((a, b) => a - b);
 
-              ctx.project.immutableDevices
+              ctx.projectRef.current.immutableDevices
                 .values()
                 .filter(
                   (it) =>
@@ -249,7 +249,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                 )
                 .forEach((it) => ctx.toolRef.current.selected.add(it.id));
 
-              ctx.project.immutableDecals
+              ctx.projectRef.current.immutableDecals
                 .filter(
                   (it) =>
                     it &&
@@ -266,12 +266,12 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
               const diffY = ev.pos[1] - ctx.toolRef.current.lastCursorPos[1];
               if (diffX || diffY) {
                 for (const dev of ctx.toolRef.current.selected) {
-                  ctx.project.mutDevice(dev)!.pos[0] += diffX;
-                  ctx.project.mutDevice(dev)!.pos[1] += diffY;
+                  ctx.projectRef.current.mutDevice(dev)!.pos[0] += diffX;
+                  ctx.projectRef.current.mutDevice(dev)!.pos[1] += diffY;
                 }
                 for (const dec of ctx.toolRef.current.selectedDecals) {
-                  ctx.project.mutDecal(dec)!.pos[0] += diffX;
-                  ctx.project.mutDecal(dec)!.pos[1] += diffY;
+                  ctx.projectRef.current.mutDecal(dec)!.pos[0] += diffX;
+                  ctx.projectRef.current.mutDecal(dec)!.pos[1] += diffY;
                 }
                 ctx.updateProject();
               }
@@ -287,10 +287,10 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
           switch (ev.key) {
             case "Delete": {
               for (const s of ctx.toolRef.current.selected) {
-                ctx.project.deleteDevice(s);
+                ctx.projectRef.current.deleteDevice(s);
               }
               for (const s of ctx.toolRef.current.selectedDecals) {
-                ctx.project.removeDecal(s);
+                ctx.projectRef.current.removeDecal(s);
               }
               ctx.toolRef.current.selected.clear();
               ctx.toolRef.current.selectedDecals.clear();
@@ -301,17 +301,17 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             case "d": {
               const newSelected = new Set<number>();
               for (const s of ctx.toolRef.current.selected) {
-                const newId = ctx.project.duplicateDevice(s)!;
+                const newId = ctx.projectRef.current.duplicateDevice(s)!;
                 newSelected.add(newId);
-                ctx.project.mutDevice(newId)!.pos[0] += 10;
-                ctx.project.mutDevice(newId)!.pos[1] += 10;
+                ctx.projectRef.current.mutDevice(newId)!.pos[0] += 10;
+                ctx.projectRef.current.mutDevice(newId)!.pos[1] += 10;
               }
               const newDecals = new Set<number>();
               for (const s of ctx.toolRef.current.selectedDecals) {
-                const newId = ctx.project.duplicateDecal(s)!;
+                const newId = ctx.projectRef.current.duplicateDecal(s)!;
                 newDecals.add(newId);
-                ctx.project.mutDecal(newId)!.pos[0] += 10;
-                ctx.project.mutDecal(newId)!.pos[1] += 10;
+                ctx.projectRef.current.mutDecal(newId)!.pos[0] += 10;
+                ctx.projectRef.current.mutDecal(newId)!.pos[1] += 10;
               }
               ctx.toolRef.current.selected = newSelected;
               ctx.toolRef.current.selectedDecals = newDecals;

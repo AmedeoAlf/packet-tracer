@@ -273,16 +273,22 @@ function buildMouseEventHandler(
     return (ev: MouseEvent) => {
       if (ev.buttons == 4) {
         ev.preventDefault();
-        ctx.project.viewBoxX -= ev.movementX / ctx.project.viewBoxZoom;
-        ctx.project.viewBoxY -= ev.movementY / ctx.project.viewBoxZoom;
+        ctx.projectRef.current.viewBoxX -=
+          ev.movementX / ctx.projectRef.current.viewBoxZoom;
+        ctx.projectRef.current.viewBoxY -=
+          ev.movementY / ctx.projectRef.current.viewBoxZoom;
         ctx.updateProject();
       } else {
         ctx.tool.onEvent(ctx, {
           type,
           movement: [ev.movementX, ev.movementY],
           pos: getPos(ev),
-          device: ctx.project.deviceFromTag(ev.target as SVGUseElement),
-          decal: ctx.project.decalFromTag(ev.target as SVGUseElement),
+          device: ctx.projectRef.current.deviceFromTag(
+            ev.target as SVGUseElement,
+          ),
+          decal: ctx.projectRef.current.decalFromTag(
+            ev.target as SVGUseElement,
+          ),
           shiftKey: ev.shiftKey,
         });
       }
@@ -292,8 +298,10 @@ function buildMouseEventHandler(
       ctx.tool.onEvent(ctx, {
         type,
         pos: getPos(ev),
-        device: ctx.project.deviceFromTag(ev.target as SVGUseElement),
-        decal: ctx.project.decalFromTag(ev.target as SVGUseElement),
+        device: ctx.projectRef.current.deviceFromTag(
+          ev.target as SVGUseElement,
+        ),
+        decal: ctx.projectRef.current.decalFromTag(ev.target as SVGUseElement),
         shiftKey: ev.shiftKey,
       });
       return false;

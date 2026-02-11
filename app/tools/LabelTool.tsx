@@ -9,7 +9,7 @@ export type LabelTool = Tool<{
 }>;
 
 function finalizeCurrinput(ctx: ToolCtx<LabelTool>) {
-  ctx.project.addDecal({
+  ctx.projectRef.current.addDecal({
     type: "text",
     ...ctx.tool.currInput!,
   });
@@ -52,7 +52,7 @@ export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
             finalizeCurrinput(ctx);
           } else if (ev.decal && ev.decal.type == "text") {
             ctx.tool.currInput = { text: ev.decal.text, pos: ev.decal.pos };
-            ctx.project.removeDecal(ev.decal.id);
+            ctx.projectRef.current.removeDecal(ev.decal.id);
             ctx.updateProject();
           } else {
             ctx.tool.currInput = {

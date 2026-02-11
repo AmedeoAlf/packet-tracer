@@ -19,7 +19,7 @@ export function makeHandTool(prev: HandTool | object = {}): HandTool {
             step={10}
             value={Math.round(ctx.project.viewBoxZoom * 100)}
             onChange={(ev) => {
-              ctx.project.viewBoxZoom = +ev.target.value / 100;
+              ctx.projectRef.current.viewBoxZoom = +ev.target.value / 100;
               ctx.updateProject();
               ctx.updateTool();
             }}
@@ -39,8 +39,10 @@ export function makeHandTool(prev: HandTool | object = {}): HandTool {
           break;
         case "mousemove":
           if (ctx.tool.holding) {
-            ctx.project.viewBoxX -= ev.movement[0] / ctx.project.viewBoxZoom;
-            ctx.project.viewBoxY -= ev.movement[1] / ctx.project.viewBoxZoom;
+            ctx.projectRef.current.viewBoxX -=
+              ev.movement[0] / ctx.projectRef.current.viewBoxZoom;
+            ctx.projectRef.current.viewBoxY -=
+              ev.movement[1] / ctx.projectRef.current.viewBoxZoom;
             ctx.updateProject();
           }
           break;

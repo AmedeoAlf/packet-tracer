@@ -38,7 +38,7 @@ function canConnect(
 function connect(c: ToolCtx<ConnectTool>) {
   if (!canConnect(c.tool))
     throw "ArgumentException: can't access ConnectTool.idxA/.idxB";
-  c.project.connect(
+  c.projectRef.current.connect(
     c.tool.deviceA!.id,
     c.tool.idxA!,
     c.tool.deviceB!.id,
@@ -207,7 +207,10 @@ const InterfaceSelector = memo(
     device: Device;
     intfIdx?: number;
     selectIntf: (idx: number) => void;
-    ctx: Pick<ToolCtx<ConnectTool>, "project" | "updateProject" | "updateTool">;
+    ctx: Pick<
+      ToolCtx<ConnectTool>,
+      "project" | "projectRef" | "updateProject" | "updateTool"
+    >;
   }) {
     const isConnected = (i: number) =>
       ctx.project.getConnectedTo(toInterfaceId(device.id, i)) !== undefined;
@@ -225,7 +228,7 @@ const InterfaceSelector = memo(
             ) : isConnected(i) ? (
               <Button
                 onClick={() => {
-                  ctx.project.disconnect(device.id, i);
+                  ctx.projectRef.current.disconnect(device.id, i);
                   ctx.updateProject();
                   selectIntf(i);
                 }}

@@ -30,7 +30,7 @@ export function makeAddTool(prev: AddTool | object = {}): AddTool {
     onEvent: (ctx, ev) => {
       switch (ev.type) {
         case "click":
-          ctx.project.createDevice(ctx.tool.deviceType, ev.pos);
+          ctx.projectRef.current.createDevice(ctx.tool.deviceType, ev.pos);
           ctx.updateProject();
           ctx.revertTool();
           break;
@@ -86,10 +86,13 @@ const DeviceTypeSelector = memo(
           isSelected={it == ctx.tool.deviceType}
           onClick={(ev) => {
             if (ev.shiftKey) {
-              ctx.project.createDevice(deviceTypesDB[it].proto.deviceType, [
-                (ctx.project.lastId % 5) * 100 - 600,
-                Math.floor(ctx.project.lastId / 5) * 100 - 350,
-              ]);
+              ctx.projectRef.current.createDevice(
+                deviceTypesDB[it].proto.deviceType,
+                [
+                  (ctx.projectRef.current.lastId % 5) * 100 - 600,
+                  Math.floor(ctx.projectRef.current.lastId / 5) * 100 - 350,
+                ],
+              );
               ctx.updateProject();
             }
             ctx.toolRef.current.deviceType = it;
