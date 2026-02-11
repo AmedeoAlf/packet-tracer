@@ -207,7 +207,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             }
             ctx.toolRef.current.selectionRectangle = ev.pos;
             ctx.toolRef.current.lastCursorPos = ev.pos;
-            ctx.updateTool();
+            // ctx.updateTool();
           }
           break;
         case "mousemove":
@@ -266,6 +266,9 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                 .forEach((it) =>
                   ctx.toolRef.current.selectedDecals.add(it!.id),
                 );
+              ctx.toolRef.current.lastCursorPos = undefined;
+              ctx.toolRef.current.selectionRectangle = undefined;
+              ctx.updateTool();
             } else {
               const diffX = ev.pos[0] - ctx.toolRef.current.lastCursorPos[0];
               const diffY = ev.pos[1] - ctx.toolRef.current.lastCursorPos[1];
@@ -283,9 +286,6 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
               ctx.toolRef.current.lastCursorPos = undefined;
             }
           }
-          ctx.toolRef.current.lastCursorPos = undefined;
-          ctx.toolRef.current.selectionRectangle = undefined;
-          ctx.updateTool();
           break;
         case "keydown":
           ev.consumed = true;
