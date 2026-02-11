@@ -141,12 +141,17 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
               </div>
             );
           } else {
-            const decal = ctx.tool.selectedDecals.values().next().value!;
+            const decal = ctx.toolRef.current.selectedDecals
+              .values()
+              .next().value!;
             const offsetSelection = (of: number) => () => {
-              ctx.tool.selectedDecals = new Set([
+              ctx.toolRef.current.selectedDecals = new Set([
                 ctx.projectRef.current.moveDecalIdx(decal, of),
               ]);
-              console.log(decal, ctx.tool.selectedDecals.values().next().value);
+              console.log(
+                decal,
+                ctx.toolRef.current.selectedDecals.values().next().value,
+              );
               ctx.updateProject();
               ctx.updateTool();
             };
@@ -171,8 +176,8 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
       }
     },
     onEvent: (ctx, ev) => {
-      const originalDevices = new Set(ctx.tool.selected);
-      const originalDecals = new Set(ctx.tool.selectedDecals);
+      const originalDevices = new Set(ctx.toolRef.current.selected);
+      const originalDecals = new Set(ctx.toolRef.current.selectedDecals);
       switch (ev.type) {
         case "mousedown":
           if (ev.device) {
