@@ -41,7 +41,7 @@ export function makeRectTool(prev: RectTool | object = {}): RectTool {
                 type="color"
                 value={ctx.tool.fill}
                 onChange={(ev) => {
-                  ctx.tool.fill = ev.target.value;
+                  ctx.toolRef.current.fill = ev.target.value;
                   ctx.updateTool();
                 }}
               />
@@ -58,25 +58,28 @@ export function makeRectTool(prev: RectTool | object = {}): RectTool {
     onEvent: (ctx, ev) => {
       switch (ev.type) {
         case "mousedown":
-          ctx.tool.startPos = ev.pos;
-          ctx.tool.currPos = ev.pos;
+          ctx.toolRef.current.startPos = ev.pos;
+          ctx.toolRef.current.currPos = ev.pos;
           break;
         case "mousemove":
-          if (!ctx.tool.startPos) return;
-          ctx.tool.currPos = ev.pos;
+          if (!ctx.toolRef.current.startPos) return;
+          ctx.toolRef.current.currPos = ev.pos;
           break;
         case "mouseup":
-          if (!ctx.tool.startPos) return;
-          const { x, y, width, height } = rectProps(ctx.tool.startPos, ev.pos);
-          ctx.tool.startPos = undefined;
+          if (!ctx.toolRef.current.startPos) return;
+          const { x, y, width, height } = rectProps(
+            ctx.toolRef.current.startPos,
+            ev.pos,
+          );
+          ctx.toolRef.current.startPos = undefined;
           ctx.updateTool();
           if (ev.pos[0] || ev.pos[1]) {
             ctx.projectRef.current.addDecal({
               type: "rect",
               pos: [x, y],
               size: { width, height },
-              fill: ctx.tool.fill,
-              stroke: ctx.tool.stroke,
+              fill: ctx.toolRef.current.fill,
+              stroke: ctx.toolRef.current.stroke,
             });
             ctx.updateProject();
             ctx.revertTool();
