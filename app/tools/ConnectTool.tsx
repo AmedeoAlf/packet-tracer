@@ -127,22 +127,26 @@ export function makeConnectTool(prev: ConnectTool | object = {}): ConnectTool {
             case !ev.device:
               clearSelection(ctx);
               return;
-            case !ctx.tool.deviceA:
-              ctx.tool.deviceA = ev.device;
-              ctx.tool.idxA = firstEmptyInterface(ctx.tool.deviceA);
-              ctx.tool.cursorPos = ev.pos;
+            case !ctx.toolRef.current.deviceA:
+              ctx.toolRef.current.deviceA = ev.device;
+              ctx.toolRef.current.idxA = firstEmptyInterface(
+                ctx.toolRef.current.deviceA,
+              );
+              ctx.toolRef.current.cursorPos = ev.pos;
               ctx.updateTool();
               return;
-            case !ctx.tool.deviceB:
-              ctx.tool.deviceB = ev.device;
-              ctx.tool.idxB = firstEmptyInterface(ctx.tool.deviceB);
+            case !ctx.toolRef.current.deviceB:
+              ctx.toolRef.current.deviceB = ev.device;
+              ctx.toolRef.current.idxB = firstEmptyInterface(
+                ctx.toolRef.current.deviceB,
+              );
               ctx.updateTool();
               return;
           }
           break;
         case "mousemove":
-          if (ctx.tool.deviceA) {
-            ctx.tool.cursorPos = ev.pos;
+          if (ctx.toolRef.current.deviceA) {
+            ctx.toolRef.current.cursorPos = ev.pos;
             ctx.updateTool();
           }
           break;
