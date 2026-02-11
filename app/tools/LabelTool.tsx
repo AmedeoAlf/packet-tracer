@@ -14,7 +14,7 @@ function finalizeCurrinput(ctx: ToolCtx<LabelTool>) {
     ...ctx.tool.currInput!,
   });
   ctx.updateProject();
-  ctx.tool.currInput = undefined;
+  ctx.toolRef.current.currInput = undefined;
   ctx.updateTool();
   ctx.revertTool();
 }
@@ -51,11 +51,14 @@ export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
           if (ctx.tool.currInput) {
             finalizeCurrinput(ctx);
           } else if (ev.decal && ev.decal.type == "text") {
-            ctx.tool.currInput = { text: ev.decal.text, pos: ev.decal.pos };
+            ctx.toolRef.current.currInput = {
+              text: ev.decal.text,
+              pos: ev.decal.pos,
+            };
             ctx.projectRef.current.removeDecal(ev.decal.id);
             ctx.updateProject();
           } else {
-            ctx.tool.currInput = {
+            ctx.toolRef.current.currInput = {
               text: "",
               pos: ev.pos,
             };
