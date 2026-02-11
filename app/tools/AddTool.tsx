@@ -35,7 +35,7 @@ export function makeAddTool(prev: AddTool | object = {}): AddTool {
           ctx.revertTool();
           break;
         case "mousemove":
-          ctx.tool.cursorPos = ev.pos;
+          ctx.toolRef.current.cursorPos = ev.pos;
           ctx.updateTool();
           break;
       }

@@ -31,10 +31,10 @@ export function makeHandTool(prev: HandTool | object = {}): HandTool {
     onEvent: (ctx, ev) => {
       switch (ev.type) {
         case "mousedown":
-          ctx.tool.holding = true;
+          ctx.toolRef.current.holding = true;
           break;
         case "mouseup":
-          ctx.tool.holding = false;
+          ctx.toolRef.current.holding = false;
           ctx.revertTool();
           break;
         case "mousemove":

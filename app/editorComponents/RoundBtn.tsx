@@ -1,19 +1,14 @@
-import { ReactNode } from "react";
+import React from "react";
 
 export function Button({
-  onClick,
-  className: extraClass,
+  className,
   children,
-}: {
-  onClick?: () => void;
-  className?: string;
-  children: ReactNode;
-}) {
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
-      className={"h-8 rounded-md font-bold px-2 " + (extraClass ?? "")}
-      onClick={onClick}
-      disabled={onClick === undefined}
+      className={"h-8 rounded-md font-bold px-2 " + (className ?? "")}
+      {...props}
     >
       {children}
     </button>

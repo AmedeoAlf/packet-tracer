@@ -48,6 +48,8 @@ export type Tool<Ext extends object> = {
 
 export type ToolCtx<T extends Tool<any>> = {
   project: ProjectManager;
+  projectRef: RefObject<ProjectManager>;
+
   // Triggers a React rerender with changes applied to project
   updateProject: () => void;
 

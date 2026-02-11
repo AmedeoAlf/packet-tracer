@@ -48,17 +48,13 @@ function connect(c: ToolCtx<ConnectTool>) {
   c.updateProject();
   c.revertTool();
 }
+
 function intfType(dev: Device, intf: number) {
   return dev.internalState.netInterfaces[intf].type;
 }
 
 export function makeConnectTool(prev: ConnectTool | object = {}): ConnectTool {
   return {
-    deviceA: undefined,
-    idxA: undefined,
-    deviceB: undefined,
-    idxB: undefined,
-    errorMsg: undefined,
     ...prev,
     toolname: "connect",
     panel: (ctx) => {
@@ -76,12 +72,12 @@ export function makeConnectTool(prev: ConnectTool | object = {}): ConnectTool {
               <>
                 <InterfaceSelector
                   device={ctx.tool.deviceA}
+                  ctx={ctx}
+                  intfIdx={ctx.tool.idxA}
                   selectIntf={(n) => {
                     ctx.toolRef.current.idxA = n;
                     ctx.updateTool();
                   }}
-                  intfIdx={ctx.tool.idxA}
-                  ctx={ctx}
                 />
                 {!ctx.tool.deviceB ? (
                   <div className="h-8 rounded-md font-bold m-2 px-2 p-1 bg-gray-700 text-gray-400">
@@ -224,13 +220,6 @@ const InterfaceSelector = memo(
         {device.internalState.netInterfaces.map((intf, i) => (
           <div key={i} className="flex items-center justify-between m-1">
             <div className="bg-white h-6 w-17 rounded-md">{intf.name}</div>
-            {/*
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" className="sr-only peer"></input>
-          <div className="w-16 h-8 bg-red-500 rounded-full peer-checked:bg-green-500"></div>
-          <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition peer-checked:translate-x-8"></div>
-        </label>
-        */}
             {i === intfIdx ? (
               <Button className="text-blue-900 bg-blue-400">Selezionata</Button>
             ) : isConnected(i) ? (
@@ -283,9 +272,18 @@ const ConnectBtn = memo(
       </Button>
     );
   },
-  (p, n) =>
-    p.connectTool.tool.idxA === n.connectTool.tool.idxA &&
-    p.connectTool.tool.idxB === n.connectTool.tool.idxB &&
-    p.connectTool.tool.deviceA === n.connectTool.tool.deviceA &&
-    p.connectTool.tool.deviceB === n.connectTool.tool.deviceB,
+  (p, n) => {
+    console.log(
+      p.connectTool.tool.idxA,
+      n.connectTool.tool.idxA,
+      p.connectTool.tool.idxB,
+      n.connectTool.tool.idxB,
+    );
+    return (
+      p.connectTool.tool.idxA === n.connectTool.tool.idxA &&
+      p.connectTool.tool.idxB === n.connectTool.tool.idxB &&
+      p.connectTool.tool.deviceA === n.connectTool.tool.deviceA &&
+      p.connectTool.tool.deviceB === n.connectTool.tool.deviceB
+    );
+  },
 );

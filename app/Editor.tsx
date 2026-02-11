@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/immutability */
 import {
   useState,
   useRef,
@@ -45,16 +44,17 @@ export function Editor({
   const [tool, setTool] = useState<Tool<any>>(makeSelectTool());
   const [lastTool, setLastTool] = useState<keyof typeof TOOLS>("select");
   const toolRef = useRef(tool);
-  toolRef.current = tool;
+  const projectRef = useRef(project);
 
   const toolCtx: ToolCtx<Tool<object>> = {
     tool,
     project,
     toolRef,
+    projectRef,
     updateProject() {
-      const newProj = new ProjectManager(project);
+      projectRef.current = new ProjectManager(projectRef.current);
       setShouldSave(true);
-      setProject(newProj);
+      setProject(projectRef.current);
     },
     updateTool() {
       setTool({ ...toolCtx.toolRef.current });
@@ -126,6 +126,7 @@ export function Editor({
   const tbbp: TopBarBtnsParams = useRef({ ctx: toolCtx, setProject });
   tbbp.current = { ctx: toolCtx, setProject };
 
+  const currProject = projectRef.current;
   return (
     <div
       onKeyDown={buildKeyboardEventHandler(toolCtx, "keydown")}
@@ -145,7 +146,10 @@ export function Editor({
 
       <ToolSelector
         toolname={tool.toolname}
-        setToolTo={(t) => setTool(TOOLS[t](toolRef.current))}
+        setToolTo={(t) => {
+          toolRef.current = TOOLS[t](toolRef.current);
+          toolCtx.updateTool();
+        }}
         anchor={lastTool}
         setAnchor={setLastTool}
       />
@@ -160,11 +164,11 @@ export function Editor({
         onMouseLeave={mouseHandler("mouseleave")}
         onWheel={(ev) => {
           if (ev.ctrlKey) {
-            const from = toolCtx.project.viewBoxZoom;
-            toolCtx.project.viewBoxZoom *= 1 + ev.deltaY * -0.0005;
+            const from = currProject.viewBoxZoom;
+            currProject.viewBoxZoom *= 1 + ev.deltaY * -0.0005;
             // devono entrambe non essere undefined per chiamare svgToDOMPoint
             if (canvasSize && pt) {
-              const factor = from / toolCtx.project.viewBoxZoom;
+              const factor = from / currProject.viewBoxZoom;
 
               const cursor = svgToDOMPoint(ev.clientX, ev.clientY)!;
               const center = svgToDOMPoint(
@@ -172,18 +176,18 @@ export function Editor({
                 canvasSize[1] / 2,
               )!;
 
-              toolCtx.project.viewBoxX += (cursor.x - center.x) * (1 - factor);
-              toolCtx.project.viewBoxY += (cursor.y - center.y) * (1 - factor);
+              currProject.viewBoxX += (cursor.x - center.x) * (1 - factor);
+              currProject.viewBoxY += (cursor.y - center.y) * (1 - factor);
             }
             toolCtx.updateProject();
             toolCtx.updateTool();
           } else if (ev.shiftKey) {
-            toolCtx.project.viewBoxX += ev.deltaY / toolCtx.project.viewBoxZoom;
+            currProject.viewBoxX += ev.deltaY / toolCtx.project.viewBoxZoom;
             toolCtx.updateProject();
             // toolCtx.update()
           } else {
-            toolCtx.project.viewBoxX += ev.deltaX / toolCtx.project.viewBoxZoom;
-            toolCtx.project.viewBoxY += ev.deltaY / toolCtx.project.viewBoxZoom;
+            currProject.viewBoxX += ev.deltaX / toolCtx.project.viewBoxZoom;
+            currProject.viewBoxY += ev.deltaY / toolCtx.project.viewBoxZoom;
             toolCtx.updateProject();
             // toolCtx.update()
           }
@@ -192,6 +196,7 @@ export function Editor({
         viewBox={svgViewBox.join(" ")}
         ref={(svg) => {
           svgCanvas.current = svg;
+          // eslint-disable-next-line react-hooks/immutability
           pt = svgCanvas.current?.createSVGPoint();
           if (svgCanvas.current) {
             const rect = svgCanvas.current.getBoundingClientRect();
