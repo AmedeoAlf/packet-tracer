@@ -103,5 +103,5 @@ const DeviceTypeSelector = memo(
       );
     });
   },
-  (p, n) => p.tool == n.tool,
+  (p, n) => p.tool.deviceType == n.tool.deviceType,
 );
