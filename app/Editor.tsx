@@ -70,6 +70,7 @@ export function Editor({
       if (shouldSave) save(project);
       setShouldSave(false);
     }, 500);
+    window.onbeforeunload = shouldSave ? () => save(project) : null;
     return () => clearTimeout(timeout);
   }, [project, save, shouldSave]);
 
