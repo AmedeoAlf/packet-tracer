@@ -38,7 +38,7 @@ export function makeHandTool(prev: HandTool | object = {}): HandTool {
           ctx.revertTool();
           break;
         case "mousemove":
-          if (ctx.tool.holding) {
+          if (ctx.toolRef.current.holding) {
             ctx.projectRef.current.viewBoxX -=
               ev.movement[0] / ctx.projectRef.current.viewBoxZoom;
             ctx.projectRef.current.viewBoxY -=
