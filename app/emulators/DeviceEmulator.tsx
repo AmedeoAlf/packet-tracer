@@ -210,7 +210,7 @@ export function buildEmulatorContext(
     // NOTE: il print avviene anche con il terminale connesso ad un dispositivo diverso
     write: isSelectTool(toolCtx)
       ? (msg) => {
-          toolCtx.tool.stdout += "\n" + msg;
+          toolCtx.toolRef.current.stdout += "\n" + msg;
           toolCtx.updateTool();
         }
       : (msg) => {
