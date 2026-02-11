@@ -52,9 +52,10 @@ export function Editor({
     toolRef,
     projectRef,
     updateProject() {
-      projectRef.current = new ProjectManager(projectRef.current);
+      // projectRef.current = new ProjectManager(projectRef.current);
+      // projectRef.current.applyMutations();
       setShouldSave(true);
-      setProject(projectRef.current);
+      setProject(new ProjectManager(projectRef.current));
     },
     updateTool() {
       setTool({ ...toolCtx.toolRef.current });
@@ -122,7 +123,9 @@ export function Editor({
   //   }, 10)
   //   return clearInterval.bind(0, int);
   // }, [])
-  project.advanceTickToCallback(toolCtx);
+  useEffect(() => {
+    projectRef.current.advanceTickToCallback(toolCtx);
+  });
 
   const tbbp: TopBarBtnsParams = useRef({ ctx: toolCtx, setProject });
   tbbp.current = { ctx: toolCtx, setProject };

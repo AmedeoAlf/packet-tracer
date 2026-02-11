@@ -3,7 +3,7 @@ import { Device } from "../devices/Device";
 import { Tool, ToolCtx } from "../tools/Tool";
 import { MacAddress } from "../protocols/802_3";
 import { toInterfaceId } from "../ProjectManager";
-import { SelectTool } from "../tools/SelectTool";
+import { isSelectTool, SelectTool } from "../tools/SelectTool";
 
 export interface NetworkInterface {
   type: "serial" | "copper" | "fiber";
@@ -186,12 +186,8 @@ export function buildEmulatorContext(
   device: Device,
   toolCtx: ToolCtx<SelectTool | Tool<object>>,
 ): EmulatorContext<any> {
-  function isSelectTool(
-    t: ToolCtx<SelectTool | Tool<object>>,
-  ): t is ToolCtx<SelectTool> {
-    return t.tool.toolname == "select";
-  }
   const emulator = device.emulator;
+  const tool = toolCtx.toolRef.current;
   return {
     interpreter: emulator.cmdInterpreter,
     updateState: () => {
@@ -208,9 +204,9 @@ export function buildEmulatorContext(
     },
     state: device.internalState,
     // NOTE: il print avviene anche con il terminale connesso ad un dispositivo diverso
-    write: isSelectTool(toolCtx)
+    write: isSelectTool(tool)
       ? (msg) => {
-          toolCtx.toolRef.current.stdout += "\n" + msg;
+          tool.stdout += "\n" + msg;
           toolCtx.updateTool();
         }
       : (msg) => {

@@ -201,7 +201,7 @@ export class ProjectManager {
   }
   sendOn(intf: InterfaceId, data: Buffer) {
     const target = this.getConnectedTo(intf);
-    if (!target) return;
+    if (typeof target == "undefined") return;
     const dev = this.project.devices.get(deviceOfIntf(target));
     if (!dev) return;
     const ifIdx = idxOfIntf(target);
