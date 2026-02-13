@@ -22,37 +22,28 @@ function rectProps(
 
 export function makeRectTool(prev: RectTool | object = {}): RectTool {
   return {
-    fill: "#000000",
+    fill: "#39774b",
     stroke: "none",
     ...prev,
     toolname: "rect",
     panel: (ctx) => {
-      if (ctx.tool.startPos === undefined || ctx.tool.currPos === undefined)
-        return (
-          <div className="w-full text-center font-bold">
-            <div className="h-8 rounded-md m-2 px-2 p-1 bg-gray-800 text-gray-500">
-              {" "}
-              Trascina per disegnare un rettangolo{" "}
-            </div>
-            <div className="h-8 rounded-md m-2 px-2 p-0.5 bg-gray-700 text-gray-400 w-[50%]">
-              Riempimento:&nbsp;
-              <input
-                className="align-middle"
-                type="color"
-                value={ctx.tool.fill}
-                onChange={(ev) => {
-                  ctx.toolRef.current.fill = ev.target.value;
-                  ctx.updateTool();
-                }}
-              />
-            </div>
-          </div>
-        );
+      if (ctx.tool.startPos && ctx.tool.currPos) return;
       return (
-        <>
-          Dimensioni: {ctx.tool.currPos[0] - ctx.tool.startPos[0]}x
-          {ctx.tool.currPos[1] - ctx.tool.startPos[1]}
-        </>
+        <div className="w-full text-center font-bold flex gap-2 flex-col">
+          Trascina per disegnare un rettangolo
+          <div className="rounded-md px-2 p-1 bg-gray-800 text-gray-500">
+            Riempimento:&nbsp;
+            <input
+              className="align-middle"
+              type="color"
+              value={ctx.tool.fill}
+              onChange={(ev) => {
+                ctx.toolRef.current.fill = ev.target.value;
+                ctx.updateTool();
+              }}
+            />
+          </div>
+        </div>
       );
     },
     onEvent: (ctx, ev) => {
