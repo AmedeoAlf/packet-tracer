@@ -60,3 +60,16 @@ export function capitalize(s: string) {
   arr[0] = arr[0].toUpperCase();
   return arr.join("");
 }
+
+export function arraySwap<T>(arr: T[], a: number, b: number) {
+  if (a > b) {
+    const t = a;
+    a = b;
+    b = t;
+  }
+  const elA = arr.splice(a, 1)[0];
+  const elB = arr.splice(b - 1, 1)[0];
+
+  arr.splice(a, 0, elB);
+  arr.splice(b, 0, elA);
+}

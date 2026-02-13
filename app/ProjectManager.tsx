@@ -5,6 +5,7 @@ import {
   Coords,
   deepCopy,
   PrimitiveType,
+  arraySwap,
   trustMeBroCast,
 } from "./common";
 import { Device, makeDevice } from "./devices/Device";
@@ -79,11 +80,11 @@ export class ProjectManager {
     if (!this.project.decals.at(id)) return;
     this.mutatedDecals ??= [];
     if (!this.mutatedDecals.includes(id)) this.mutatedDecals.push(id);
-    return this.project.decals.at(id);
+    return this.project.decals.at(id) ?? undefined;
   }
   decalFromTag(tag: HTMLOrSVGElement): Decal | undefined {
     if (tag.dataset.decalid) {
-      return this.project.decals[+tag.dataset.decalid];
+      return this.project.decals[+tag.dataset.decalid] ?? undefined;
     }
   }
   createDevice(type: DeviceType, pos: Coords, name?: string) {
@@ -257,33 +258,42 @@ export class ProjectManager {
     return this.project.decals.length - 1;
   }
   duplicateDecal(id: number): number | undefined {
-    const old = this.project.decals.at(id);
-    if (old === undefined) return undefined;
+    const old = this.project.decals.at(id) ?? null;
+    if (old === null) return;
 
     return this.addDecal(deepCopy(old));
   }
   removeDecal(id: number) {
     this.mutatedDecals ??= [];
-    this.project.decals[id] = undefined;
+    this.project.decals[id] = null;
   }
   moveDecalIdx(id: number, offset: number): number {
-    id = Math.max(id, 0);
-    const to = Math.max(
-      0,
-      Math.min(id + offset, this.project.decals.length - 1),
-    );
-    if (this.project.decals.at(id)) {
-      const toMove = this.project.decals.splice(id, 1)[0];
-      this.project.decals.splice(to, 0, toMove);
-      for (let i = Math.min(id, to); i <= Math.max(id, to); i++) {
-        if (this.project.decals[i] !== undefined)
-          this.project.decals[i]!.id = i;
+    const step = Math.sign(offset);
+    let target = id;
+    while (offset != 0) {
+      target += step;
+      if (target < 0) return -1;
+      switch (this.immutableDecals.at(target)) {
+        case undefined:
+          return -1;
+        default:
+          offset -= step;
+        case null:
+          continue;
       }
-      this.mutatedDecals ??= [];
-      return to;
-      // this.mutatedDecals.push(...intRange(id, id + offset))
     }
-    return 0;
+    console.log(this.immutableDecals.at(target));
+    if (!this.immutableDecals.at(target)) return -1;
+
+    console.log("B", this.project.decals);
+    arraySwap(this.project.decals, id, target);
+    console.log("A", this.project.decals);
+    if (this.project.decals[id]) this.project.decals[id].id = id;
+    // IDK perché c'è bisogno del ! qui
+    if (this.project.decals[target]) this.project.decals[target]!.id = target;
+    this.mutatedDecals ??= [];
+    this.mutatedDecals.push(id, target);
+    return target;
   }
   exportProject(): object {
     const proj = {
@@ -389,12 +399,15 @@ export class ProjectManager {
         );
       }
       this.project.devices = new Map(this.project.devices);
+      this.mutatedDevices = undefined;
     }
     if (this.mutatedDecals) {
       for (const id of this.mutatedDecals) {
         this.project.decals[id] = { ...this.project.decals[id]! };
       }
       this.project.decals = [...this.project.decals];
+      console.log(...this.project.decals);
+      this.mutatedDecals = undefined;
     }
   }
 

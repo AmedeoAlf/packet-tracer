@@ -31,7 +31,7 @@ export type Project = {
   // Tutti i dispositivi presenti
   devices: Map<number, Device>;
   // Tutti gli elementi decorativi sullo scenario
-  decals: (Decal | undefined)[];
+  decals: (Decal | null)[];
   // A cosa è connessa ogni interfaccia
   connections: Map<InterfaceId, InterfaceId>;
 

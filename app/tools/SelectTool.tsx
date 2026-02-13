@@ -145,15 +145,12 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
               .values()
               .next().value!;
             const offsetSelection = (of: number) => () => {
-              ctx.toolRef.current.selectedDecals = new Set([
-                ctx.projectRef.current.moveDecalIdx(decal, of),
-              ]);
-              console.log(
-                decal,
-                ctx.toolRef.current.selectedDecals.values().next().value,
-              );
-              ctx.updateProject();
-              ctx.updateTool();
+              const newIdx = ctx.projectRef.current.moveDecalIdx(decal, of);
+              if (newIdx != -1) {
+                ctx.toolRef.current.selectedDecals = new Set([newIdx]);
+                ctx.updateProject();
+                ctx.updateTool();
+              }
             };
             return (
               <div>
