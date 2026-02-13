@@ -11,23 +11,23 @@ export const SideBar = memo(
       <>
         <div
           className={
-            "transition fixed top-[50px] w-1/3 min-w-80 max-w-120 max-h-(--h-spec-cont) right-0 p-3 " +
+            "transition fixed top-[50px] w-1/3 min-w-80 max-w-120 max-h-(--h-spec-cont) right-0 p-3 pointer-events-none " +
             (panel && open ? "" : "translate-x-120")
           }
         >
-          <div className="bg-zinc-900 p-4 border-zinc-500 border-2 w-full rounded-xl">
+          <div className="bg-zinc-900 p-4 border-zinc-500 border-2 w-full rounded-xl pointer-events-auto">
             {panel}
           </div>
         </div>
         <button
           className={
-            "transition fixed top-[80px] right-0 border-sky-800 bg-sky-700 p-2 rounded-l-full " +
+            "transition fixed top-[50px] right-0 bg-radial-[at_80%_50%] from-sky-700 to-transparent to-70% w-6 h-(--h-spec-cont) " +
             (panel ? "" : "translate-x-10")
           }
           onClick={() => setOpen(!open)}
         >
           <svg
-            width={16}
+            width={12}
             height={20}
             className={"transition " + (open ? "-scale-x-100" : "")}
           >
