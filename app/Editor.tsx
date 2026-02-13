@@ -324,7 +324,7 @@ const Decals = memo(function Decals({
   decals,
   highlighted,
 }: {
-  decals: (Decal | undefined)[];
+  decals: (Decal | null)[];
   highlighted?: (d: Decal) => boolean;
 }): ReactNode {
   return decals.map((d, idx) => {
