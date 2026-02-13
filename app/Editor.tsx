@@ -61,8 +61,9 @@ export function Editor({
       setTool({ ...toolCtx.toolRef.current });
     },
     revertTool() {
-      if (lastTool != toolCtx.tool.toolname)
-        setTool(TOOLS[lastTool](toolRef.current));
+      if (lastTool == toolCtx.tool.toolname) return;
+      toolRef.current = TOOLS[lastTool](toolRef.current);
+      this.updateTool();
     },
   };
 
@@ -207,7 +208,7 @@ export function Editor({
         viewBox={svgViewBox.join(" ")}
         ref={(svg) => {
           svgCanvas.current = svg;
-          // eslint-disable-next-line react-hooks/immutability
+
           pt = svgCanvas.current?.createSVGPoint();
           if (svgCanvas.current) {
             const rect = svgCanvas.current.getBoundingClientRect();
