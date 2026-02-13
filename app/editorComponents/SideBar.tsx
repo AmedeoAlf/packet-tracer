@@ -11,16 +11,17 @@ export const SideBar = memo(
       <>
         <div
           className={
-            "transition bg-zinc-900 fixed top-[50px] w-1/3 min-w-80 max-w-120 h-(--h-spec-cont) border-sky-800 border-solid border-t-[.1em] border-l-[.1em] right-0 " +
+            "transition fixed top-[50px] w-1/3 min-w-80 max-w-120 max-h-(--h-spec-cont) right-0 p-3 " +
             (panel && open ? "" : "translate-x-120")
           }
         >
-          <div className="bg-sky-700 h-[20px] indent-0"></div>
-          {toolCtx.tool.panel(toolCtx)}
+          <div className="bg-zinc-900 p-4 border-zinc-500 border-2 w-full rounded-xl">
+            {panel}
+          </div>
         </div>
         <button
           className={
-            "transition fixed top-[52px] right-0 border-sky-800 bg-sky-700 p-2 rounded-l-full " +
+            "transition fixed top-[80px] right-0 border-sky-800 bg-sky-700 p-2 rounded-l-full " +
             (panel ? "" : "translate-x-10")
           }
           onClick={() => setOpen(!open)}
