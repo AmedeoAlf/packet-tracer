@@ -169,8 +169,14 @@ export function Editor({
         onWheel={(ev) => {
           if (ev.ctrlKey) {
             const from = currProject.viewBoxZoom;
-            // TODO: in questo momento è ottimizzato per il pinch sui trackpad
-            currProject.viewBoxZoom *= 1 + ev.deltaY * -0.01;
+
+            const MAX_ZOOM_INCREMENT = 0.2;
+            let requestedIncrement = ev.deltaY * -0.01;
+            if (Math.abs(requestedIncrement) > MAX_ZOOM_INCREMENT)
+              requestedIncrement =
+                Math.sign(requestedIncrement) * MAX_ZOOM_INCREMENT;
+
+            currProject.viewBoxZoom *= 1 + requestedIncrement;
             // devono entrambe non essere undefined per chiamare svgToDOMPoint
             if (canvasSize && pt) {
               const factor = from / currProject.viewBoxZoom;
