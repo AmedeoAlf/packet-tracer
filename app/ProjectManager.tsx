@@ -282,12 +282,9 @@ export class ProjectManager {
           continue;
       }
     }
-    console.log(this.immutableDecals.at(target));
     if (!this.immutableDecals.at(target)) return -1;
 
-    console.log("B", this.project.decals);
     arraySwap(this.project.decals, id, target);
-    console.log("A", this.project.decals);
     if (this.project.decals[id]) this.project.decals[id].id = id;
     // IDK perché c'è bisogno del ! qui
     if (this.project.decals[target]) this.project.decals[target]!.id = target;
@@ -406,7 +403,6 @@ export class ProjectManager {
         this.project.decals[id] = { ...this.project.decals[id]! };
       }
       this.project.decals = [...this.project.decals];
-      console.log(...this.project.decals);
       this.mutatedDecals = undefined;
     }
   }
