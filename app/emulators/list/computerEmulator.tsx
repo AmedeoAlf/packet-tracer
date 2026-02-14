@@ -13,6 +13,8 @@ import { cat } from "@/app/virtualPrograms/cat";
 import { writeFile } from "@/app/virtualPrograms/writeFile";
 import { ls } from "@/app/virtualPrograms/ls";
 import { recvIPv4Packet } from "../utils/recvIPv4Packet";
+import { TCPPacket } from "@/app/protocols/tcp";
+import { sendIPv4Packet } from "../utils/sendIPv4Packet";
 
 export type OSUDPPacket = {
   from: IPv4Address;
@@ -68,6 +70,70 @@ export function computerPacketHandler(
           },
         ]);
       if (completed) ctx.state.udpSockets.delete(udpPacket.destination);
+      break;
+    case ProtocolCode.tcp:
+      const tcpPacket = TCPPacket.fromBytes(packet.payload);
+      const connectionState = ctx.state.tcpSockets.get(tcpPacket.destination);
+      if (!connectionState) return;
+
+      const destroySocket = () => {
+        ctx.state.tcpSockets.delete(tcpPacket.destination);
+      };
+      const osCallback = () =>
+        connectionState.callback([
+          ctx,
+          tcpPacket.destination,
+          tcpPacket.payload,
+        ]);
+      const answerWith = (tcpPacket: TCPPacket) =>
+        sendIPv4Packet(
+          ctx as any,
+          packet.source,
+          ProtocolCode.tcp,
+          tcpPacket.toBytes(),
+        );
+
+      switch (connectionState.state) {
+        case "listen": {
+          if (!tcpPacket.syn || tcpPacket.ack !== undefined)
+            return destroySocket();
+          const answer = TCPPacket.synAckPacket(tcpPacket);
+          ctx.state.tcpSockets.set(tcpPacket.destination, {
+            state: "syn_recved",
+            address: packet.source,
+            callback: connectionState.callback,
+            port: tcpPacket.source,
+            seq: answer.seq,
+            ack: answer.ack!,
+          });
+          answerWith(answer);
+          break;
+        }
+        case "syn_sent": {
+          if (!tcpPacket.syn || tcpPacket.ack === undefined)
+            return destroySocket();
+
+          const answer = TCPPacket.ackPacket(tcpPacket);
+          connectionState.ack = answer.ack!;
+          answerWith(answer);
+          connectionState.state = "connected";
+          osCallback();
+          break;
+        }
+        case "syn_recved": {
+          if (tcpPacket.syn || tcpPacket.ack === undefined)
+            return destroySocket();
+          connectionState.state = "accepted";
+          osCallback();
+          break;
+        }
+        case "accepted":
+        case "connected":
+          // Packets are obviously not missing and in order
+          connectionState.ack = tcpPacket.seq;
+          osCallback();
+          break;
+      }
   }
   ctx.updateState();
 }

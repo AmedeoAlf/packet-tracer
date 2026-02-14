@@ -90,6 +90,9 @@ export function serverPacketHandler(
   packet: IPv4Packet,
 ) {
   switch (packet.protocol) {
+    case ProtocolCode.tcp:
+      console.log("Me, a server received a TCP packet, what do I do?");
+      break;
     case ProtocolCode.udp:
       const udpPacket = UDPPacket.fromBytes(packet.payload);
       if (ctx.state.udpSockets.has(udpPacket.destination)) {

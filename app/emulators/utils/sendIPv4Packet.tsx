@@ -9,6 +9,7 @@ import { EmulatorContext } from "../DeviceEmulator";
 import { ARPPacket } from "@/app/protocols/rfc_826";
 import { Layer2Packet } from "@/app/protocols/802_3";
 
+// FIXME: accept OSInternalState properly
 export function sendIPv4Packet(
   ctx: Pick<
     EmulatorContext<L3InternalState>,

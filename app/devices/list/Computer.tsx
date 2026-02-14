@@ -1,6 +1,7 @@
 import {
   defaultL3InternalState,
   deserializeL3InternalState,
+  IPv4Address,
   L3InternalState,
   serializeL3InternalState,
 } from "@/app/protocols/rfc_760";
@@ -18,9 +19,29 @@ export type UDPCallbackParams = [
   ctx: EmulatorContext<OSInternalState>,
   p: OSUDPPacket,
 ];
+export type TCPCallbackParams = [
+  ctx: EmulatorContext<OSInternalState>,
+  socket: number,
+  payload: Buffer,
+];
+export type TCPConnectionState =
+  | {
+      state: "listen";
+      callback: (params: TCPCallbackParams) => void;
+    }
+  | {
+      state: "syn_recved" | "accepted" | "syn_sent" | "connected";
+      callback: (params: TCPCallbackParams) => void;
+      address: IPv4Address;
+      port: number;
+      seq: number;
+      ack: number;
+    };
+
 export type OSInternalState = L3InternalState & {
   filesystem: OSDir;
   udpSockets: Map<number, (params: UDPCallbackParams) => boolean>;
+  tcpSockets: Map<number, TCPConnectionState>;
 };
 
 export const Computer: DeviceFactory<OSInternalState> = {
@@ -35,6 +56,7 @@ export const Computer: DeviceFactory<OSInternalState> = {
         ...state,
         ...serializeL3InternalState(state as L3InternalState),
         udpSockets: undefined,
+        tcpSockets: undefined,
       };
     },
     // FIXME: check if this is right
@@ -54,6 +76,7 @@ export const Computer: DeviceFactory<OSInternalState> = {
       ],
       filesystem: {},
       udpSockets: new Map(),
+      tcpSockets: new Map(),
     };
   },
 };

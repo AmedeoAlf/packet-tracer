@@ -43,6 +43,7 @@ export const Server: DeviceFactory<OSInternalState> = {
       ],
       filesystem: deepCopy(defaultServerFS),
       udpSockets: new Map(),
+      tcpSockets: new Map(),
     };
   },
 };
