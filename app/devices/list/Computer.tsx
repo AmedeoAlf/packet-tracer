@@ -19,19 +19,19 @@ export type UDPCallbackParams = [
   ctx: EmulatorContext<OSInternalState>,
   p: OSUDPPacket,
 ];
-export type TCPCallbackParams = [
+export type TCPCallback = (
   ctx: EmulatorContext<OSInternalState>,
   socket: number,
   payload: Buffer,
-];
+) => void;
 export type TCPConnectionState =
   | {
       state: "listen";
-      callback: (params: TCPCallbackParams) => void;
+      callback: TCPCallback;
     }
   | {
-      state: "syn_recved" | "accepted" | "syn_sent" | "connected";
-      callback: (params: TCPCallbackParams) => void;
+      state: "syn_recved" | "accepted" | "syn_sent" | "connected" | "closing";
+      callback: TCPCallback;
       address: IPv4Address;
       port: number;
       seq: number;

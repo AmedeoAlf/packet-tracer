@@ -15,6 +15,8 @@ import { ls } from "@/app/virtualPrograms/ls";
 import { recvIPv4Packet } from "../utils/recvIPv4Packet";
 import { TCPPacket } from "@/app/protocols/tcp";
 import { sendIPv4Packet } from "../utils/sendIPv4Packet";
+import { tcphello } from "@/app/virtualPrograms/tcpsend";
+import { tcplisten } from "@/app/virtualPrograms/tcplisten";
 
 export type OSUDPPacket = {
   from: IPv4Address;
@@ -46,6 +48,8 @@ export const computerEmulator: DeviceEmulator<OSInternalState> = {
         cat: cat,
         writeFile: writeFile,
         ls: ls,
+        tcphello,
+        tcplisten,
       },
     },
   },
@@ -80,11 +84,7 @@ export function computerPacketHandler(
         ctx.state.tcpSockets.delete(tcpPacket.destination);
       };
       const osCallback = () =>
-        connectionState.callback([
-          ctx,
-          tcpPacket.destination,
-          tcpPacket.payload,
-        ]);
+        connectionState.callback(ctx, tcpPacket.destination, tcpPacket.payload);
       const answerWith = (tcpPacket: TCPPacket) =>
         sendIPv4Packet(
           ctx as any,
@@ -129,9 +129,15 @@ export function computerPacketHandler(
         }
         case "accepted":
         case "connected":
-          // Packets are obviously not missing and in order
-          connectionState.ack = tcpPacket.seq;
-          osCallback();
+          if (tcpPacket.fin) {
+            connectionState.state = "closing";
+            osCallback();
+            destroySocket();
+          } else {
+            // Packets are obviously not missing and in order
+            connectionState.ack = tcpPacket.seq;
+            osCallback();
+          }
           break;
       }
   }

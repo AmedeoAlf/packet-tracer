@@ -1,6 +1,6 @@
 import {
   OSInternalState,
-  TCPCallbackParams,
+  TCPCallback,
   UDPCallbackParams,
 } from "@/app/devices/list/Computer";
 import { EmulatorContext } from "../DeviceEmulator";
@@ -26,7 +26,7 @@ export function readUDP(
 export function listenAndAcceptTCP(
   state: OSInternalState,
   port: number,
-  onAccept: (params: TCPCallbackParams) => void,
+  onAccept: TCPCallback,
 ) {
   state.tcpSockets.set(port, { state: "listen", callback: onAccept });
   return port;
@@ -36,8 +36,8 @@ export function dialTCP(
   ctx: EmulatorContext<OSInternalState>,
   address: IPv4Address,
   port: number,
-  onConnect: (params: TCPCallbackParams) => void,
-): number | undefined {
+  onConnect: TCPCallback,
+): number {
   let sourcePort = 0xc000;
   while (ctx.state.tcpSockets.has(++sourcePort));
 
@@ -65,7 +65,7 @@ export function recv(
   const sock = state.tcpSockets.get(socket);
   if (!sock) return false;
   if (sock.state != "accepted" && sock.state != "connected") return false;
-  sock.callback = ([ctx, , payload]) => callback(ctx, payload);
+  sock.callback = (ctx, _, payload) => callback(ctx, payload);
   return true;
 }
 
@@ -77,6 +77,7 @@ export function send(
   const connection = ctx.state.tcpSockets.get(socket);
   if (!connection) return;
   if (connection.state != "accepted" && connection.state != "connected") return;
+  connection.seq += 1;
   sendIPv4Packet(
     ctx as any,
     connection.address,
@@ -84,9 +85,31 @@ export function send(
     new TCPPacket(
       socket,
       connection.port,
-      connection.seq + 1,
+      connection.seq,
       payload,
       connection.ack,
     ).toBytes(),
   );
+}
+
+export function close(ctx: EmulatorContext<OSInternalState>, socket: number) {
+  const connection = ctx.state.tcpSockets.get(socket);
+  if (!connection) return;
+  if (connection.state != "listen") {
+    sendIPv4Packet(
+      ctx as any,
+      connection.address,
+      ProtocolCode.tcp,
+      new TCPPacket(
+        socket,
+        connection.port,
+        connection.seq + 1,
+        Buffer.alloc(0),
+        connection.ack,
+        false,
+        true,
+      ).toBytes(),
+    );
+  }
+  ctx.state.tcpSockets.delete(socket);
 }
