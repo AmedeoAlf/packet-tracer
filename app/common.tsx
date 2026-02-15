@@ -62,14 +62,19 @@ export function capitalize(s: string) {
 }
 
 export function arraySwap<T>(arr: T[], a: number, b: number) {
-  if (a > b) {
-    const t = a;
-    a = b;
-    b = t;
-  }
-  const elA = arr.splice(a, 1)[0];
-  const elB = arr.splice(b - 1, 1)[0];
+  const t = arr[a];
+  arr[a] = arr[b];
+  arr[b] = t;
+}
 
-  arr.splice(a, 0, elB);
-  arr.splice(b, 0, elA);
+export function findInBuffer(
+  buffer: ArrayLike<number>,
+  sequence: ArrayLike<number>,
+): number {
+  for (let i = 0; i <= buffer.length - sequence.length; i++) {
+    let j = 0;
+    for (; buffer[i + j] == sequence[j] && j < sequence.length; j++);
+    if (j == sequence.length) return i;
+  }
+  return -1;
 }
