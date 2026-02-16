@@ -18,7 +18,7 @@ import {
   ProtocolCode,
 } from "@/app/protocols/rfc_760";
 import { UDPPacket } from "@/app/protocols/udp";
-import { isError, OSDir, readFile } from "../utils/osFiles";
+import { isError, OSDir, readFile, readSettingsFile } from "../utils/osFiles";
 import {
   DNSPacket,
   DNSResponsePacket,
@@ -185,7 +185,11 @@ const httpRequestHandler: TCPCallback = (ctx, socket, payload) => {
     );
     return;
   }
-  const file = readFile(ctx.state.filesystem, request.resource);
+
+  const settings = readSettingsFile(ctx.state.filesystem, "/etc/http");
+  const root = settings?.dir ?? "";
+
+  const file = readFile(root + ctx.state.filesystem, request.resource);
   const response = isError(file)
     ? new HttpResponse(
         Buffer.from(

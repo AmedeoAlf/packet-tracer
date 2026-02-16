@@ -45,6 +45,15 @@ export function readFile(
   return folder[filename];
 }
 
+export function readSettingsFile(
+  filesystem: OSInternalState["filesystem"],
+  file: string,
+): Record<string, any> | undefined {
+  const f = readFile(filesystem, file);
+  if (isError(f)) return;
+  return JSON.parse(f);
+}
+
 export function writeFile(
   filesystem: OSInternalState["filesystem"],
   path: string,
