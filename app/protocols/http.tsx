@@ -67,7 +67,7 @@ abstract class HttpMessage {
 
   static fromBytes(bytes: Buffer): HttpMessage {
     // If starts with HTTP, the message is assumed to be a response
-    const maybeVersion = bytes.subarray(4).toString();
+    const maybeVersion = bytes.subarray(0, 4).toString();
 
     const headerEnd = findInBuffer(bytes, Buffer.from("\r\n\r\n"));
 
