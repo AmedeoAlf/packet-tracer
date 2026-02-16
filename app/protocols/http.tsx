@@ -65,13 +65,11 @@ abstract class HttpMessage {
     ]);
   }
 
-  static fromBytes(bytes: Buffer): HttpMessage {
+  static fromBytes(bytes: Buffer): HttpRequest | HttpResponse {
     // If starts with HTTP, the message is assumed to be a response
     const maybeVersion = bytes.subarray(0, 4).toString();
 
     const headerEnd = findInBuffer(bytes, Buffer.from("\r\n\r\n"));
-
-    console.log(bytes.toString());
 
     const [firstLine, ...params] = bytes
       .subarray(0, headerEnd)
@@ -85,6 +83,8 @@ abstract class HttpMessage {
         : new HttpRequest("", headers);
 
     message.readFirstLine(firstLine);
+
+    message.body = bytes.subarray(headerEnd + 4 /* sizeof("\r\n\r\n") */);
 
     return message;
   }

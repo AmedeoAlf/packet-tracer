@@ -168,6 +168,7 @@ function dnsPacketHandler(
 }
 
 const httpRequestHandler: TCPCallback = (ctx, socket, payload) => {
+  if (payload.length == 0) return;
   const settings = readSettingsFile(ctx.state.filesystem, "/etc/http");
   if (!settings?.on) return;
   const root = settings?.dir ?? "";
