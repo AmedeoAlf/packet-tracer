@@ -126,10 +126,7 @@ function dnsPacketHandler(
   ipSource: IPv4Address,
 ) {
   const config = readSettingsFile(ctx.state.filesystem, "/etc/dnsserver");
-  if (!config) {
-    ctx.write("Missing configuration file /etc/dnsserver");
-    return;
-  }
+  if (!config?.on) return;
   if (typeof config.domains !== "object") {
     ctx.write("dns config should contain a domains property");
     return;
@@ -171,6 +168,10 @@ function dnsPacketHandler(
 }
 
 const httpRequestHandler: TCPCallback = (ctx, socket, payload) => {
+  const settings = readSettingsFile(ctx.state.filesystem, "/etc/http");
+  if (!settings?.on) return;
+  const root = settings?.dir ?? "";
+
   const request = HttpRequest.fromBytes(payload);
 
   if (!(request instanceof HttpRequest)) return;
@@ -186,9 +187,6 @@ const httpRequestHandler: TCPCallback = (ctx, socket, payload) => {
     );
     return;
   }
-
-  const settings = readSettingsFile(ctx.state.filesystem, "/etc/http");
-  const root = settings?.dir ?? "";
 
   const file = readFile(root + ctx.state.filesystem, request.resource);
   const response = isError(file)
