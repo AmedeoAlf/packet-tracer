@@ -97,9 +97,6 @@ export function serverPacketHandler(
   packet: IPv4Packet,
 ) {
   switch (packet.protocol) {
-    case ProtocolCode.tcp:
-      console.log("Me, a server received a TCP packet, what do I do?");
-      break;
     case ProtocolCode.udp:
       const udpPacket = UDPPacket.fromBytes(packet.payload);
       if (ctx.state.udpSockets.has(udpPacket.destination)) {
@@ -128,11 +125,15 @@ function dnsPacketHandler(
   udpPacket: OSUDPPacket,
   ipSource: IPv4Address,
 ) {
-  const dnsserverStr = readFile(ctx.state.filesystem, "/etc/dnsserver");
-  if (typeof dnsserverStr != "string") return;
-  const config = JSON.parse(dnsserverStr);
-  if (!config.on) return;
-  if (typeof config.domains != "object") return;
+  const config = readSettingsFile(ctx.state.filesystem, "/etc/dnsserver");
+  if (!config) {
+    ctx.write("Missing configuration file /etc/dnsserver");
+    return;
+  }
+  if (typeof config.domains !== "object") {
+    ctx.write("dns config should contain a domains property");
+    return;
+  }
 
   const dnsPacket = DNSPacket.fromBytes(udpPacket.payload);
   if (dnsPacket instanceof DNSResponsePacket) return;
