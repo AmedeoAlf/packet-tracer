@@ -129,7 +129,7 @@ export class HttpResponse extends HttpMessage {
 
   constructor(
     body: Buffer,
-    responseCode: ResponseCode,
+    responseCode: ResponseCode = ResponseCode.OK,
     headers: ResponseHeaders = {},
   ) {
     super(body, headers);

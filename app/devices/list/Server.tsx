@@ -1,6 +1,7 @@
 import {
   defaultServerFS,
   serverEmulator,
+  serverInitServices,
 } from "@/app/emulators/list/serverEmulator";
 import { randomMAC } from "../../protocols/802_3";
 import { Device, DeviceFactory } from "../Device";
@@ -25,13 +26,16 @@ export const Server: DeviceFactory<OSInternalState> = {
         ...state,
         ...serializeL3InternalState(state as L3InternalState),
         udpSockets: undefined,
+        tcpSockets: undefined,
       };
     },
     deserializeState(o) {
-      return {
+      const state = {
         ...Server.defaultState(),
         ...deserializeL3InternalState(o),
       };
+      serverInitServices(state);
+      return state;
     },
   },
 

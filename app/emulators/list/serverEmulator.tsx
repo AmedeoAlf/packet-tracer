@@ -5,7 +5,7 @@ import { ping } from "../../virtualPrograms/ping";
 import { DeviceEmulator, EmulatorContext } from "../DeviceEmulator";
 import { arptable } from "@/app/virtualPrograms/arptable";
 import { udpSend } from "@/app/virtualPrograms/udpSend";
-import { OSInternalState } from "@/app/devices/list/Computer";
+import { OSInternalState, TCPCallback } from "@/app/devices/list/Computer";
 import { nslookup } from "@/app/virtualPrograms/nslookup";
 import { cat } from "@/app/virtualPrograms/cat";
 import { writeFile } from "@/app/virtualPrograms/writeFile";
@@ -18,14 +18,21 @@ import {
   ProtocolCode,
 } from "@/app/protocols/rfc_760";
 import { UDPPacket } from "@/app/protocols/udp";
-import { OSDir, readFile } from "../utils/osFiles";
+import { isError, OSDir, readFile } from "../utils/osFiles";
 import {
   DNSPacket,
   DNSResponsePacket,
   ResourceRecord,
-  ResponseCode,
+  ResponseCode as DnsResponseCode,
 } from "@/app/protocols/dns_emu";
 import { sendIPv4Packet } from "../utils/sendIPv4Packet";
+import { OSUDPPacket, tcpPacketHandler } from "./computerEmulator";
+import { readUDP, listenAndAcceptTCP, send } from "../utils/sockets";
+import {
+  HttpRequest,
+  HttpResponse,
+  ResponseCode as HttpResponseCode,
+} from "@/app/protocols/http";
 
 export const defaultServerFS: OSDir = {
   etc: {
@@ -108,19 +115,17 @@ export function serverPacketHandler(
             },
           ]);
         if (completed) ctx.state.udpSockets.delete(udpPacket.destination);
-      } else {
-        switch (udpPacket.destination) {
-          case 53:
-            dnsPacketHandler(ctx, udpPacket, packet.source);
-        }
       }
+      break;
+    case ProtocolCode.tcp:
+      tcpPacketHandler(ctx, packet);
   }
   ctx.updateState();
 }
 
 function dnsPacketHandler(
   ctx: EmulatorContext<OSInternalState>,
-  udpPacket: UDPPacket,
+  udpPacket: OSUDPPacket,
   ipSource: IPv4Address,
 ) {
   const dnsserverStr = readFile(ctx.state.filesystem, "/etc/dnsserver");
@@ -132,11 +137,11 @@ function dnsPacketHandler(
   const dnsPacket = DNSPacket.fromBytes(udpPacket.payload);
   if (dnsPacket instanceof DNSResponsePacket) return;
 
-  let code = ResponseCode.NoError;
+  let code = DnsResponseCode.NoError;
   const answers = dnsPacket.questions
     .map((q) => {
       if (!Array.isArray(config.domains[q.name])) {
-        code = ResponseCode.NXDomain;
+        code = DnsResponseCode.NXDomain;
         return;
       }
       return q.answerTypeA(
@@ -157,9 +162,62 @@ function dnsPacketHandler(
     ipSource,
     ProtocolCode.udp,
     new UDPPacket(
-      udpPacket.destination,
-      udpPacket.source,
+      udpPacket.toPort,
+      udpPacket.fromPort,
       response.toBytes(),
     ).toBytes(),
   );
+}
+
+const httpRequestHandler: TCPCallback = (ctx, socket, payload) => {
+  const request = HttpRequest.fromBytes(payload);
+
+  if (!(request instanceof HttpRequest)) return;
+
+  if (request.method !== "GET") {
+    send(
+      ctx,
+      socket,
+      new HttpResponse(
+        Buffer.from("This server only accepts GET http requests"),
+        HttpResponseCode.BAD_REQUEST,
+      ).toBytes(),
+    );
+    return;
+  }
+  const file = readFile(ctx.state.filesystem, request.resource);
+  const response = isError(file)
+    ? new HttpResponse(
+        Buffer.from(
+          `<h1>404 - File not found</h1><p>Could not find file ${request.resource}</p>`,
+        ),
+        HttpResponseCode.NOT_FOUND,
+      )
+    : new HttpResponse(Buffer.from(file));
+  send(ctx, socket, response.toBytes());
+};
+
+export function serverInitServices(state: OSInternalState) {
+  const dnsserver = readFile(state.filesystem, "/etc/dnsserver");
+  if (!isError(dnsserver)) {
+    const settings = JSON.parse(dnsserver);
+    if (settings.on) {
+      readUDP(
+        state,
+        ([ctx, packet]) => {
+          dnsPacketHandler(ctx, packet, packet.from);
+          return false;
+        },
+        53,
+      );
+    }
+  }
+
+  const httpserver = readFile(state.filesystem, "/etc/http");
+  if (!isError(httpserver)) {
+    const settings = JSON.parse(httpserver);
+    if (settings.on) {
+      listenAndAcceptTCP(state, 80, httpRequestHandler);
+    }
+  }
 }

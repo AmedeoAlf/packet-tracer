@@ -16,8 +16,6 @@ export function readUDP(
   if (port === undefined) {
     port = 0xc000;
     while (state.udpSockets.has(++port));
-  } else if (state.udpSockets.has(port)) {
-    return -1;
   }
   state.udpSockets.set(port, callback);
   return port;
