@@ -366,9 +366,9 @@ function TerminalEmulator<State extends InternalState>(
           ref={(area) => {
             if (area) area.scrollTop = area.scrollHeight;
           }}
+          className="w-full"
           value={content}
           rows={8}
-          cols={50}
           readOnly
         />
         <form
