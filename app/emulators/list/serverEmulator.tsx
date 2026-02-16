@@ -201,26 +201,14 @@ const httpRequestHandler: TCPCallback = (ctx, socket, payload) => {
 };
 
 export function serverInitServices(state: OSInternalState) {
-  const dnsserver = readFile(state.filesystem, "/etc/dnsserver");
-  if (!isError(dnsserver)) {
-    const settings = JSON.parse(dnsserver);
-    if (settings.on) {
-      readUDP(
-        state,
-        ([ctx, packet]) => {
-          dnsPacketHandler(ctx, packet, packet.from);
-          return false;
-        },
-        53,
-      );
-    }
-  }
+  readUDP(
+    state,
+    ([ctx, packet]) => {
+      dnsPacketHandler(ctx, packet, packet.from);
+      return false;
+    },
+    53,
+  );
 
-  const httpserver = readFile(state.filesystem, "/etc/http");
-  if (!isError(httpserver)) {
-    const settings = JSON.parse(httpserver);
-    if (settings.on) {
-      listenAndAcceptTCP(state, 80, httpRequestHandler);
-    }
-  }
+  listenAndAcceptTCP(state, 80, httpRequestHandler);
 }
