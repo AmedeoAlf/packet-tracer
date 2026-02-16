@@ -21,11 +21,11 @@ export type RequestHeaders = Partial<{
   accept: string;
   "upgrade-insecure-requests": string;
   "user-agent": string;
+  host: string;
 }>;
 
 export type ResponseHeaders = Partial<{
   "content-type": string;
-  host: string;
   "content-length": string;
 }>;
 
