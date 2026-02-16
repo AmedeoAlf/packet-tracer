@@ -71,6 +71,8 @@ abstract class HttpMessage {
 
     const headerEnd = findInBuffer(bytes, Buffer.from("\r\n\r\n"));
 
+    console.log(bytes.toString());
+
     const [firstLine, ...params] = bytes
       .subarray(0, headerEnd)
       .toString()
@@ -79,8 +81,8 @@ abstract class HttpMessage {
 
     const message =
       maybeVersion == "HTTP"
-        ? new HttpRequest("", headers)
-        : new HttpResponse(Buffer.alloc(0), ResponseCode.OK, headers);
+        ? new HttpResponse(Buffer.alloc(0), ResponseCode.OK, headers)
+        : new HttpRequest("", headers);
 
     message.readFirstLine(firstLine);
 
