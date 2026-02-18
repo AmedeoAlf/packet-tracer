@@ -1,4 +1,4 @@
-import { memo, ReactNode, useState } from "react";
+import { memo, ReactNode, useEffect, useState } from "react";
 import { Tool, ToolCtx } from "../tools/Tool";
 
 // La barra laterale dell'interfaccia: il suo contenuto è intermente deciso dal
@@ -6,16 +6,60 @@ import { Tool, ToolCtx } from "../tools/Tool";
 export const SideBar = memo(
   function SideBar({ toolCtx }: { toolCtx: ToolCtx<Tool<object>> }): ReactNode {
     const [open, setOpen] = useState(true);
+    const [resizing, setResizing] = useState(false);
+    const [width, setWidth] = useState(420);
     const panel = toolCtx.tool.panel(toolCtx);
+    useEffect(() => {
+      const events = {
+        mousedown: (ev) => {
+          if (!(ev.target instanceof HTMLDivElement)) return;
+          if (ev.target.id != "sidebarResizeHandle") return;
+          console.log("setresizing: true");
+          setResizing(true);
+        },
+        ...(resizing
+          ? {
+              mousemove: (ev) =>
+                setWidth((width) =>
+                  Math.min(
+                    window.innerWidth - 100,
+                    Math.max(300, width - ev.movementX),
+                  ),
+                ),
+              mouseup: () => setResizing(false),
+            }
+          : {}),
+      } as const satisfies Partial<{
+        [K in keyof DocumentEventMap]: (
+          this: Document,
+          ev: DocumentEventMap[K],
+        ) => any;
+      }>;
+      Object.entries(events).forEach(([k, v]) =>
+        document.addEventListener(k as keyof DocumentEventMap, v as any),
+      );
+
+      return () =>
+        Object.entries(events).forEach(([k, v]) =>
+          document.removeEventListener(k as keyof DocumentEventMap, v as any),
+        );
+    }, [setWidth, resizing, setResizing]);
     return (
       <>
         <div
           className={
-            "transition fixed top-[50px] w-1/3 min-w-80 max-w-120 max-h-(--h-spec-cont) right-0 p-3 pointer-events-none " +
-            (panel && open ? "" : "translate-x-120")
+            "transition fixed top-[50px] max-h-(--h-spec-cont) right-0 p-3 pointer-events-none " +
+            (panel && open ? "" : "translate-x-full")
           }
+          style={{ width }}
         >
           <div className="bg-zinc-900 p-4 border-zinc-500 border-2 w-full rounded-xl pointer-events-auto">
+            <div className="absolute top-0 -left-2 h-full py-4">
+              <div
+                id="sidebarResizeHandle"
+                className="w-8 z-1 h-full select-none box-border"
+              ></div>
+            </div>
             {panel}
           </div>
         </div>
