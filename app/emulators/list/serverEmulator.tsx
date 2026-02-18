@@ -189,7 +189,7 @@ const httpRequestHandler: TCPCallback = (ctx, socket, payload) => {
     return;
   }
 
-  const file = readFile(root + ctx.state.filesystem, request.resource);
+  const file = readFile(ctx.state.filesystem, root + request.resource);
   const response = isError(file)
     ? new HttpResponse(
         Buffer.from(

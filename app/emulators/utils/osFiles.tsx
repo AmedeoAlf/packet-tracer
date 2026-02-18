@@ -22,7 +22,7 @@ export function getDir(
   filesystem: OSInternalState["filesystem"],
   file: string,
 ): OSDir | OSError {
-  const folders = file.split("/");
+  const folders = file.split("/").filter((it) => it);
   let curr = filesystem;
   for (const f of folders.filter((it) => it)) {
     if (!isDirectory(curr[f])) return OSError.FileNotFound;
@@ -36,7 +36,7 @@ export function readFile(
   filesystem: OSInternalState["filesystem"],
   file: string,
 ): string | OSError {
-  const folders = file.split("/");
+  const folders = file.split("/").filter((it) => it);
   const filename = folders.pop()!;
   const folder = getDir(filesystem, folders.join("/"));
   if (isError(folder)) return folder;
