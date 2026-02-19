@@ -1,5 +1,7 @@
 "use client";
 
+import { off } from "process";
+
 export type Coords = [x: number, y: number];
 
 export function areArraysShallowEqual<T>(a: T[], b: T[]): boolean {
@@ -67,6 +69,16 @@ export function arraySwap<T>(arr: T[], a: number, b: number) {
   arr[b] = t;
 }
 
+export function arrayOffsetElement<T>(arr: T[], idx: number, offset: number) {
+  offset = Math.max(-idx, Math.min(arr.length - idx - 1, offset));
+  const el = arr[idx];
+  const sign = Math.sign(offset);
+  // Simple method
+  for (let i = idx; i != idx + offset; i += sign) arr[i] = arr[i + sign];
+
+  arr[idx + offset] = el;
+}
+
 export function findInBuffer(
   buffer: ArrayLike<number>,
   sequence: ArrayLike<number>,
@@ -77,4 +89,15 @@ export function findInBuffer(
     if (j == sequence.length) return i;
   }
   return -1;
+}
+
+export function countLeadingOnes(n: number): number {
+  for (let i = 31; i >= 0; i--) {
+    if (!(n & (1 << i))) return 31 - i;
+  }
+  return 32;
+}
+
+export function i32WithLeadingOnes(amount: number): number {
+  return ((1 << amount) - 1) << (32 - amount);
 }

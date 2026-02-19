@@ -21,6 +21,10 @@ export type RoutingTableEntry = {
 export type RouterInternalState = L3InternalState & {
   routingTables: RoutingTableEntry[];
   udpSocket?: (packet: UDPPacket, from: IPv4Address) => void;
+
+  // UI for adding new routing tables
+  rt_networkInput?: string;
+  rt_toInput?: string;
 };
 
 export const Router: DeviceFactory<RouterInternalState> = {
@@ -30,6 +34,8 @@ export const Router: DeviceFactory<RouterInternalState> = {
       return {
         ...this.internalState,
         ...serializeL3InternalState(this.internalState as L3InternalState),
+        rt_toInput: undefined,
+        rt_networkInput: undefined,
       };
     },
     deserializeState(o) {

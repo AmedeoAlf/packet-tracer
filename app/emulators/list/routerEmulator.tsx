@@ -12,12 +12,15 @@ import { hello } from "../../virtualPrograms/hello";
 import { interfacesL3 } from "../../virtualPrograms/interfacesl3";
 import { l2send } from "../../virtualPrograms/l2send";
 import { ping } from "../../virtualPrograms/ping";
-import { DeviceEmulator } from "../DeviceEmulator";
+import { DeviceEmulator, runOnInterpreter } from "../DeviceEmulator";
 import { arptable } from "@/app/virtualPrograms/arptable";
 import { udpSend } from "@/app/virtualPrograms/udpSend";
 import { UDPPacket } from "@/app/protocols/udp";
 import { handleArpPacket } from "../utils/handleArpPacket";
 import { sendIPv4Packet } from "../utils/sendIPv4Packet";
+import { countLeadingOnes } from "@/app/common";
+import { Button } from "@/app/editorComponents/RoundBtn";
+import { routing } from "@/app/virtualPrograms/routing";
 
 export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   configPanel: {
@@ -52,6 +55,97 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
             })}
           </tbody>
         </table>
+      );
+    },
+    "Tabelle di routing"(ctx) {
+      return (
+        <>
+          <div>
+            Inserisci nuova <br />
+            Rete:
+            <input
+              type="text"
+              placeholder="1.1.1.0/24"
+              value={ctx.state.rt_networkInput ?? ""}
+              onChange={(ev) => {
+                ctx.state.rt_networkInput = ev.target.value;
+                ctx.updateState();
+              }}
+            />
+            <br />
+            Next hop:
+            <input
+              type="text"
+              placeholder="10.1.1.2"
+              value={ctx.state.rt_toInput ?? ""}
+              onChange={(ev) => {
+                ctx.state.rt_toInput = ev.target.value;
+                ctx.updateState();
+              }}
+            />
+            <Button
+              className="bg-slate-500"
+              onClick={() => {
+                ctx.args = [
+                  "routing",
+                  "add",
+                  ctx.state.rt_networkInput ?? "",
+                  ctx.state.rt_toInput ?? "",
+                ];
+                ctx.write("> " + ctx.args.join(" "));
+                runOnInterpreter(ctx);
+              }}
+            >
+              Aggiungi
+            </Button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th className="p-1"></th>
+                <th className="p-1">Rete</th>
+                <th className="p-1">Next hop</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ctx.state.routingTables.map((tableEntry, idx) => (
+                <tr key={idx}>
+                  <td>
+                    <Button
+                      onClick={() => {
+                        ctx.args = `routing set-priority ${idx} -1`.split(" ");
+                        runOnInterpreter(ctx);
+                      }}
+                    >
+                      ⬆️
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        ctx.args = `routing set-priority ${idx} 1`.split(" ");
+                        runOnInterpreter(ctx);
+                      }}
+                    >
+                      ⬇️
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        ctx.args = `routing remove ${idx}`.split(" ");
+                        runOnInterpreter(ctx);
+                      }}
+                    >
+                      ✖️
+                    </Button>
+                  </td>
+                  <td className="p-1">
+                    {ipv4ToString(tableEntry.netAddr)}/
+                    {countLeadingOnes(tableEntry.mask)}
+                  </td>
+                  <td className="p-1">{ipv4ToString(tableEntry.to)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
       );
     },
   },
@@ -125,12 +219,13 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   cmdInterpreter: {
     shell: {
       subcommands: {
-        hello: hello,
+        hello,
         interfaces: interfacesL3,
-        l2send: l2send,
+        l2send,
         ping: ping as any,
-        arptable: arptable,
+        arptable,
         "udp-send": udpSend,
+        routing,
       },
     },
   },
