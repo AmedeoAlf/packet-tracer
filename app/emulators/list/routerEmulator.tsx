@@ -37,17 +37,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
               const l3if = ctx.state.l3Ifs.at(idx);
               return (
                 <tr key={idx}>
-                  <td className="p-1 max-w-1/4">
-                    <input
-                      type="text"
-                      value={val.name}
-                      className="w-full"
-                      onChange={(ev) => {
-                        ctx.state.netInterfaces[idx].name = ev.target.value;
-                        ctx.updateState();
-                      }}
-                    />
-                  </td>
+                  <td className="p-1 max-w-1/4">{val.name}</td>
                   <td className="p-1">
                     {val.type} {val.maxMbps}&nbsp;Mbps
                   </td>
