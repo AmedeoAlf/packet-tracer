@@ -14,7 +14,6 @@ export const SideBar = memo(
         mousedown: (ev) => {
           if (!(ev.target instanceof HTMLDivElement)) return;
           if (ev.target.id != "sidebarResizeHandle") return;
-          console.log("setresizing: true");
           setResizing(true);
         },
         ...(resizing
@@ -53,12 +52,19 @@ export const SideBar = memo(
           }
           style={{ width }}
         >
-          <div className="bg-zinc-900 p-4 border-zinc-500 border-2 w-full rounded-xl pointer-events-auto">
-            <div className="absolute top-0 -left-2 h-full py-4">
+          <div className="bg-zinc-900 p-4 border-zinc-500 border-2 w-full pl-5 rounded-xl pointer-events-auto">
+            <div className="absolute top-0 left-4 h-full py-4">
               <div
                 id="sidebarResizeHandle"
-                className="w-8 z-1 h-full select-none box-border"
-              ></div>
+                className="w-3 z-1 h-full select-none box-border flex items-center justify-center group"
+              >
+                <div
+                  className={
+                    "transition-all bg-slate-100 w-1 rounded-full pointer-events-none " +
+                    (resizing ? "h-7" : "h-10 group-hover:h-9")
+                  }
+                ></div>
+              </div>
             </div>
             {panel}
           </div>

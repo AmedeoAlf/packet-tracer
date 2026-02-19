@@ -121,24 +121,24 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
               ...Object.entries(emulator.configPanel),
             ];
             return (
-              <div>
+              <>
                 <input
-                  className="text-xl font-bold"
+                  className="text-xl font-bold flex-1 bg-zinc-800 w-full px-2 py-1 rounded-md border-b"
                   type="text"
+                  size={2}
                   value={device.name}
                   onChange={(ev) => {
                     device.name = ev.target.value;
                     emuCtx.updateState();
                   }}
-                />{" "}
-                ✏️
+                />
                 {panels.map(([k, v]) => (
                   <div key={k} className="mb-2">
                     <h2 className="text-lg font-bold">{k}</h2> <hr />
                     {v(emuCtx)}
                   </div>
                 ))}
-              </div>
+              </>
             );
           } else {
             const decal = ctx.toolRef.current.selectedDecals
@@ -341,7 +341,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
   };
 }
 
-// TODO: separate correctly args
+// TODO: separate args correctly
 function TerminalEmulator<State extends InternalState>(
   inputBar: string,
   setInputBar: (s: string) => void,
@@ -386,7 +386,7 @@ function TerminalEmulator<State extends InternalState>(
             type="text"
             value={inputBar}
             placeholder=">"
-            className="w-full bg-gray-700"
+            className="w-full bg-zinc-700 p-1"
             onKeyDown={(ev) => {
               if (ev.key != "Tab") return;
               ev.preventDefault();
