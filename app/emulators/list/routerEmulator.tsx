@@ -1,6 +1,6 @@
 import { ARPPacket } from "@/app/protocols/rfc_826";
 import { RouterInternalState } from "../../devices/list/Router";
-import { Layer2Packet, MAC_BROADCAST } from "../../protocols/802_3";
+import { Layer2Packet } from "../../protocols/802_3";
 import { ICMPPacket, ICMPType } from "../../protocols/icmp";
 import {
   getMatchingInterface,
@@ -17,7 +17,7 @@ import { arptable } from "@/app/virtualPrograms/arptable";
 import { udpSend } from "@/app/virtualPrograms/udpSend";
 import { UDPPacket } from "@/app/protocols/udp";
 import { handleArpPacket } from "../utils/handleArpPacket";
-import { sendIPv4Packet } from "../utils/sendIPv4Packet";
+import { forwardIPv4Packet, sendIPv4Packet } from "../utils/sendIPv4Packet";
 import { countLeadingOnes } from "@/app/common";
 import { Button } from "@/app/editorComponents/RoundBtn";
 import { routing } from "@/app/virtualPrograms/routing";
@@ -164,11 +164,19 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
       // Non è indirizzato a me?
       if (isDestinedInterface == -1) {
         const sendTo = getMatchingInterface(ctx.state.l3Ifs, destination);
-        // Devo (posso?) fare routing?
+        const packet = new PartialIPv4Packet(l2Packet.payload);
+        // È su una mia interfaccia?
         if (sendTo != -1 && sendTo != intf) {
-          l2Packet.from = ctx.state.netInterfaces[intf].mac;
-          l2Packet.to = MAC_BROADCAST;
-          ctx.sendOnIf(sendTo, l2Packet.toBytes());
+          forwardIPv4Packet(ctx as any, packet, packet.destination);
+        } else {
+          // Controllo le tabelle di routing
+          const nextHop = ctx.state.routingTables.find(
+            (entry) =>
+              (destination & entry.mask) == (entry.netAddr & entry.mask),
+          )?.to;
+          if (typeof nextHop != "undefined") {
+            forwardIPv4Packet(ctx as any, packet, nextHop);
+          }
         }
         return;
       }

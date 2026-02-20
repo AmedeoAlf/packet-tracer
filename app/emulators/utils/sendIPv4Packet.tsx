@@ -18,9 +18,8 @@ export function sendIPv4Packet(
   destination: IPv4Address,
   protocol: ProtocolCode,
   data: Buffer,
-  ttl: number = 255,
 ): boolean {
-  const { targetIp, intf, ok } = targetIP(ctx.state, destination);
+  const { intf, ok } = targetIP(ctx.state, destination);
   if (!ok) return false;
 
   const packet = new IPv4Packet(
@@ -28,8 +27,21 @@ export function sendIPv4Packet(
     data,
     ctx.state.l3Ifs[intf].ip,
     destination,
-    ttl,
   );
+
+  return forwardIPv4Packet(ctx, packet, packet.destination);
+}
+
+export function forwardIPv4Packet(
+  ctx: Pick<
+    EmulatorContext<L3InternalState>,
+    "state" | "sendOnIf" | "schedule"
+  >,
+  packet: IPv4Packet,
+  destinationMACFrom: IPv4Address,
+) {
+  const { targetIp, intf, ok } = targetIP(ctx.state, destinationMACFrom);
+  if (!ok) return false;
 
   if (!ctx.state.macTable.has(targetIp)) {
     ctx.sendOnIf(
@@ -43,9 +55,9 @@ export function sendIPv4Packet(
         .toBytes(),
     );
     ctx.state.packetsWaitingForARP.push(packet);
-    ctx.schedule(10, (ctx: EmulatorContext<L3InternalState>) => {
+    ctx.schedule(50, (ctx: EmulatorContext<L3InternalState>) => {
       ctx.state.packetsWaitingForARP = ctx.state.packetsWaitingForARP.filter(
-        (it) => it.destination != destination,
+        (it) => it != packet,
       );
     });
     return false;
