@@ -26,6 +26,7 @@
  * simulatore)
  */
 
+import { RouterInternalState } from "../devices/list/Router";
 import { EmulatorContext, InternalState } from "../emulators/DeviceEmulator";
 import { MacAddress } from "./802_3";
 
@@ -55,7 +56,7 @@ export type L3Interface = { ip: IPv4Address; mask: IPv4Address };
 
 // -1 on no interface
 export function getMatchingInterface(
-  interfaces: L3Interface[],
+  interfaces: (L3Interface | null)[],
   ip: IPv4Address,
 ): number {
   return interfaces.findIndex((v) => v && (v.ip & v.mask) == (ip & v.mask));
@@ -63,10 +64,10 @@ export function getMatchingInterface(
 
 type L3InternalStateProps = {
   ipPackets: Map<number, PartialIPv4Packet>;
-  l3Ifs: L3Interface[];
+  l3Ifs: (L3Interface | null)[];
   gateway: IPv4Address;
   macTable: Map<IPv4Address, MacAddress>;
-  packetsWaitingForARP: IPv4Packet[];
+  packetsWaitingForARP: Record<IPv4Address, IPv4Packet[]>;
 };
 export type L3InternalStateBase = InternalState & L3InternalStateProps;
 export type L3InternalState = InternalState & {
@@ -285,18 +286,29 @@ export class PartialIPv4Packet extends IPv4Packet {
 }
 
 export function targetIP(
-  state: L3InternalState,
+  state: L3InternalState | RouterInternalState,
   destination: IPv4Address,
 ): { intf: number; ok: boolean; targetIp: IPv4Address } {
   let targetIp = destination;
   // L'interfaccia su cui inviare il pacchetto
-  let intf = getMatchingInterface(state.l3Ifs, destination);
+  let intf = getMatchingInterface(state.l3Ifs, targetIp);
   // Il pacchetto non è su una rete disponibile -> invia al gateway
   if (intf == -1) {
-    targetIp = state.gateway;
-    intf = getMatchingInterface(state.l3Ifs, state.gateway);
-    // Il gateway è invalido
-    if (intf == -1) return { intf: 0, targetIp: 0, ok: false };
+    if ("routingTables" in state) {
+      const tableEntry = state.routingTables.find(
+        (it) => (it.netAddr & it.mask) == (targetIp & it.mask),
+      );
+      if (tableEntry) {
+        targetIp = tableEntry.to;
+        intf = getMatchingInterface(state.l3Ifs, targetIp);
+      }
+    }
+    if (intf == -1) {
+      targetIp = state.gateway;
+      intf = getMatchingInterface(state.l3Ifs, targetIp);
+      // Il gateway è invalido
+      if (intf == -1) return { intf: 0, targetIp: 0, ok: false };
+    }
   }
   return { targetIp, intf, ok: true };
 }

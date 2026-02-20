@@ -8,6 +8,7 @@ import {
 import { EmulatorContext } from "../DeviceEmulator";
 import { ARPPacket } from "@/app/protocols/rfc_826";
 import { Layer2Packet } from "@/app/protocols/802_3";
+import { filterObject } from "@/app/common";
 
 // FIXME: accept OSInternalState properly
 export function sendIPv4Packet(
@@ -25,7 +26,7 @@ export function sendIPv4Packet(
   const packet = new IPv4Packet(
     protocol,
     data,
-    ctx.state.l3Ifs[intf].ip,
+    ctx.state.l3Ifs[intf]!.ip,
     destination,
   );
 
@@ -48,16 +49,18 @@ export function forwardIPv4Packet(
       intf,
       new ARPPacket(
         ctx.state.netInterfaces[intf].mac,
-        ctx.state.l3Ifs[intf].ip,
+        ctx.state.l3Ifs[intf]!.ip,
         targetIp,
       )
         .toL2()
         .toBytes(),
     );
-    ctx.state.packetsWaitingForARP.push(packet);
+    ctx.state.packetsWaitingForARP[targetIp] ??= [];
+    ctx.state.packetsWaitingForARP[targetIp].push(packet);
     ctx.schedule(50, (ctx: EmulatorContext<L3InternalState>) => {
-      ctx.state.packetsWaitingForARP = ctx.state.packetsWaitingForARP.filter(
-        (it) => it != packet,
+      ctx.state.packetsWaitingForARP = filterObject(
+        ctx.state.packetsWaitingForARP,
+        ([ip]) => +ip != targetIp,
       );
     });
     return false;

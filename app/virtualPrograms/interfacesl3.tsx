@@ -15,10 +15,9 @@ export const interfacesL3 = {
       ctx.state.netInterfaces
         .map((l2Intf, idx) => {
           const l3Intf = ctx.state.l3Ifs.at(idx);
-          const ip =
-            l3Intf !== undefined
-              ? `${ipv4ToString(l3Intf.ip)} ${ipv4ToString(l3Intf.mask)}`
-              : "No ip";
+          const ip = l3Intf
+            ? `${ipv4ToString(l3Intf.ip)} ${ipv4ToString(l3Intf.mask)}`
+            : "No ip";
           return `${l2Intf.name} ${l2Intf.type} ${l2Intf.maxMbps}Mbps ${MACToString(l2Intf.mac)} ${ip}`;
         })
         .join("\n"),

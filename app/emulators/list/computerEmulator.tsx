@@ -18,6 +18,7 @@ import { sendIPv4Packet } from "../utils/sendIPv4Packet";
 import { tcphello } from "@/app/virtualPrograms/tcpsend";
 import { tcplisten } from "@/app/virtualPrograms/tcplisten";
 import { curl } from "@/app/virtualPrograms/curl";
+import { gatewayCmd } from "@/app/virtualPrograms/gateway";
 
 export type OSUDPPacket = {
   from: IPv4Address;
@@ -52,6 +53,7 @@ export const computerEmulator: DeviceEmulator<OSInternalState> = {
         tcphello,
         tcplisten,
         curl,
+        gateway: gatewayCmd,
       },
     },
   },

@@ -21,6 +21,7 @@ import { forwardIPv4Packet, sendIPv4Packet } from "../utils/sendIPv4Packet";
 import { countLeadingOnes } from "@/app/common";
 import { Button } from "@/app/editorComponents/RoundBtn";
 import { routing } from "@/app/virtualPrograms/routing";
+import { gatewayCmd } from "@/app/virtualPrograms/gateway";
 
 export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   configPanel: {
@@ -161,10 +162,11 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         (v) => v && v.ip == destination,
       );
 
+      let packet = new PartialIPv4Packet(l2Packet.payload);
+
       // Non è indirizzato a me?
       if (isDestinedInterface == -1) {
         const sendTo = getMatchingInterface(ctx.state.l3Ifs, destination);
-        const packet = new PartialIPv4Packet(l2Packet.payload);
         // È su una mia interfaccia?
         if (sendTo != -1 && sendTo != intf) {
           forwardIPv4Packet(ctx as any, packet, packet.destination);
@@ -181,7 +183,6 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         return;
       }
 
-      let packet = new PartialIPv4Packet(l2Packet.payload);
       if (!packet.isPayloadFinished()) {
         const packets = ctx.state.ipPackets;
         if (!ctx.state.ipPackets.has(packet.id)) {
@@ -210,14 +211,17 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
                 ProtocolCode.icmp,
                 ICMPPacket.echoResponse(icmpPacket).toBytes(),
               );
+              break;
             default:
               if (ctx.state.rawSocketFd)
                 ctx.state.rawSocketFd(ctx as any, packet);
           }
+          break;
         case ProtocolCode.udp:
           const udpPacket = UDPPacket.fromBytes(packet.payload);
           if (ctx.state.udpSocket)
             ctx.state.udpSocket(udpPacket, packet.source);
+          break;
       }
       ctx.updateState();
     } catch (e) {
@@ -234,6 +238,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         arptable,
         "udp-send": udpSend,
         routing,
+        gateway: gatewayCmd as any,
       },
     },
   },

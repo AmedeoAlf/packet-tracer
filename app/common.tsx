@@ -1,7 +1,5 @@
 "use client";
 
-import { off } from "process";
-
 export type Coords = [x: number, y: number];
 
 export function areArraysShallowEqual<T>(a: T[], b: T[]): boolean {
@@ -100,4 +98,18 @@ export function countLeadingOnes(n: number): number {
 
 export function i32WithLeadingOnes(amount: number): number {
   return ((1 << amount) - 1) << (32 - amount);
+}
+
+export function mapObject<T extends object>(
+  obj: T,
+  map: (val: [string, T[any]]) => [string, T[any]],
+) {
+  return Object.fromEntries(Object.entries(obj).map(map));
+}
+
+export function filterObject<T extends object>(
+  obj: T,
+  filter: (val: [string, T[any]]) => boolean,
+) {
+  return Object.fromEntries(Object.entries(obj).filter(filter));
 }
