@@ -52,8 +52,8 @@ export const SideBar = memo(
           }
           style={{ width }}
         >
-          <div className="bg-zinc-900 p-4 border-zinc-500 border-2 w-full pl-5 rounded-xl pointer-events-auto overflow-y-auto h-max max-h-full">
-            <div className="absolute top-0 left-4 h-full py-4">
+          <div className="bg-zinc-900 p-4 border-zinc-500 border-2 w-full pl-5 rounded-xl pointer-events-auto overflow-y-auto h-max max-h-full relative">
+            <div className="absolute top-0 left-0 h-full py-4">
               <div
                 id="sidebarResizeHandle"
                 className="w-3 z-1 h-full select-none box-border flex items-center justify-center group"
