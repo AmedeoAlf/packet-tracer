@@ -47,12 +47,12 @@ export const SideBar = memo(
       <>
         <div
           className={
-            "transition fixed top-[50px] max-h-(--h-spec-cont) right-0 p-3 pointer-events-none " +
+            "transition fixed top-[50px] h-(--h-spec-cont) right-0 p-3 pointer-events-none " +
             (panel && open ? "" : "translate-x-full")
           }
           style={{ width }}
         >
-          <div className="bg-zinc-900 p-4 border-zinc-500 border-2 w-full pl-5 rounded-xl pointer-events-auto">
+          <div className="bg-zinc-900 p-4 border-zinc-500 border-2 w-full pl-5 rounded-xl pointer-events-auto overflow-y-auto h-max max-h-full">
             <div className="absolute top-0 left-4 h-full py-4">
               <div
                 id="sidebarResizeHandle"
