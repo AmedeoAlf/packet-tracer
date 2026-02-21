@@ -24,8 +24,6 @@ export const Server: DeviceFactory<OSInternalState> = {
       trustMeBroCast<Device>(this);
       return removeTempFields({
         ...serializeL3InternalState(this.internalState as L3InternalState),
-        udpSockets: undefined,
-        tcpSockets: undefined,
       });
     },
     deserializeState(o) {
@@ -45,8 +43,8 @@ export const Server: DeviceFactory<OSInternalState> = {
         { name: "if0", maxMbps: 100, type: "copper", mac: randomMAC() },
       ],
       filesystem: deepCopy(defaultServerFS),
-      udpSockets: new Map(),
-      tcpSockets: new Map(),
+      udpSockets_t: new Map(),
+      tcpSockets_t: new Map(),
     };
   },
 };

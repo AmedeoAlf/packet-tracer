@@ -26,7 +26,7 @@ export const tcphello = {
         });
         ctx.schedule(50, (ctx) => {
           const state = ctx.state as OSInternalState;
-          if (!state.tcpSockets.has(socket)) return;
+          if (!state.tcpSockets_t.has(socket)) return;
           ctx.write("Could not establish/terminate connection");
           close(ctx, socket);
         });

@@ -66,7 +66,7 @@ export function computerPacketHandler(
   switch (packet.protocol) {
     case ProtocolCode.udp:
       const udpPacket = UDPPacket.fromBytes(packet.payload);
-      const completed = ctx.state.udpSockets
+      const completed = ctx.state.udpSockets_t
         .get(udpPacket.destination)
         ?.call(null, [
           ctx,
@@ -77,7 +77,7 @@ export function computerPacketHandler(
             payload: udpPacket.payload,
           },
         ]);
-      if (completed) ctx.state.udpSockets.delete(udpPacket.destination);
+      if (completed) ctx.state.udpSockets_t.delete(udpPacket.destination);
       break;
     case ProtocolCode.tcp:
       tcpPacketHandler(ctx, packet);
@@ -93,11 +93,11 @@ export function tcpPacketHandler(
   if (packet.protocol !== ProtocolCode.tcp)
     throw "Why did this function get a non tcp packet?";
   const tcpPacket = TCPPacket.fromBytes(packet.payload);
-  const connectionState = ctx.state.tcpSockets.get(tcpPacket.destination);
+  const connectionState = ctx.state.tcpSockets_t.get(tcpPacket.destination);
   if (!connectionState) return;
 
   const destroySocket = () => {
-    ctx.state.tcpSockets.delete(tcpPacket.destination);
+    ctx.state.tcpSockets_t.delete(tcpPacket.destination);
   };
   const osCallback = () =>
     connectionState.callback(ctx, tcpPacket.destination, tcpPacket.payload);
@@ -113,7 +113,7 @@ export function tcpPacketHandler(
     case "listen": {
       if (!tcpPacket.syn || tcpPacket.ack !== undefined) return destroySocket();
       const answer = TCPPacket.synAckPacket(tcpPacket);
-      ctx.state.tcpSockets.set(tcpPacket.destination, {
+      ctx.state.tcpSockets_t.set(tcpPacket.destination, {
         state: "syn_recved",
         address: packet.source,
         callback: connectionState.callback,
@@ -144,7 +144,7 @@ export function tcpPacketHandler(
       if (tcpPacket.fin) {
         connectionState.state = "closing";
         osCallback();
-        ctx.state.tcpSockets.set(tcpPacket.destination, {
+        ctx.state.tcpSockets_t.set(tcpPacket.destination, {
           state: "listen",
           callback: connectionState.callback,
         });

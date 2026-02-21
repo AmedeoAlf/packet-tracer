@@ -42,8 +42,8 @@ export function recvIPv4Packet(
 
     let packet = new PartialIPv4Packet(l2Packet.payload);
     if (!packet.isPayloadFinished()) {
-      const packets = ctx.state.ipPackets;
-      if (!ctx.state.ipPackets.has(packet.id)) {
+      const packets = ctx.state.ipPackets_t;
+      if (!ctx.state.ipPackets_t.has(packet.id)) {
         packets.set(packet.id, packet);
       } else {
         packets.get(packet.id)!.add(l2Packet.payload);
@@ -69,7 +69,8 @@ export function recvIPv4Packet(
             ICMPPacket.echoResponse(icmpPacket).toBytes(),
           );
         default:
-          if (ctx.state.rawSocketFd) ctx.state.rawSocketFd(ctx as any, packet);
+          if (ctx.state.rawSocketFd_t)
+            ctx.state.rawSocketFd_t(ctx as any, packet);
       }
       return;
     }

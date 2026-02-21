@@ -7,7 +7,7 @@ export const arptable = {
   done: true,
   run: (ctx: EmulatorContext<L3InternalStateBase>) =>
     ctx.write(
-      ctx.state.macTable
+      ctx.state.macTable_t
         .entries()
         .map(
           ([ip, mac]) =>

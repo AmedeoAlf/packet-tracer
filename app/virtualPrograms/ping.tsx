@@ -27,14 +27,14 @@ export const ping = {
       }
       const start = ctx.currTick;
       let done = false;
-      ctx.state.rawSocketFd = (ctx, packet) => {
+      ctx.state.rawSocketFd_t = (ctx, packet) => {
         done = true;
         const seq = ICMPPacket.fromBytes(packet.payload).echoResponseHeader()
           .seq;
         ctx.write(
           `From ${ipv4ToString(packet.source)}: icmp_seq=${seq} ttl=${packet.ttl} time=${ctx.currTick - start} ms`,
         );
-        ctx.state.rawSocketFd = undefined;
+        ctx.state.rawSocketFd_t = undefined;
       };
       const req = ICMPPacket.echoRequest(0, 0, Buffer.alloc(0)).toBytes();
       sendIPv4Packet(ctx, addr, ProtocolCode.icmp, req);

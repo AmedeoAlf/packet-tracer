@@ -99,8 +99,8 @@ export function serverPacketHandler(
   switch (packet.protocol) {
     case ProtocolCode.udp:
       const udpPacket = UDPPacket.fromBytes(packet.payload);
-      if (ctx.state.udpSockets.has(udpPacket.destination)) {
-        const completed = ctx.state.udpSockets
+      if (ctx.state.udpSockets_t.has(udpPacket.destination)) {
+        const completed = ctx.state.udpSockets_t
           .get(udpPacket.destination)!
           .call(null, [
             ctx,
@@ -111,7 +111,7 @@ export function serverPacketHandler(
               payload: udpPacket.payload,
             },
           ]);
-        if (completed) ctx.state.udpSockets.delete(udpPacket.destination);
+        if (completed) ctx.state.udpSockets_t.delete(udpPacket.destination);
       }
       break;
     case ProtocolCode.tcp:

@@ -15,9 +15,9 @@ export function readUDP(
 ) {
   if (port === undefined) {
     port = 0xc000;
-    while (state.udpSockets.has(++port));
+    while (state.udpSockets_t.has(++port));
   }
-  state.udpSockets.set(port, callback);
+  state.udpSockets_t.set(port, callback);
   return port;
 }
 
@@ -26,7 +26,7 @@ export function listenAndAcceptTCP(
   port: number,
   onAccept: TCPCallback,
 ) {
-  state.tcpSockets.set(port, { state: "listen", callback: onAccept });
+  state.tcpSockets_t.set(port, { state: "listen", callback: onAccept });
   return port;
 }
 
@@ -37,10 +37,10 @@ export function dialTCP(
   onConnect: TCPCallback,
 ): number {
   let sourcePort = 0xc000;
-  while (ctx.state.tcpSockets.has(++sourcePort));
+  while (ctx.state.tcpSockets_t.has(++sourcePort));
 
   const synPacket = TCPPacket.synPacket(sourcePort, port);
-  ctx.state.tcpSockets.set(sourcePort, {
+  ctx.state.tcpSockets_t.set(sourcePort, {
     state: "syn_sent",
     callback: onConnect,
     address,
@@ -60,7 +60,7 @@ export function recv(
   socket: number,
   callback: (ctx: EmulatorContext<OSInternalState>, data: Buffer) => void,
 ): boolean {
-  const sock = state.tcpSockets.get(socket);
+  const sock = state.tcpSockets_t.get(socket);
   if (!sock) return false;
   if (sock.state != "accepted" && sock.state != "connected") return false;
   sock.callback = (ctx, _, payload) => callback(ctx, payload);
@@ -72,7 +72,7 @@ export function send(
   socket: number,
   payload: Buffer,
 ) {
-  const connection = ctx.state.tcpSockets.get(socket);
+  const connection = ctx.state.tcpSockets_t.get(socket);
   if (!connection) return;
   if (connection.state != "accepted" && connection.state != "connected") return;
   connection.seq += 1;
@@ -91,7 +91,7 @@ export function send(
 }
 
 export function close(ctx: EmulatorContext<OSInternalState>, socket: number) {
-  const connection = ctx.state.tcpSockets.get(socket);
+  const connection = ctx.state.tcpSockets_t.get(socket);
   if (!connection) return;
   if (connection.state != "listen") {
     sendIPv4Packet(
@@ -109,5 +109,5 @@ export function close(ctx: EmulatorContext<OSInternalState>, socket: number) {
       ).toBytes(),
     );
   }
-  ctx.state.tcpSockets.delete(socket);
+  ctx.state.tcpSockets_t.delete(socket);
 }

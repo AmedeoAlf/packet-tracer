@@ -67,9 +67,9 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
             <input
               type="text"
               placeholder="1.1.1.0/24"
-              value={ctx.state.rt_networkInput ?? ""}
+              value={ctx.state.rtNetworkInput_t ?? ""}
               onChange={(ev) => {
-                ctx.state.rt_networkInput = ev.target.value;
+                ctx.state.rtNetworkInput_t = ev.target.value;
                 ctx.updateState();
               }}
             />
@@ -78,9 +78,9 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
             <input
               type="text"
               placeholder="10.1.1.2"
-              value={ctx.state.rt_toInput ?? ""}
+              value={ctx.state.rtDestinationInput_t ?? ""}
               onChange={(ev) => {
-                ctx.state.rt_toInput = ev.target.value;
+                ctx.state.rtDestinationInput_t = ev.target.value;
                 ctx.updateState();
               }}
             />
@@ -90,8 +90,8 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
                 ctx.args = [
                   "routing",
                   "add",
-                  ctx.state.rt_networkInput ?? "",
-                  ctx.state.rt_toInput ?? "",
+                  ctx.state.rtNetworkInput_t ?? "",
+                  ctx.state.rtDestinationInput_t ?? "",
                 ];
                 ctx.write("> " + ctx.args.join(" "));
                 runOnInterpreter(ctx);
@@ -184,8 +184,8 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
       }
 
       if (!packet.isPayloadFinished()) {
-        const packets = ctx.state.ipPackets;
-        if (!ctx.state.ipPackets.has(packet.id)) {
+        const packets = ctx.state.ipPackets_t;
+        if (!ctx.state.ipPackets_t.has(packet.id)) {
           packets.set(packet.id, packet);
         } else {
           packets.get(packet.id)!.add(l2Packet.payload);
@@ -213,14 +213,14 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
               );
               break;
             default:
-              if (ctx.state.rawSocketFd)
-                ctx.state.rawSocketFd(ctx as any, packet);
+              if (ctx.state.rawSocketFd_t)
+                ctx.state.rawSocketFd_t(ctx as any, packet);
           }
           break;
         case ProtocolCode.udp:
           const udpPacket = UDPPacket.fromBytes(packet.payload);
-          if (ctx.state.udpSocket)
-            ctx.state.udpSocket(udpPacket, packet.source);
+          if (ctx.state.udpSocket_t)
+            ctx.state.udpSocket_t(udpPacket, packet.source);
           break;
       }
       ctx.updateState();

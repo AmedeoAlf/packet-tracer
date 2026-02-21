@@ -44,7 +44,7 @@ export function forwardIPv4Packet(
   const { targetIp, intf, ok } = targetIP(ctx.state, destinationMACFrom);
   if (!ok) return false;
 
-  if (!ctx.state.macTable.has(targetIp)) {
+  if (!ctx.state.macTable_t.has(targetIp)) {
     ctx.sendOnIf(
       intf,
       new ARPPacket(
@@ -55,11 +55,11 @@ export function forwardIPv4Packet(
         .toL2()
         .toBytes(),
     );
-    ctx.state.packetsWaitingForARP[targetIp] ??= [];
-    ctx.state.packetsWaitingForARP[targetIp].push(packet);
+    ctx.state.packetsWaitingForARP_t[targetIp] ??= [];
+    ctx.state.packetsWaitingForARP_t[targetIp].push(packet);
     ctx.schedule(50, (ctx: EmulatorContext<L3InternalState>) => {
-      ctx.state.packetsWaitingForARP = filterObject(
-        ctx.state.packetsWaitingForARP,
+      ctx.state.packetsWaitingForARP_t = filterObject(
+        ctx.state.packetsWaitingForARP_t,
         ([ip]) => +ip != targetIp,
       );
     });
@@ -73,7 +73,7 @@ export function forwardIPv4Packet(
       new Layer2Packet(
         p,
         ctx.state.netInterfaces[intf].mac,
-        ctx.state.macTable.get(targetIp),
+        ctx.state.macTable_t.get(targetIp),
       ).toBytes(),
     );
   }

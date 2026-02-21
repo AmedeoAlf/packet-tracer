@@ -70,7 +70,8 @@ export default function Home() {
       isSaved={isSaved}
       save={(proj) => {
         setIsSaved(false);
-        localStorage.setItem("project", JSON.stringify(proj.exportProject()));
+        const exported = proj.exportProject();
+        localStorage.setItem("project", JSON.stringify(exported));
         setIsSaved(true);
         // navigator
         //   .clipboard

@@ -41,8 +41,8 @@ export type TCPConnectionState =
 
 export type OSInternalState = L3InternalState & {
   filesystem: OSDir;
-  udpSockets: Map<number, (params: UDPCallbackParams) => boolean>;
-  tcpSockets: Map<number, TCPConnectionState>;
+  udpSockets_t: Map<number, (params: UDPCallbackParams) => boolean>;
+  tcpSockets_t: Map<number, TCPConnectionState>;
 };
 
 export const Computer: DeviceFactory<OSInternalState> = {
@@ -55,8 +55,6 @@ export const Computer: DeviceFactory<OSInternalState> = {
       const state = this.internalState as OSInternalState;
       return removeTempFields({
         ...serializeL3InternalState(state as L3InternalState),
-        udpSockets: undefined,
-        tcpSockets: undefined,
       });
     },
     // FIXME: check if this is right
@@ -75,8 +73,8 @@ export const Computer: DeviceFactory<OSInternalState> = {
         { name: "if0", maxMbps: 100, type: "copper", mac: randomMAC() },
       ],
       filesystem: {},
-      udpSockets: new Map(),
-      tcpSockets: new Map(),
+      udpSockets_t: new Map(),
+      tcpSockets_t: new Map(),
     };
   },
 };
