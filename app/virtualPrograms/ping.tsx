@@ -38,7 +38,8 @@ export const ping = {
       };
       const req = ICMPPacket.echoRequest(0, 0, Buffer.alloc(0)).toBytes();
       sendIPv4Packet(ctx, addr, ProtocolCode.icmp, req);
-      ctx.schedule(15, (ctx) => {
+      ctx.schedule(100, (ctx) => {
+        ctx.state.rawSocketFd_t = undefined;
         if (!done) {
           ctx.write("Request timeout");
         }
