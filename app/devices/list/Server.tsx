@@ -13,6 +13,7 @@ import {
   serializeL3InternalState,
 } from "@/app/protocols/rfc_760";
 import { deepCopy, trustMeBroCast } from "@/app/common";
+import { removeTempFields } from "@/app/ProjectManager";
 
 export const Server: DeviceFactory<OSInternalState> = {
   proto: {
@@ -21,13 +22,11 @@ export const Server: DeviceFactory<OSInternalState> = {
     deviceType: "server",
     serializeState() {
       trustMeBroCast<Device>(this);
-      const state = this.internalState as OSInternalState;
-      return {
-        ...state,
-        ...serializeL3InternalState(state as L3InternalState),
+      return removeTempFields({
+        ...serializeL3InternalState(this.internalState as L3InternalState),
         udpSockets: undefined,
         tcpSockets: undefined,
-      };
+      });
     },
     deserializeState(o) {
       const state = {

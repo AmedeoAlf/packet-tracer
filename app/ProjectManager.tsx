@@ -7,6 +7,7 @@ import {
   PrimitiveType,
   arraySwap,
   trustMeBroCast,
+  filterObject,
 } from "./common";
 import { Device, makeDevice } from "./devices/Device";
 import { DeviceType, deviceTypesDB } from "./devices/deviceTypesDB";
@@ -302,7 +303,8 @@ export class ProjectManager {
       proj.devices[id] = {
         ...dev,
         type: dev.deviceType,
-        internalState: dev.serializeState?.() ?? dev.internalState,
+        internalState:
+          dev.serializeState?.() ?? removeTempFields(dev.internalState),
       };
     });
     return proj;
@@ -450,4 +452,8 @@ export class ProjectManager {
     this.callbacks = old.callbacks;
     this.project = { ...old.project };
   }
+}
+
+export function removeTempFields<T extends object>(obj: T): T {
+  return filterObject(obj, ([k]) => !k.endsWith("_t")) as T;
 }

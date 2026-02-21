@@ -14,6 +14,7 @@ import {
 import { EmulatorContext } from "@/app/emulators/DeviceEmulator";
 import { OSDir } from "@/app/emulators/utils/osFiles";
 import { trustMeBroCast } from "@/app/common";
+import { removeTempFields } from "@/app/ProjectManager";
 
 export type UDPCallbackParams = [
   ctx: EmulatorContext<OSInternalState>,
@@ -52,12 +53,11 @@ export const Computer: DeviceFactory<OSInternalState> = {
     serializeState() {
       trustMeBroCast<Device>(this);
       const state = this.internalState as OSInternalState;
-      return {
-        ...state,
+      return removeTempFields({
         ...serializeL3InternalState(state as L3InternalState),
         udpSockets: undefined,
         tcpSockets: undefined,
-      };
+      });
     },
     // FIXME: check if this is right
     deserializeState(o) {

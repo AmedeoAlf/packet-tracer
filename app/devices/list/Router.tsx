@@ -11,6 +11,7 @@ import {
 } from "../../protocols/rfc_760";
 import { Device, DeviceFactory } from "../Device";
 import { trustMeBroCast } from "@/app/common";
+import { removeTempFields } from "@/app/ProjectManager";
 
 export type RoutingTableEntry = {
   netAddr: IPv4Address;
@@ -31,12 +32,11 @@ export const Router: DeviceFactory<RouterInternalState> = {
   proto: {
     serializeState() {
       trustMeBroCast<Device>(this);
-      return {
-        ...this.internalState,
+      return removeTempFields({
         ...serializeL3InternalState(this.internalState as L3InternalState),
         rt_toInput: undefined,
         rt_networkInput: undefined,
-      };
+      });
     },
     deserializeState(o) {
       return {
