@@ -1,20 +1,16 @@
 import {
   defaultL3InternalState,
-  deserializeL3InternalState,
   IPv4Address,
   L3InternalState,
-  serializeL3InternalState,
 } from "@/app/protocols/rfc_760";
 import { randomMAC } from "../../protocols/802_3";
-import { Device, DeviceFactory } from "../Device";
+import { DeviceFactory } from "../Device";
 import {
   computerEmulator,
   OSUDPPacket,
 } from "@/app/emulators/list/computerEmulator";
 import { EmulatorContext } from "@/app/emulators/DeviceEmulator";
 import { OSDir } from "@/app/emulators/utils/osFiles";
-import { trustMeBroCast } from "@/app/common";
-import { removeTempFields } from "@/app/ProjectManager";
 
 export type UDPCallbackParams = [
   ctx: EmulatorContext<OSInternalState>,
@@ -50,20 +46,6 @@ export const Computer: DeviceFactory<OSInternalState> = {
     iconId: "#pc-icon",
     emulator: computerEmulator,
     deviceType: "computer",
-    serializeState() {
-      trustMeBroCast<Device>(this);
-      const state = this.internalState as OSInternalState;
-      return removeTempFields({
-        ...serializeL3InternalState(state as L3InternalState),
-      });
-    },
-    // FIXME: check if this is right
-    deserializeState(o) {
-      return {
-        ...Computer.defaultState(),
-        ...deserializeL3InternalState(o),
-      };
-    },
   },
 
   defaultState() {

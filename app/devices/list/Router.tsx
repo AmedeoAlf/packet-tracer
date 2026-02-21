@@ -4,14 +4,10 @@ import { routerEmulator } from "../../emulators/list/routerEmulator";
 import { randomMAC } from "../../protocols/802_3";
 import {
   defaultL3InternalState,
-  deserializeL3InternalState,
   IPv4Address,
   L3InternalState,
-  serializeL3InternalState,
 } from "../../protocols/rfc_760";
-import { Device, DeviceFactory } from "../Device";
-import { trustMeBroCast } from "@/app/common";
-import { removeTempFields } from "@/app/ProjectManager";
+import { DeviceFactory } from "../Device";
 
 export type RoutingTableEntry = {
   netAddr: IPv4Address;
@@ -30,18 +26,6 @@ export type RouterInternalState = L3InternalState & {
 
 export const Router: DeviceFactory<RouterInternalState> = {
   proto: {
-    serializeState() {
-      trustMeBroCast<Device>(this);
-      return removeTempFields({
-        ...serializeL3InternalState(this.internalState as L3InternalState),
-      });
-    },
-    deserializeState(o) {
-      return {
-        ...Router.defaultState(),
-        ...deserializeL3InternalState(o),
-      };
-    },
     iconId: "#router-icon",
     emulator: routerEmulator,
     deviceType: "router",

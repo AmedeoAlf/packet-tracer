@@ -88,43 +88,6 @@ export function defaultL3InternalState(): L3InternalStateBase {
   };
 }
 
-export function serializeL3InternalState(s: L3InternalState) {
-  return {
-    ...s,
-    macTable: Object.fromEntries(s.macTable_t.entries()),
-    ipPackets: Object.fromEntries(s.ipPackets_t.entries()),
-  };
-}
-
-export function deserializeL3InternalState(
-  o: Record<string, unknown>,
-): L3InternalStateBase {
-  const s = {
-    ...defaultL3InternalState(),
-    ...o,
-  };
-
-  // FIXME: properties are likely not present anymore
-  function setIf<K extends keyof L3InternalStateBase>(
-    prop: K,
-    transform: (v: any) => undefined | L3InternalStateBase[K],
-  ) {
-    if (prop in o) s[prop] = transform(o[prop]) ?? s[prop];
-  }
-
-  setIf(
-    "macTable_t",
-    (v) => new Map(Object.entries(v).map(([k, v]) => [+k, +(v as string)])),
-  );
-  setIf(
-    "ipPackets_t",
-    (v) =>
-      new Map(Object.entries(v).map(([k, v]) => [+k, v as PartialIPv4Packet])),
-  );
-
-  return s;
-}
-
 export enum ProtocolCode {
   "icmp" = 1,
   "tcp" = 6,
