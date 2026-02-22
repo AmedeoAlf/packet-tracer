@@ -22,7 +22,7 @@ import { ToolSelector } from "./editorComponents/ToolSelector";
 import { Devices } from "./editorComponents/Devices";
 import { ProjectManager } from "./ProjectManager";
 import { Decal } from "./Project";
-import { TopBarBtns, TopBarBtnsParams } from "./editorComponents/TopBarBtns";
+import { TopBarBtns } from "./editorComponents/TopBarBtns";
 import { Coords } from "./common";
 
 /*
@@ -128,9 +128,6 @@ export function Editor({
     projectRef.current.advanceTickToCallback(toolCtx);
   });
 
-  const tbbp: TopBarBtnsParams = useRef({ ctx: toolCtx, setProject });
-  tbbp.current = { ctx: toolCtx, setProject };
-
   const currProject = projectRef.current;
   return (
     <div
@@ -139,7 +136,7 @@ export function Editor({
       tabIndex={0}
     >
       <div className="bg-sky-700 fixed top-0 w-full h-[50px] indent-1.5em border-b-[.1em] border-solid border-sky-800 flex items-center px-1">
-        <TopBarBtns ref={tbbp} />
+        <TopBarBtns ctx={toolCtx} />
 
         <p className="inline ml-3">
           {!shouldSave && isSaved ? "Salvato" : "Salvataggio in corso"}

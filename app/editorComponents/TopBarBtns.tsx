@@ -1,44 +1,37 @@
-import { memo, RefObject } from "react";
+import { memo } from "react";
 import { ToolCtx } from "../tools/Tool";
 import { ProjectManager } from "../ProjectManager";
 import { BtnArray, BtnArrEl } from "./BtnArray";
 
-export type TopBarBtnsParams = RefObject<{
-  ctx: ToolCtx<any>;
-  setProject: (p: ProjectManager) => void;
-}>;
-
 export const TopBarBtns = memo(function TopBarBtns({
-  ref,
+  ctx,
 }: {
-  ref: TopBarBtnsParams;
+  ctx: ToolCtx<any>;
 }) {
   return (
     <BtnArray>
       <BtnArrEl
-        onClick={() =>
-          ref.current.ctx.project.advanceTickToCallback(ref.current.ctx)
-        }
+        onClick={() => ctx.projectRef.current.advanceTickToCallback(ctx)}
       >
         Advance
       </BtnArrEl>
       <BtnArrEl
         onClick={() =>
           navigator.clipboard.writeText(
-            JSON.stringify(ref.current.ctx.project.exportProject()),
+            JSON.stringify(ctx.projectRef.current.exportProject()),
           )
         }
       >
         Salva
       </BtnArrEl>
       <BtnArrEl
-        onClick={async () =>
-          ref.current.setProject(
-            ProjectManager.fromSerialized(
-              JSON.parse(await navigator.clipboard.readText()),
-            ),
-          )
-        }
+        onClick={async () => {
+          const ref = ctx.projectRef;
+          ref.current = ProjectManager.fromSerialized(
+            JSON.parse(await navigator.clipboard.readText()),
+          );
+          ctx.updateProject();
+        }}
       >
         Carica
       </BtnArrEl>
