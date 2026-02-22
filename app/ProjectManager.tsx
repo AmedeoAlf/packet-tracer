@@ -160,7 +160,10 @@ export class ProjectManager {
     this.lastCables = undefined;
   }
   // Maps two deviceIds to the amount of connections between them
-  getCables(): Map<number, Pick<NetworkInterface, "maxMbps" | "type">[]> {
+  getCables(): Map<
+    number,
+    (Pick<NetworkInterface, "maxMbps" | "type"> & { intf: [number, number] })[]
+  > {
     if (this.lastCables) return this.lastCables;
     const cabled = new Set<number>();
     const cableToOccurencies: ReturnType<ProjectManager["getCables"]> =
@@ -182,6 +185,7 @@ export class ProjectManager {
           ifA.maxMbps,
           ifB.maxMbps,
         ) as NetworkInterface["maxMbps"],
+        intf: conn.map((it) => idxOfIntf(it)) as [number, number],
       });
     }
     this.lastCables = cableToOccurencies;

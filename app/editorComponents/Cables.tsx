@@ -2,6 +2,7 @@ import { memo, ReactNode } from "react";
 import { Project } from "../Project";
 import { NetworkInterface } from "../emulators/DeviceEmulator";
 import { ProjectManager } from "../ProjectManager";
+import { Device } from "../devices/Device";
 
 export const Cables = memo(function Cables({
   cables,
@@ -52,6 +53,52 @@ export const Cables = memo(function Cables({
             });
           })
           .map((props, idx) => <line {...props} key={idx} strokeWidth="1pt" />),
+      ]}
+      {[
+        ...cables.entries().map(([fromTo, cables]) => {
+          const a = devices.get(fromTo >> 16)!;
+          const b = devices.get(fromTo & 0xffff)!;
+
+          const dx = a.pos[0] - b.pos[0];
+          const dy = a.pos[1] - b.pos[1];
+          const cableLen = Math.sqrt(dx * dx + dy * dy);
+
+          const postFixPlus = cables.length == 1 ? "" : "+";
+
+          function Label({
+            device,
+            idxOfIntfOfCable: idx,
+          }: {
+            device: Device;
+            idxOfIntfOfCable: number;
+          }) {
+            const text =
+              device.internalState.netInterfaces[cables[0].intf[idx]].name +
+              postFixPlus;
+            const len = ((idx == 0 ? -1 : 1) * cableLen) / 45;
+            return (
+              <foreignObject
+                x={device.pos[0] + dx / len - 15}
+                y={device.pos[1] + dy / len}
+                width={35}
+                height={20}
+              >
+                <div className="w-full text-sm text-center bg-slate-800/70 rounded-sm truncate">
+                  {" "}
+                  {text}{" "}
+                </div>
+              </foreignObject>
+            );
+          }
+
+          // C'è un solo cavo tra due dispositivi, caso facile
+          return (
+            <g key={fromTo}>
+              <Label device={a} idxOfIntfOfCable={0} />
+              <Label device={b} idxOfIntfOfCable={1} />
+            </g>
+          );
+        }),
       ]}
     </g>
   );
