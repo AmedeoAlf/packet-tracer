@@ -113,3 +113,6 @@ export function filterObject<T extends object>(
 ) {
   return Object.fromEntries(Object.entries(obj).filter(filter));
 }
+
+export type MapRecord<M extends Map<any, any>> =
+  M extends Map<any, infer I> ? I : never;
