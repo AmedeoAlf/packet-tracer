@@ -4,6 +4,7 @@ import { Tool, ToolCtx } from "./Tool";
 export type LabelTool = Tool<{
   currInput?: {
     text: string;
+    fg: string;
     pos: Coords;
   };
 }>;
@@ -26,7 +27,7 @@ export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
     panel: (ctx) => {
       if (!ctx.tool.currInput) return;
       return (
-        <div className="w-full p-2">
+        <>
           <div className="rounded-md font-bold px-2 p-2 bg-gray-700 text-gray-400 text-center w-full">
             Contenuto: <br />
             <textarea
@@ -41,8 +42,19 @@ export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
               }}
               autoFocus
             />
+            <div className="flex items-center">
+              <p>Colore:</p>
+              <input
+                type="color"
+                value={ctx.tool.currInput.fg ?? "#000"}
+                onChange={(ev) => {
+                  ctx.toolRef.current.currInput!.fg = ev.target.value;
+                  ctx.updateTool();
+                }}
+              />
+            </div>
           </div>
-        </div>
+        </>
       );
     },
     onEvent: (ctx, ev) => {
@@ -52,8 +64,7 @@ export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
             finalizeCurrinput(ctx);
           } else if (ev.decal && ev.decal.type == "text") {
             ctx.toolRef.current.currInput = {
-              text: ev.decal.text,
-              pos: ev.decal.pos,
+              ...ev.decal,
             };
             ctx.projectRef.current.removeDecal(ev.decal.id);
             ctx.updateProject();
@@ -61,6 +72,7 @@ export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
             ctx.toolRef.current.currInput = {
               text: "",
               pos: ev.pos,
+              fg: "#fff",
             };
           }
           ctx.updateTool();
@@ -70,8 +82,13 @@ export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
     svgElements: ({ tool }) => {
       if (tool.currInput) {
         return (
-          <text x={tool.currInput.pos[0]} y={tool.currInput.pos[1]}>
-            {tool.currInput.text}
+          <text
+            x={tool.currInput.pos[0]}
+            y={tool.currInput.pos[1]}
+            fill={tool.currInput.fg ?? "#fff"}
+            textDecoration="underline"
+          >
+            {tool.currInput.text || "|"}
           </text>
         );
       }

@@ -336,7 +336,8 @@ const Decals = memo(function Decals({
             x={d.pos[0]}
             y={d.pos[1]}
             {...data}
-            fill={highlighted && highlighted(d) ? "#555" : "#000"}
+            fill={d.fg}
+            className={highlighted && highlighted(d) ? "opacity-50" : ""}
           >
             {d.text}
           </text>

@@ -10,6 +10,7 @@ export type DecalData = {
   | {
       type: "text";
       text: string;
+      fg: string;
     }
   | {
       type: "rect";
