@@ -62,7 +62,7 @@ export function Editor({
     },
     revertTool() {
       if (lastTool == toolCtx.tool.toolname) return;
-      toolRef.current = TOOLS[lastTool](toolRef.current);
+      toolRef.current = TOOLS[lastTool](toolRef.current, projectRef.current);
       this.updateTool();
     },
   };
@@ -149,7 +149,7 @@ export function Editor({
       <ToolSelector
         toolname={tool.toolname}
         setToolTo={(t) => {
-          toolRef.current = TOOLS[t](toolRef.current);
+          toolRef.current = TOOLS[t](toolRef.current, projectRef.current);
           toolCtx.updateTool();
         }}
         anchor={lastTool}

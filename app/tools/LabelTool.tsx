@@ -1,4 +1,6 @@
 import { Coords } from "../common";
+import { ProjectManager } from "../ProjectManager";
+import { isSelectTool, SelectTool } from "./SelectTool";
 import { Tool, ToolCtx } from "./Tool";
 
 export type LabelTool = Tool<{
@@ -20,9 +22,22 @@ function finalizeCurrinput(ctx: ToolCtx<LabelTool>) {
   ctx.revertTool();
 }
 
-export function makeLabelTool(prev: LabelTool | object = {}): LabelTool {
+export function makeLabelTool(
+  prev: SelectTool | LabelTool | object = {},
+  project: ProjectManager,
+): LabelTool {
+  const selectedDecal =
+    isSelectTool(prev) && prev.selectedDecals.size == 1
+      ? project.immutableDecals.at(prev.selectedDecals.values().next().value!)
+      : null;
+  const currInput =
+    selectedDecal?.type == "text"
+      ? selectedDecal
+      : (prev as LabelTool).currInput;
+
   return {
     ...prev,
+    currInput,
     toolname: "label",
     panel: (ctx) => {
       if (!ctx.tool.currInput) return;

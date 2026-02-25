@@ -2,10 +2,11 @@ import { Device } from "../devices/Device";
 import { Tool, ToolCtx } from "./Tool";
 import { Coords } from "../common";
 import { intfColor } from "../editorComponents/Cables";
-import { toInterfaceId } from "../ProjectManager";
+import { ProjectManager, toInterfaceId } from "../ProjectManager";
 import { NetworkInterface } from "../emulators/DeviceEmulator";
 import { Button } from "../editorComponents/RoundBtn";
 import { memo } from "react";
+import { isSelectTool, SelectTool } from "./SelectTool";
 
 export type ConnectTool = Tool<{
   deviceA?: Device;
@@ -53,9 +54,33 @@ function intfType(dev: Device, intf: number) {
   return dev.internalState.netInterfaces[intf].type;
 }
 
-export function makeConnectTool(prev: ConnectTool | object = {}): ConnectTool {
+function migrateSelectedDevices(
+  prev: SelectTool | ConnectTool | object,
+  project: ProjectManager,
+): Pick<ConnectTool, "deviceA" | "deviceB" | "idxA" | "idxB"> | undefined {
+  if (!isSelectTool(prev)) return;
+  if (prev.selected.size != 1 && prev.selected.size != 2) return;
+  const devices = prev.selected
+    .values()
+    .take(2)
+    .map((d) => project.immutableDevices.get(d)!)
+    .toArray();
+  return {
+    deviceA: devices[0],
+    idxA: firstEmptyInterface(project, devices[0]),
+    deviceB: devices.at(1),
+    idxB: devices.at(1) ? firstEmptyInterface(project, devices[1]) : undefined,
+  };
+}
+
+export function makeConnectTool(
+  prev: ConnectTool | SelectTool | object = {},
+  project: ProjectManager,
+): ConnectTool {
+  const selectedDevices = migrateSelectedDevices(prev, project);
   return {
     ...prev,
+    ...selectedDevices,
     toolname: "connect",
     panel: (ctx) => {
       return (
@@ -294,3 +319,22 @@ const ConnectBtn = memo(
     );
   },
 );
+
+const firstEmptyInterface = (
+  project: ProjectManager,
+  device: Device,
+  type?: NetworkInterface["type"],
+): number => {
+  let firstIf: number | undefined = undefined;
+  const res = device.internalState.netInterfaces.findIndex((_, idx) => {
+    if (project.getConnectedTo(toInterfaceId(device.id, idx)) == undefined) {
+      firstIf ??= idx;
+      return (
+        type === undefined ||
+        device.internalState.netInterfaces[idx].type === type
+      );
+    }
+    return false;
+  });
+  return res == -1 ? (firstIf ?? 0) : res;
+};
