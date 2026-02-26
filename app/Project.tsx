@@ -15,8 +15,8 @@ export type DecalData = {
   | {
       type: "rect";
       size: { width: number; height: number };
-      fill: string;
-      stroke: string;
+      fill?: string;
+      stroke?: string;
     }
 );
 

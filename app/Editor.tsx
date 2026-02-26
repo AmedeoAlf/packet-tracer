@@ -349,8 +349,8 @@ const Decals = memo(function Decals({
             x={d.pos[0]}
             y={d.pos[1]}
             {...d.size}
-            stroke={d.stroke}
-            fill={d.fill}
+            stroke={d.stroke ?? "none"}
+            fill={d.fill ?? "none"}
             {...data}
           />
         );
