@@ -10,6 +10,7 @@ import {
 import { Coords } from "../common";
 import { Device } from "../devices/Device";
 import { Decal } from "../Project";
+import { deviceOfIntf, idxOfIntf, toInterfaceId } from "../ProjectManager";
 
 export type SelectTool = Tool<{
   selected: Set<number>;
@@ -301,13 +302,43 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
               return;
             }
             case "d": {
-              const newSelected = new Set<number>();
-              for (const s of ctx.toolRef.current.selected) {
+              const newSelected = new Array<number>();
+              const oldSelected = [...ctx.toolRef.current.selected];
+              for (const s of oldSelected) {
                 const newId = ctx.projectRef.current.duplicateDevice(s)!;
-                newSelected.add(newId);
+                newSelected.push(newId);
                 ctx.projectRef.current.mutDevice(newId)!.pos[0] += 10;
                 ctx.projectRef.current.mutDevice(newId)!.pos[1] += 10;
               }
+
+              // Copy device connections
+              // NOTE: Set iteration is guaranteed to be in insertion ordedr
+              // https://tc39.es/ecma262/multipage/keyed-collections.html#sec-set.prototype.foreach
+              for (const [idx, dev] of [
+                ...ctx.toolRef.current.selected,
+              ].entries()) {
+                const connections =
+                  ctx.projectRef.current.getAllConnectedTo(dev);
+                for (const pair of connections) {
+                  if (deviceOfIntf(pair[1]) == dev) pair.reverse();
+
+                  const otherDev = deviceOfIntf(pair[1]);
+                  if (!ctx.toolRef.current.selected.has(otherDev)) continue;
+
+                  const otherIdx = oldSelected.findIndex(
+                    (oldIdx) => oldIdx == otherDev,
+                  );
+                  if (otherIdx == -1) continue;
+
+                  ctx.projectRef.current.connect(
+                    newSelected[idx],
+                    idxOfIntf(pair[0]),
+                    newSelected[otherIdx],
+                    idxOfIntf(pair[1]),
+                  );
+                }
+              }
+
               const newDecals = new Set<number>();
               for (const s of ctx.toolRef.current.selectedDecals) {
                 const newId = ctx.projectRef.current.duplicateDecal(s)!;
@@ -315,7 +346,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                 ctx.projectRef.current.mutDecal(newId)!.pos[0] += 10;
                 ctx.projectRef.current.mutDecal(newId)!.pos[1] += 10;
               }
-              ctx.toolRef.current.selected = newSelected;
+              ctx.toolRef.current.selected = new Set(newSelected);
               ctx.toolRef.current.selectedDecals = newDecals;
               ctx.updateTool();
               ctx.updateProject();
