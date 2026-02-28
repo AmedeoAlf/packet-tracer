@@ -172,9 +172,11 @@ export class ProjectManager {
       if (cabled.has(conn[0])) continue;
       cabled.add(conn[1]);
 
-      const key = [deviceOfIntf(conn[0]), deviceOfIntf(conn[1])]
-        .toSorted((a, b) => a - b)
-        .reduce((acc, val) => (acc << 16) | val);
+      const reversed = deviceOfIntf(conn[0]) > deviceOfIntf(conn[1]);
+      if (reversed) conn.reverse();
+      const key = [deviceOfIntf(conn[0]), deviceOfIntf(conn[1])].reduce(
+        (acc, val) => (acc << 16) | val,
+      );
       if (!cableToOccurencies.has(key)) cableToOccurencies.set(key, []);
 
       const ifA = this.getInterfaceFromId(conn[0])!;

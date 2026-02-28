@@ -108,7 +108,7 @@ const Label = memo(
     const text =
       device.internalState.netInterfaces[shared.cables[0].intf[idx]].name +
       (shared.cables.length > 1 ? "+" : "");
-    const len = ((idx == 0 ? -1 : 1) * shared.cableLen) / 45;
+    const len = ((idx == 0 ? -1 : 1) * shared.cableLen) / 50;
     return (
       <foreignObject
         x={device.pos[0] + shared.dx / len - 15}
