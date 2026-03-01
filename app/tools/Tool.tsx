@@ -61,6 +61,11 @@ export type ToolCtx<T extends Tool<any>> = {
   // Revert to last tool (should be called on completed actions)
   revertTool: () => void;
 };
+
+export type ToolConstructor = (
+  prev: Tool<any> | object,
+  project: ProjectManager,
+) => Tool<any>;
 export const TOOLS = {
   select: makeSelectTool,
   add: makeAddTool,
@@ -68,10 +73,7 @@ export const TOOLS = {
   connect: makeConnectTool,
   label: makeLabelTool,
   rect: makeRectTool,
-} satisfies Record<
-  string,
-  (prev: Tool<any> | object, project: ProjectManager) => Tool<any>
->;
+} satisfies Record<string, ToolConstructor>;
 
 export const TOOL_LIST = [
   "select",

@@ -1,4 +1,4 @@
-import { Tool } from "./Tool";
+import { Tool, ToolConstructor } from "./Tool";
 import {
   buildEmulatorContext,
   DevicePanel,
@@ -10,7 +10,9 @@ import {
 import { Coords } from "../common";
 import { Device } from "../devices/Device";
 import { Decal } from "../Project";
-import { deviceOfIntf, idxOfIntf, toInterfaceId } from "../ProjectManager";
+import { deviceOfIntf, idxOfIntf, ProjectManager } from "../ProjectManager";
+import { makeLabelTool } from "./LabelTool";
+import { makeRectTool } from "./RectTool";
 
 export type SelectTool = Tool<{
   selected: Set<number>;
@@ -177,6 +179,32 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
       const originalDevices = new Set(ctx.toolRef.current.selected);
       const originalDecals = new Set(ctx.toolRef.current.selectedDecals);
       switch (ev.type) {
+        case "doubleclick":
+          if (ctx.toolRef.current.selected.size != 0) return;
+          if (ctx.toolRef.current.selectedDecals.size != 1) return;
+          const decalIdx = ctx.toolRef.current.selectedDecals
+            .values()
+            .next().value!;
+          const decal = ctx.projectRef.current.immutableDecals[decalIdx]!;
+
+          const setTool = (constructor: ToolConstructor) => {
+            ctx.toolRef.current = constructor(
+              ctx.toolRef.current,
+              ctx.projectRef.current,
+            );
+            ctx.updateTool();
+          };
+
+          switch (decal.type) {
+            case "text":
+              setTool(makeLabelTool);
+              return;
+            case "rect":
+              setTool(makeRectTool);
+              return;
+            default:
+              return;
+          }
         case "mousedown":
           if (ev.device) {
             if (
