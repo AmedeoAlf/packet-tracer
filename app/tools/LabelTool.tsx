@@ -62,7 +62,7 @@ export function makeLabelTool(
               <p>Colore:</p>
               <input
                 type="color"
-                value={ctx.tool.currInput.fg ?? "#000"}
+                value={ctx.tool.currInput.fg ?? "#000000"}
                 onChange={(ev) => {
                   ctx.toolRef.current.currInput!.fg = ev.target.value;
                   ctx.updateTool();
@@ -88,7 +88,7 @@ export function makeLabelTool(
             ctx.toolRef.current.currInput = {
               text: "",
               pos: ev.pos,
-              fg: "#fff",
+              fg: "#ffffff",
             };
           }
           ctx.updateTool();
