@@ -49,7 +49,8 @@ export function makeRectTool(
         if (decal.type != "rect") throw "How did I select a non-rect decal???";
         return (
           <>
-            Dimensioni: {decal.size.width}x{decal.size.width} <br />
+            Dimensioni: {decal.size.width.toFixed(1)}x
+            {decal.size.height.toFixed(1)} <br />
             <table>
               <tbody>
                 <ColorSelectorRow
@@ -111,13 +112,15 @@ export function makeRectTool(
       if (
         ctx.toolRef.current.editing !== undefined &&
         !ctx.toolRef.current.startPos
-      )
+      ) {
+        if (ev.type == "mouseup") ctx.revertTool();
         return;
+      }
 
       switch (ev.type) {
         case "mousedown":
-          // Resize correctly the editing rectangle
-          if (ctx.toolRef.current.startPos == undefined)
+          // Handle editing a rectangle correctly
+          if (!ctx.toolRef.current.startPos)
             ctx.toolRef.current.startPos = ev.pos;
           ctx.toolRef.current.currPos = ev.pos;
           break;
