@@ -14,6 +14,7 @@ function defaultProject(): ProjectManager {
     type: "text",
     text: "This is an example project",
     pos: [-300, -250],
+    fg: "#ffffff",
   });
   p.createDevice("switch", [-300, -100], "Rete A");
   p.createDevice("router", [-150, -100], "Router A");
