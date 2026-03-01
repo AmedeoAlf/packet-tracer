@@ -44,7 +44,7 @@ export function makeRectTool(
     toolname: "rect",
     panel: (ctx) => {
       if (ctx.tool.startPos && ctx.tool.currPos) return;
-      if (typeof ctx.tool.editing == "number") {
+      if (ctx.tool.editing !== undefined && !ctx.tool.startPos) {
         const decal = ctx.project.immutableDecals[ctx.tool.editing]!;
         if (decal.type != "rect") throw "How did I select a non-rect decal???";
         return (
@@ -108,14 +108,35 @@ export function makeRectTool(
       );
     },
     onEvent: (ctx, ev) => {
+      if (
+        ctx.toolRef.current.editing !== undefined &&
+        !ctx.toolRef.current.startPos
+      )
+        return;
+
       switch (ev.type) {
         case "mousedown":
-          ctx.toolRef.current.startPos = ev.pos;
+          // Resize correctly the editing rectangle
+          if (ctx.toolRef.current.startPos == undefined)
+            ctx.toolRef.current.startPos = ev.pos;
           ctx.toolRef.current.currPos = ev.pos;
           break;
         case "mousemove":
           if (!ctx.toolRef.current.startPos) return;
           ctx.toolRef.current.currPos = ev.pos;
+          if (ctx.toolRef.current.editing !== undefined) {
+            const { x, y, width, height } = rectProps(
+              ctx.toolRef.current.startPos,
+              ev.pos,
+            );
+            const decal = ctx.projectRef.current.mutDecal(
+              ctx.toolRef.current.editing,
+            );
+            if (decal?.type != "rect") throw "How did I get a non-rect decal";
+            decal.pos = [x, y];
+            decal.size = { width, height };
+            ctx.updateProject();
+          }
           break;
         case "mouseup":
           if (!ctx.toolRef.current.startPos) return;
@@ -126,13 +147,22 @@ export function makeRectTool(
           ctx.toolRef.current.startPos = undefined;
           ctx.updateTool();
           if (ev.pos[0] || ev.pos[1]) {
-            ctx.projectRef.current.addDecal({
-              type: "rect",
-              pos: [x, y],
-              size: { width, height },
-              fill: ctx.toolRef.current.fill,
-              stroke: ctx.toolRef.current.stroke,
-            });
+            if (ctx.toolRef.current.editing !== undefined) {
+              const decal = ctx.projectRef.current.mutDecal(
+                ctx.toolRef.current.editing,
+              );
+              if (decal?.type != "rect") throw "How did I get a non-rect decal";
+              decal.pos = [x, y];
+              decal.size = { width, height };
+            } else {
+              ctx.projectRef.current.addDecal({
+                type: "rect",
+                pos: [x, y],
+                size: { width, height },
+                fill: ctx.toolRef.current.fill,
+                stroke: ctx.toolRef.current.stroke,
+              });
+            }
             ctx.updateProject();
             ctx.revertTool();
           }
@@ -142,9 +172,9 @@ export function makeRectTool(
       }
       ctx.updateTool();
     },
-    svgElements: ({ tool, project }) => {
-      if (typeof tool.editing == "number") {
-        const decal = project.immutableDecals[tool.editing]!;
+    svgElements: (ctx) => {
+      if (typeof ctx.tool.editing == "number" && !ctx.tool.startPos) {
+        const decal = project.immutableDecals[ctx.tool.editing]!;
         if (decal.type != "rect") throw "How did I get a non-rect decal";
         return (
           <rect
@@ -154,18 +184,31 @@ export function makeRectTool(
             height={10}
             fill="red"
             stroke="black"
-            onMouseMove={() => {
-              throw "Not yet implemented";
+            onMouseDown={() => {
+              const rect =
+                ctx.projectRef.current.immutableDecals[
+                  ctx.toolRef.current.editing!
+                ];
+              if (rect?.type != "rect") throw "Why am i not a rect?????";
+              ctx.toolRef.current.startPos = rect.pos;
+              ctx.toolRef.current.currPos = [
+                rect.pos[0] + rect.size.width,
+                rect.pos[1] + rect.size.height,
+              ];
+              ctx.updateTool();
             }}
           />
         );
-      }
-      if (tool.startPos && tool.currPos) {
+      } else if (
+        ctx.tool.startPos &&
+        ctx.tool.currPos &&
+        ctx.tool.editing === undefined
+      ) {
         return (
           <rect
-            {...rectProps(tool.startPos, tool.currPos)}
-            fill={tool.fill}
-            stroke={tool.stroke}
+            {...rectProps(ctx.tool.startPos, ctx.tool.currPos)}
+            fill={ctx.tool.fill}
+            stroke={ctx.tool.stroke}
           />
         );
       }
