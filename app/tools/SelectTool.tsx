@@ -10,7 +10,7 @@ import {
 import { Coords } from "../common";
 import { Device } from "../devices/Device";
 import { Decal } from "../Project";
-import { deviceOfIntf, idxOfIntf, ProjectManager } from "../ProjectManager";
+import { deviceOfIntf, idxOfIntf } from "../ProjectManager";
 import { makeLabelTool } from "./LabelTool";
 import { makeRectTool } from "./RectTool";
 

@@ -26,14 +26,15 @@ export function makeLabelTool(
   prev: SelectTool | LabelTool | object = {},
   project: ProjectManager,
 ): LabelTool {
-  const selectedDecal =
-    isSelectTool(prev) && prev.selectedDecals.size == 1
-      ? project.immutableDecals.at(prev.selectedDecals.values().next().value!)
-      : null;
-  const currInput =
-    selectedDecal?.type == "text"
-      ? selectedDecal
-      : (prev as LabelTool).currInput;
+  let currInput = (prev as LabelTool).currInput;
+  if (isSelectTool(prev) && prev.selectedDecals.size == 1) {
+    const selectedDecalIdx = prev.selectedDecals.values().next().value!;
+    const selectedDecal = project.immutableDecals.at(selectedDecalIdx);
+    if (selectedDecal?.type == "text") {
+      currInput = { ...selectedDecal };
+      project.removeDecal(selectedDecalIdx);
+    }
+  }
 
   return {
     ...prev,
