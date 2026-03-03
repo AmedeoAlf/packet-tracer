@@ -3,15 +3,14 @@ import { memo, ReactNode } from "react";
 export const BtnArrEl = memo(function BtnArrEl({
   onClick,
   children,
+  className,
 }: {
   onClick: () => void;
   children: ReactNode;
+  className?: string;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className="px-4 h-9 bg-gray-600 hover:bg-gray-700 active:bg-gray-800"
-    >
+    <button onClick={onClick} className={"px-4 h-9 " + (className ?? "")}>
       {children}
     </button>
   );

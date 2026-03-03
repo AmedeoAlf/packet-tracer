@@ -1,7 +1,11 @@
 import { memo, ReactNode } from "react";
 import { Decal } from "../Project";
 import { Tool } from "../tools/Tool";
-import { isDecalHighlighted, isSelectTool, SelectTool } from "../tools/SelectTool";
+import {
+  isDecalHighlighted,
+  isSelectTool,
+  SelectTool,
+} from "../tools/SelectTool";
 
 export const Decals = memo(
   function Decals({

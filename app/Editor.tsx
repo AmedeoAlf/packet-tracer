@@ -5,23 +5,16 @@ import {
   useEffect,
   ReactNode,
   useMemo,
-  memo,
   KeyboardEvent,
 } from "react";
 import { CanvasEvent, Tool, ToolCtx, TOOLS } from "./tools/Tool";
-import {
-  isDecalHighlighted,
-  isSelectTool,
-  makeSelectTool,
-  SelectTool,
-} from "./tools/SelectTool";
+import { makeSelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { Cables } from "./editorComponents/Cables";
 import { SideBar } from "./editorComponents/SideBar";
 import { ToolSelector } from "./editorComponents/ToolSelector";
 import { Devices } from "./editorComponents/Devices";
 import { ProjectManager } from "./ProjectManager";
-import { Decal } from "./Project";
 import { TopBarBtns } from "./editorComponents/TopBarBtns";
 import { Coords } from "./common";
 import { Decals } from "./editorComponents/Decals";
@@ -136,7 +129,7 @@ export function Editor({
       onKeyUp={buildKeyboardEventHandler(toolCtx, "keyup")}
       tabIndex={0}
     >
-      <div className="bg-sky-700 fixed top-0 w-full h-[50px] indent-1.5em border-b-[.1em] border-solid border-sky-800 flex items-center px-1">
+      <div className="bg-slate-800 fixed top-0 w-full h-[50px] indent-1.5em border-b-[.1em] border-solid border-slate-900 flex items-center px-1">
         <TopBarBtns ctx={toolCtx} />
 
         <p className="inline ml-3">

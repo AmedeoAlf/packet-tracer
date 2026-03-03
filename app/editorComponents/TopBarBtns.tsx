@@ -8,14 +8,17 @@ export const TopBarBtns = memo(function TopBarBtns({
 }: {
   ctx: ToolCtx<any>;
 }) {
+  const CLASSNAME = "bg-slate-700 hover:brightness-80 active:brightness-70";
   return (
     <BtnArray>
       <BtnArrEl
+        className={CLASSNAME}
         onClick={() => ctx.projectRef.current.advanceTickToCallback(ctx)}
       >
         Advance
       </BtnArrEl>
       <BtnArrEl
+        className={CLASSNAME}
         onClick={() =>
           navigator.clipboard.writeText(
             JSON.stringify(ctx.projectRef.current.exportProject()),
@@ -25,6 +28,7 @@ export const TopBarBtns = memo(function TopBarBtns({
         Salva
       </BtnArrEl>
       <BtnArrEl
+        className={CLASSNAME}
         onClick={async () => {
           const ref = ctx.projectRef;
           ref.current = ProjectManager.fromSerialized(
