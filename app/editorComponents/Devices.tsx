@@ -1,17 +1,26 @@
 import { memo } from "react";
 import { Project } from "../Project";
 import { Device } from "../devices/Device";
+import { Tool } from "../tools/Tool";
+import {
+  isDeviceHighlighted,
+  isSelectTool,
+  SelectTool,
+} from "../tools/SelectTool";
 
 // Utility function che disegna i dispositivi del progetto, opzionalmente
 // evidenziandoli
 export const Devices = memo(
   function Devices({
     devices,
-    highlighted,
+    tool,
   }: {
     devices: Project["devices"];
-    highlighted?: (d: Device) => boolean;
+    tool: Tool<object> | SelectTool;
   }) {
+    const highlighted = isSelectTool(tool)
+      ? isDeviceHighlighted.bind(null, tool)
+      : undefined;
     return (
       <g>
         {[
@@ -23,7 +32,11 @@ export const Devices = memo(
                     <DeviceComponent
                       device={d}
                       key={d.id}
-                      extraClass={highlighted(d) ? " brightness-50" : undefined}
+                      extraClass={
+                        highlighted && highlighted(d)
+                          ? " brightness-50"
+                          : undefined
+                      }
                     />
                   )
                 : (d) => <DeviceComponent device={d} key={d.id} />,
@@ -32,7 +45,9 @@ export const Devices = memo(
       </g>
     );
   },
-  (p, n) => p.devices === n.devices && p.highlighted === n.highlighted,
+  (p, n) =>
+    p.devices === n.devices &&
+    (p.tool === n.tool || (!isSelectTool(p.tool) && !isSelectTool(n.tool))),
 );
 
 // Componente che ritorna un dispositivo come SVG, cliccando sopra il
