@@ -257,6 +257,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             ctx.updateTool();
           }
           break;
+        case "mouseleave":
         case "mouseup":
           if (ctx.toolRef.current.lastCursorPos) {
             if (ctx.toolRef.current.selectionRectangle) {
