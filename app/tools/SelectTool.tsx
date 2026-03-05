@@ -401,7 +401,10 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
   };
 }
 
-// TODO: separate args correctly
+export function splitArgs(cmd: string) {
+  return cmd.split(" ").filter((it) => it);
+}
+
 function TerminalEmulator<State extends InternalState>(
   inputBar: string,
   setInputBar: (s: string) => void,
@@ -413,9 +416,9 @@ function TerminalEmulator<State extends InternalState>(
         setInputBar(s);
         return;
       }
-      const lastArg = getAutoComplete({ ...ctx, args: inputBar.split(" ") });
+      const lastArg = getAutoComplete({ ...ctx, args: splitArgs(inputBar) });
       if (lastArg) {
-        const args = s.split(" ");
+        const args = splitArgs(s);
         args[args.length - 1] = lastArg;
         setInputBar(args.join(" ") + " ");
       }
@@ -436,7 +439,7 @@ function TerminalEmulator<State extends InternalState>(
             ev.preventDefault();
             ctx.write("> " + inputBar);
             runOnInterpreter({
-              args: inputBar.split(" "),
+              args: splitArgs(inputBar),
               ...ctx,
             });
             setInput("");
@@ -450,12 +453,12 @@ function TerminalEmulator<State extends InternalState>(
             onKeyDown={(ev) => {
               if (ev.key != "Tab") return;
               ev.preventDefault();
+              const args = splitArgs(inputBar);
               const lastArg = getAutoComplete({
                 ...ctx,
-                args: inputBar.split(" "),
+                args,
               });
               if (lastArg) {
-                const args = inputBar.split(" ");
                 args[args.length - 1] = lastArg;
                 setInput(args.join(" "));
               }
