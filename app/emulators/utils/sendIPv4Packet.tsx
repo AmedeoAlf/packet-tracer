@@ -12,10 +12,7 @@ import { filterObject } from "@/app/common";
 
 // FIXME: accept OSInternalState properly
 export function sendIPv4Packet<State extends L3InternalState>(
-  ctx: Pick<
-    EmulatorContext<State>,
-    "state" | "sendOnIf" | "schedule"
-  >,
+  ctx: Pick<EmulatorContext<State>, "state" | "sendOnIf" | "schedule">,
   destination: IPv4Address,
   protocol: ProtocolCode,
   data: Buffer,
@@ -34,10 +31,7 @@ export function sendIPv4Packet<State extends L3InternalState>(
 }
 
 export function forwardIPv4Packet<State extends L3InternalState>(
-  ctx: Pick<
-    EmulatorContext<State>,
-    "state" | "sendOnIf" | "schedule"
-  >,
+  ctx: Pick<EmulatorContext<State>, "state" | "sendOnIf" | "schedule">,
   packet: IPv4Packet,
   destinationMACFrom: IPv4Address,
 ) {
