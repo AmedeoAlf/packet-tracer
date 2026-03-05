@@ -102,12 +102,7 @@ export function tcpPacketHandler(
   const osCallback = () =>
     connectionState.callback(ctx, tcpPacket.destination, tcpPacket.payload);
   const answerWith = (tcpPacket: TCPPacket) =>
-    sendIPv4Packet(
-      ctx as any,
-      packet.source,
-      ProtocolCode.tcp,
-      tcpPacket.toBytes(),
-    );
+    sendIPv4Packet(ctx, packet.source, ProtocolCode.tcp, tcpPacket.toBytes());
 
   switch (connectionState.state) {
     case "listen": {

@@ -10,7 +10,6 @@ import { ARPPacket } from "@/app/protocols/rfc_826";
 import { Layer2Packet } from "@/app/protocols/802_3";
 import { filterObject } from "@/app/common";
 
-// FIXME: accept OSInternalState properly
 export function sendIPv4Packet<State extends L3InternalState>(
   ctx: Pick<EmulatorContext<State>, "state" | "sendOnIf" | "schedule">,
   destination: IPv4Address,

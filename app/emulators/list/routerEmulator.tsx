@@ -169,7 +169,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         const sendTo = getMatchingInterface(ctx.state.l3Ifs, destination);
         // È su una mia interfaccia?
         if (sendTo != -1 && sendTo != intf) {
-          forwardIPv4Packet(ctx as any, packet, packet.destination);
+          forwardIPv4Packet(ctx, packet, packet.destination);
         } else {
           // Controllo le tabelle di routing
           const nextHop = ctx.state.routingTables.find(
@@ -177,7 +177,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
               (destination & entry.mask) == (entry.netAddr & entry.mask),
           )?.to;
           if (typeof nextHop != "undefined") {
-            forwardIPv4Packet(ctx as any, packet, nextHop);
+            forwardIPv4Packet(ctx, packet, nextHop);
           }
         }
         return;
@@ -206,7 +206,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
           switch (icmpPacket.type) {
             case ICMPType.echoRequest:
               sendIPv4Packet(
-                ctx as any,
+                ctx,
                 packet.source,
                 ProtocolCode.icmp,
                 ICMPPacket.echoResponse(icmpPacket).toBytes(),

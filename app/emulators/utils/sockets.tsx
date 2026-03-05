@@ -49,7 +49,7 @@ export function dialTCP(
     ack: 0,
   });
 
-  sendIPv4Packet(ctx as any, address, ProtocolCode.tcp, synPacket.toBytes());
+  sendIPv4Packet(ctx, address, ProtocolCode.tcp, synPacket.toBytes());
 
   ctx.updateState();
   return sourcePort;
@@ -77,7 +77,7 @@ export function send(
   if (connection.state != "accepted" && connection.state != "connected") return;
   connection.seq += 1;
   sendIPv4Packet(
-    ctx as any,
+    ctx,
     connection.address,
     ProtocolCode.tcp,
     new TCPPacket(
@@ -95,7 +95,7 @@ export function close(ctx: EmulatorContext<OSInternalState>, socket: number) {
   if (!connection) return;
   if (connection.state != "listen") {
     sendIPv4Packet(
-      ctx as any,
+      ctx,
       connection.address,
       ProtocolCode.tcp,
       new TCPPacket(

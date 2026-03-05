@@ -63,7 +63,7 @@ export function recvIPv4Packet(
       switch (icmpPacket.type) {
         case ICMPType.echoRequest:
           sendIPv4Packet(
-            ctx as any,
+            ctx,
             packet.source,
             ProtocolCode.icmp,
             ICMPPacket.echoResponse(icmpPacket).toBytes(),

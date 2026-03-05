@@ -156,7 +156,7 @@ function dnsPacketHandler(
   );
 
   sendIPv4Packet(
-    ctx as any,
+    ctx,
     ipSource,
     ProtocolCode.udp,
     new UDPPacket(
