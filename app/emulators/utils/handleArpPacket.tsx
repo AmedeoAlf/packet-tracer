@@ -3,8 +3,8 @@ import { EmulatorContext } from "../DeviceEmulator";
 import { ARPPacket } from "@/app/protocols/rfc_826";
 import { forwardIPv4Packet } from "./sendIPv4Packet";
 
-export function handleArpPacket(
-  ctx: EmulatorContext<L3InternalStateBase>,
+export function handleArpPacket<State extends L3InternalStateBase>(
+  ctx: EmulatorContext<State>,
   packet: ARPPacket,
   intf: number,
 ) {

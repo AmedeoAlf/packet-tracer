@@ -153,7 +153,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   packetHandler(ctx, data, intf) {
     const l2Packet = Layer2Packet.fromBytes(data);
     if (l2Packet.type() == "arp") {
-      handleArpPacket(ctx as any, ARPPacket.fromL2(l2Packet), intf);
+      handleArpPacket(ctx, ARPPacket.fromL2(l2Packet), intf);
       return;
     }
     try {
