@@ -40,8 +40,10 @@ export function deepCopy<T>(t: T): T {
           return null as T;
         case t instanceof Map:
           return new Map(t.entries().map(([k, v]) => [k, deepCopy(v)])) as T;
-        case t instanceof Array:
+        case Array.isArray(t):
           return t.map((it) => deepCopy(it)) as T;
+        case t instanceof Set:
+          return new Set(t.values().map((it) => deepCopy(it))) as T;
         default:
           return Object.setPrototypeOf(
             Object.fromEntries(
