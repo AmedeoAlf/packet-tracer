@@ -11,9 +11,9 @@ import { Layer2Packet } from "@/app/protocols/802_3";
 import { filterObject } from "@/app/common";
 
 // FIXME: accept OSInternalState properly
-export function sendIPv4Packet(
+export function sendIPv4Packet<State extends L3InternalState>(
   ctx: Pick<
-    EmulatorContext<L3InternalState>,
+    EmulatorContext<State>,
     "state" | "sendOnIf" | "schedule"
   >,
   destination: IPv4Address,
@@ -33,9 +33,9 @@ export function sendIPv4Packet(
   return forwardIPv4Packet(ctx, packet, packet.destination);
 }
 
-export function forwardIPv4Packet(
+export function forwardIPv4Packet<State extends L3InternalState>(
   ctx: Pick<
-    EmulatorContext<L3InternalState>,
+    EmulatorContext<State>,
     "state" | "sendOnIf" | "schedule"
   >,
   packet: IPv4Packet,
@@ -57,7 +57,7 @@ export function forwardIPv4Packet(
     );
     ctx.state.packetsWaitingForARP_t[targetIp] ??= [];
     ctx.state.packetsWaitingForARP_t[targetIp].push(packet);
-    ctx.schedule(50, (ctx: EmulatorContext<L3InternalState>) => {
+    ctx.schedule(50, (ctx: EmulatorContext<State>) => {
       ctx.state.packetsWaitingForARP_t = filterObject(
         ctx.state.packetsWaitingForARP_t,
         ([ip]) => +ip != targetIp,

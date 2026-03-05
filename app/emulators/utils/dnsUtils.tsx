@@ -75,5 +75,5 @@ export async function resolveAddresses(
   });
   const query = new DNSQueryPacket(0, dnsQuestions);
   const udpPacket = new UDPPacket(port, 53, query.toBytes());
-  sendIPv4Packet(ctx as any, dns, ProtocolCode.udp, udpPacket.toBytes());
+  sendIPv4Packet(ctx, dns, ProtocolCode.udp, udpPacket.toBytes());
 }

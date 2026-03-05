@@ -387,7 +387,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
       }
       if (
         originalDevices.symmetricDifference(ctx.toolRef.current.selected).size >
-          0 ||
+        0 ||
         originalDecals.symmetricDifference(ctx.toolRef.current.selectedDecals)
           .size > 0
       ) {
@@ -402,7 +402,9 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
 }
 
 export function splitArgs(cmd: string) {
-  return cmd.split(" ").filter((it) => it);
+  const args = cmd.split(" ").filter((it) => it);
+  if (cmd.endsWith(' ')) args.push('');
+  return args;
 }
 
 function TerminalEmulator<State extends InternalState>(
