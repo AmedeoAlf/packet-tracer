@@ -427,7 +427,6 @@ export class ProjectManager {
     return this.project.lastId;
   }
 
-  // TODO: logica per il riciclo decente
   get viewBoxX() {
     return this.project.viewBoxX;
   }
