@@ -6,6 +6,7 @@ import {
   ReactNode,
   useMemo,
   KeyboardEvent,
+  WheelEventHandler,
 } from "react";
 import { CanvasEvent, Tool, ToolCtx, TOOLS } from "./tools/Tool";
 import { makeSelectTool } from "./tools/SelectTool";
@@ -39,6 +40,11 @@ export function Editor({
   const [lastTool, setLastTool] = useState<keyof typeof TOOLS>("select");
   const toolRef = useRef(tool);
   const projectRef = useRef(project);
+  const [canvasSize, setCanvasSize] = useState<[number, number] | undefined>(
+    undefined,
+  );
+  const svgCanvas = useRef<SVGSVGElement>(null);
+  let svgPt = svgCanvas.current?.createSVGPoint();
 
   const toolCtx: ToolCtx<Tool<object>> = {
     tool,
@@ -70,19 +76,15 @@ export function Editor({
     return () => clearTimeout(timeout);
   }, [project, save, shouldSave]);
 
-  const svgCanvas = useRef<SVGSVGElement>(null);
-  let pt = svgCanvas.current?.createSVGPoint();
-
-  const [canvasSize, setCanvasSize] = useState<[number, number] | undefined>(
-    undefined,
-  );
-
-  function svgToDOMPoint(x: number, y: number): DOMPoint | undefined {
-    if (!pt) return;
-    pt.x = x;
-    pt.y = y;
-    return pt.matrixTransform(svgCanvas.current!.getScreenCTM()!.inverse());
-  }
+  const svgToDOMPoint = svgPt
+    ? (x: number, y: number): DOMPoint => {
+        svgPt!.x = x;
+        svgPt!.y = y;
+        return svgPt!.matrixTransform(
+          svgCanvas.current!.getScreenCTM()!.inverse(),
+        );
+      }
+    : undefined;
 
   const mouseHandler = buildMouseEventHandler.bind(
     null,
@@ -122,7 +124,6 @@ export function Editor({
     projectRef.current.advanceTickToCallback(toolCtx);
   });
 
-  const currProject = projectRef.current;
   return (
     <div
       onKeyDown={buildKeyboardEventHandler(toolCtx, "keydown")}
@@ -158,49 +159,14 @@ export function Editor({
         onMouseMove={mouseHandler("mousemove")}
         onMouseEnter={mouseHandler("mouseenter")}
         onMouseLeave={mouseHandler("mouseleave")}
-        onWheel={(ev) => {
-          if (ev.ctrlKey) {
-            const from = currProject.viewBoxZoom;
-
-            const MAX_ZOOM_INCREMENT = 0.2;
-            let requestedIncrement = ev.deltaY * -0.01;
-            if (Math.abs(requestedIncrement) > MAX_ZOOM_INCREMENT)
-              requestedIncrement =
-                Math.sign(requestedIncrement) * MAX_ZOOM_INCREMENT;
-
-            currProject.viewBoxZoom *= 1 + requestedIncrement;
-            // devono entrambe non essere undefined per chiamare svgToDOMPoint
-            if (canvasSize && pt) {
-              const factor = from / currProject.viewBoxZoom;
-
-              const cursor = svgToDOMPoint(ev.clientX, ev.clientY)!;
-              const center = svgToDOMPoint(
-                canvasSize[0] / 2,
-                canvasSize[1] / 2,
-              )!;
-
-              currProject.viewBoxX += (cursor.x - center.x) * (1 - factor);
-              currProject.viewBoxY += (cursor.y - center.y) * (1 - factor);
-            }
-            toolCtx.updateProject();
-            toolCtx.updateTool();
-          } else if (ev.shiftKey) {
-            currProject.viewBoxX += ev.deltaY / toolCtx.project.viewBoxZoom;
-            toolCtx.updateProject();
-            // toolCtx.update()
-          } else {
-            currProject.viewBoxX += ev.deltaX / toolCtx.project.viewBoxZoom;
-            currProject.viewBoxY += ev.deltaY / toolCtx.project.viewBoxZoom;
-            toolCtx.updateProject();
-            // toolCtx.update()
-          }
-        }}
+        onWheel={canvasWheelEventHandler(toolCtx, svgToDOMPoint, canvasSize)}
         className={`bg-${svgCanvas.current ? "gray-700" : "gray-100"} -z-1 w-full h-screen transition-colors select-none`}
         viewBox={svgViewBox.join(" ")}
         ref={(svg) => {
           svgCanvas.current = svg;
 
-          pt = svgCanvas.current?.createSVGPoint();
+          if (canvasSize) return;
+          svgPt = svgCanvas.current?.createSVGPoint();
           if (svgCanvas.current) {
             const rect = svgCanvas.current.getBoundingClientRect();
             if (
@@ -251,13 +217,14 @@ function buildKeyboardEventHandler(
 // Ritorna una funzione che chiama `tool.onEvent(event)` con un oggetto
 // `CanvasEvent`, costruito a partire dal tipo di evento DOM specificato
 function buildMouseEventHandler(
-  toDOMPoint: (x: number, y: number) => DOMPoint | undefined,
+  toDOMPoint: ((x: number, y: number) => DOMPoint) | undefined,
   ctx: ToolCtx<Tool<object>>,
   type: Exclude<CanvasEvent["type"], "keydown" | "keyup">,
 ): (ev: MouseEvent) => void {
-  const getPos = (ev: MouseEvent) => {
+  const getPos = (ev: MouseEvent): Coords => {
+    if (!toDOMPoint) return [0, 0];
     const result = toDOMPoint(ev.clientX, ev.clientY);
-    return (result ? [result.x, result.y] : [0, 0]) as Coords;
+    return [result.x, result.y];
   };
 
   if (type == "mousemove") {
@@ -298,4 +265,45 @@ function buildMouseEventHandler(
       return false;
     };
   }
+}
+
+function canvasWheelEventHandler(
+  ctx: ToolCtx<object>,
+  toDOMPoint: ((x: number, y: number) => DOMPoint) | undefined,
+  canvasSize: Coords | undefined,
+): WheelEventHandler {
+  return (ev) => {
+    const currProject = ctx.projectRef.current;
+    if (ev.ctrlKey) {
+      const from = currProject.viewBoxZoom;
+
+      const MAX_ZOOM_INCREMENT = 0.2;
+      let requestedIncrement = ev.deltaY * -0.01;
+      if (Math.abs(requestedIncrement) > MAX_ZOOM_INCREMENT)
+        requestedIncrement = Math.sign(requestedIncrement) * MAX_ZOOM_INCREMENT;
+
+      currProject.viewBoxZoom *= 1 + requestedIncrement;
+      // devono entrambe non essere undefined per chiamare svgToDOMPoint
+      if (canvasSize && toDOMPoint) {
+        const factor = from / currProject.viewBoxZoom;
+
+        const cursor = toDOMPoint(ev.clientX, ev.clientY)!;
+        const center = toDOMPoint(canvasSize[0] / 2, canvasSize[1] / 2)!;
+
+        currProject.viewBoxX += (cursor.x - center.x) * (1 - factor);
+        currProject.viewBoxY += (cursor.y - center.y) * (1 - factor);
+      }
+      ctx.updateProject();
+      ctx.updateTool();
+    } else if (ev.shiftKey) {
+      currProject.viewBoxX += ev.deltaY / ctx.project.viewBoxZoom;
+      ctx.updateProject();
+      // ctx.update()
+    } else {
+      currProject.viewBoxX += ev.deltaX / ctx.project.viewBoxZoom;
+      currProject.viewBoxY += ev.deltaY / ctx.project.viewBoxZoom;
+      ctx.updateProject();
+      // ctx.update()
+    }
+  };
 }
