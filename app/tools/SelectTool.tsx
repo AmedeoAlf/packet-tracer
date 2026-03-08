@@ -22,6 +22,7 @@ export type SelectTool = Tool<{
   selectionRectangle?: Coords;
   stdout: string;
   stdin: string;
+  previousCmds: string[];
 
   currDevicePanel?: string;
 }>;
@@ -77,6 +78,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
     stdin: "",
     stdout: "= Terminal emulator =",
     lastCursorPos: undefined,
+    previousCmds: [],
     ...prev,
     toolname: "select",
     svgElements: (ctx) => {
@@ -119,6 +121,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                   ctx.updateTool();
                 },
                 ctx.tool.stdout,
+                ctx.tool.previousCmds,
               ),
               ...emulator.configPanel,
             };
@@ -401,10 +404,12 @@ export function splitArgs(cmd: string) {
   return args;
 }
 
+// NOTE: oldCmds is expected to be consistent and is appended to
 function TerminalEmulator<State extends InternalState>(
   inputBar: string,
   setInputBar: (s: string) => void,
   content: string,
+  oldCmds: string[],
 ): DevicePanel<State> {
   return function TerminalEmulator(ctx: EmulatorContext<State>) {
     const setInput = (s: string) => {
@@ -438,6 +443,7 @@ function TerminalEmulator<State extends InternalState>(
               args: splitArgs(inputBar),
               ...ctx,
             });
+            oldCmds.push(inputBar);
             setInput("");
           }}
         >
@@ -447,16 +453,35 @@ function TerminalEmulator<State extends InternalState>(
             placeholder=">"
             className="w-full bg-zinc-700 p-1"
             onKeyDown={(ev) => {
-              if (ev.key != "Tab") return;
-              ev.preventDefault();
-              const args = splitArgs(inputBar);
-              const lastArg = getAutoComplete({
-                ...ctx,
-                args,
-              });
-              if (lastArg) {
-                args[args.length - 1] = lastArg;
-                setInput(args.join(" "));
+              switch (ev.key) {
+                case "Tab":
+                  ev.preventDefault();
+                  const args = splitArgs(inputBar);
+                  const lastArg = getAutoComplete({
+                    ...ctx,
+                    args,
+                  });
+                  if (lastArg) {
+                    args[args.length - 1] = lastArg;
+                    setInput(args.join(" "));
+                  }
+                  break;
+                case "ArrowUp":
+                  ev.preventDefault();
+                  if (inputBar == "") {
+                    setInput(oldCmds.at(-1) ?? "");
+                  } else {
+                    const previousCmd =
+                      oldCmds.findLastIndex((it) => it == inputBar) - 1;
+                    if (previousCmd >= 0) setInput(oldCmds[previousCmd]);
+                  }
+                  break;
+                case "ArrowDown":
+                  ev.preventDefault();
+                  const nextCmd =
+                    oldCmds.findLastIndex((it) => it == inputBar) + 1;
+                  setInput(oldCmds.at(nextCmd) ?? "");
+                  break;
               }
             }}
             onChange={(ev) => setInput(ev.target.value)}
