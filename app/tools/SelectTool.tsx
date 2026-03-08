@@ -189,20 +189,17 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
     onEvent: (ctx, ev) => {
       const originalDevices = new Set(ctx.toolRef.current.selected);
       const originalDecals = new Set(ctx.toolRef.current.selectedDecals);
+
+      const self = ctx.toolRef.current;
       switch (ev.type) {
         case "doubleclick":
-          if (ctx.toolRef.current.selected.size != 0) return;
-          if (ctx.toolRef.current.selectedDecals.size != 1) return;
-          const decalIdx = ctx.toolRef.current.selectedDecals
-            .values()
-            .next().value!;
+          if (self.selected.size != 0) return;
+          if (self.selectedDecals.size != 1) return;
+          const decalIdx = self.selectedDecals.values().next().value!;
           const decal = ctx.projectRef.current.immutableDecals[decalIdx]!;
 
           const setTool = (constructor: ToolConstructor) => {
-            ctx.toolRef.current = constructor(
-              ctx.toolRef.current,
-              ctx.projectRef.current,
-            );
+            ctx.toolRef.current = constructor(self, ctx.projectRef.current);
             ctx.updateTool();
           };
 
@@ -218,67 +215,61 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
           }
         case "mousedown":
           if (ev.device) {
-            if (
-              !ev.shiftKey &&
-              !ctx.toolRef.current.selected.has(ev.device.id)
-            ) {
-              ctx.toolRef.current.selected.clear();
-              ctx.toolRef.current.selectedDecals.clear();
+            if (!ev.shiftKey && !self.selected.has(ev.device.id)) {
+              self.selected.clear();
+              self.selectedDecals.clear();
             }
-            ctx.toolRef.current.selected.add(ev.device.id);
-            ctx.toolRef.current.lastCursorPos = ev.pos;
+            self.selected.add(ev.device.id);
+            self.lastCursorPos = ev.pos;
           } else if (ev.decal) {
-            if (
-              !ev.shiftKey &&
-              !ctx.toolRef.current.selectedDecals.has(ev.decal.id)
-            ) {
-              ctx.toolRef.current.selected.clear();
-              ctx.toolRef.current.selectedDecals.clear();
+            if (!ev.shiftKey && !self.selectedDecals.has(ev.decal.id)) {
+              self.selected.clear();
+              self.selectedDecals.clear();
             }
-            ctx.toolRef.current.selectedDecals.add(ev.decal.id);
-            ctx.toolRef.current.lastCursorPos = ev.pos;
+            self.selectedDecals.add(ev.decal.id);
+            self.lastCursorPos = ev.pos;
           } else {
             if (!ev.shiftKey) {
-              ctx.toolRef.current.selected.clear();
-              ctx.toolRef.current.selectedDecals.clear();
+              self.selected.clear();
+              self.selectedDecals.clear();
             }
-            ctx.toolRef.current.selectionRectangle = ev.pos;
-            ctx.toolRef.current.lastCursorPos = ev.pos;
+            self.selectionRectangle = ev.pos;
+            self.lastCursorPos = ev.pos;
             // ctx.updateTool();
           }
           break;
         case "mousemove":
-          if (ctx.toolRef.current.lastCursorPos) {
-            if (!ctx.toolRef.current.selectionRectangle) {
-              for (const dev of ctx.toolRef.current.selected) {
+          if (self.lastCursorPos) {
+            if (!self.selectionRectangle) {
+              for (const dev of self.selected) {
                 ctx.projectRef.current.mutDevice(dev)!.pos[0] +=
-                  ev.pos[0] - ctx.toolRef.current.lastCursorPos[0];
+                  ev.pos[0] - self.lastCursorPos[0];
                 ctx.projectRef.current.mutDevice(dev)!.pos[1] +=
-                  ev.pos[1] - ctx.toolRef.current.lastCursorPos[1];
+                  ev.pos[1] - self.lastCursorPos[1];
               }
-              for (const dec of ctx.toolRef.current.selectedDecals) {
+              for (const dec of self.selectedDecals) {
                 ctx.projectRef.current.mutDecal(dec)!.pos[0] +=
-                  ev.pos[0] - ctx.toolRef.current.lastCursorPos[0];
+                  ev.pos[0] - self.lastCursorPos[0];
                 ctx.projectRef.current.mutDecal(dec)!.pos[1] +=
-                  ev.pos[1] - ctx.toolRef.current.lastCursorPos[1];
+                  ev.pos[1] - self.lastCursorPos[1];
               }
               ctx.updateProject();
             }
-            ctx.toolRef.current.lastCursorPos = ev.pos;
+            self.lastCursorPos = ev.pos;
             ctx.updateTool();
           }
           break;
         case "mouseleave":
         case "mouseup":
-          if (ctx.toolRef.current.lastCursorPos) {
-            if (ctx.toolRef.current.selectionRectangle) {
+          if (self.lastCursorPos) {
+            if (self.selectionRectangle) {
               const x = [
-                ctx.toolRef.current.selectionRectangle[0],
-                ctx.toolRef.current.lastCursorPos[0],
+                self.selectionRectangle[0],
+                self.lastCursorPos[0],
               ].toSorted((a, b) => a - b);
               const y = [
-                ctx.toolRef.current.selectionRectangle[1],
-                ctx.toolRef.current.lastCursorPos[1],
+                self.selectionRectangle[1],
+                self.lastCursorPos[1],
               ].toSorted((a, b) => a - b);
 
               ctx.projectRef.current.immutableDevices
@@ -290,7 +281,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                     y[0] <= it.pos[1] &&
                     it.pos[1] <= y[1],
                 )
-                .forEach((it) => ctx.toolRef.current.selected.add(it.id));
+                .forEach((it) => self.selected.add(it.id));
 
               ctx.projectRef.current.immutableDecals
                 .filter(
@@ -301,27 +292,25 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                     y[0] <= it.pos[1] &&
                     it.pos[1] <= y[1],
                 )
-                .forEach((it) =>
-                  ctx.toolRef.current.selectedDecals.add(it!.id),
-                );
-              ctx.toolRef.current.lastCursorPos = undefined;
-              ctx.toolRef.current.selectionRectangle = undefined;
+                .forEach((it) => self.selectedDecals.add(it!.id));
+              self.lastCursorPos = undefined;
+              self.selectionRectangle = undefined;
               ctx.updateTool();
             } else {
-              const diffX = ev.pos[0] - ctx.toolRef.current.lastCursorPos[0];
-              const diffY = ev.pos[1] - ctx.toolRef.current.lastCursorPos[1];
+              const diffX = ev.pos[0] - self.lastCursorPos[0];
+              const diffY = ev.pos[1] - self.lastCursorPos[1];
               if (diffX || diffY) {
-                for (const dev of ctx.toolRef.current.selected) {
+                for (const dev of self.selected) {
                   ctx.projectRef.current.mutDevice(dev)!.pos[0] += diffX;
                   ctx.projectRef.current.mutDevice(dev)!.pos[1] += diffY;
                 }
-                for (const dec of ctx.toolRef.current.selectedDecals) {
+                for (const dec of self.selectedDecals) {
                   ctx.projectRef.current.mutDecal(dec)!.pos[0] += diffX;
                   ctx.projectRef.current.mutDecal(dec)!.pos[1] += diffY;
                 }
                 ctx.updateProject();
               }
-              ctx.toolRef.current.lastCursorPos = undefined;
+              self.lastCursorPos = undefined;
             }
           }
           break;
@@ -329,21 +318,21 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
           ev.consumed = true;
           switch (ev.key) {
             case "Delete": {
-              for (const s of ctx.toolRef.current.selected) {
+              for (const s of self.selected) {
                 ctx.projectRef.current.deleteDevice(s);
               }
-              for (const s of ctx.toolRef.current.selectedDecals) {
+              for (const s of self.selectedDecals) {
                 ctx.projectRef.current.removeDecal(s);
               }
-              ctx.toolRef.current.selected.clear();
-              ctx.toolRef.current.selectedDecals.clear();
+              self.selected.clear();
+              self.selectedDecals.clear();
               ctx.updateTool();
               ctx.updateProject();
               return;
             }
             case "d": {
               const newSelected = new Array<number>();
-              const oldSelected = [...ctx.toolRef.current.selected];
+              const oldSelected = [...self.selected];
               for (const s of oldSelected) {
                 const newId = ctx.projectRef.current.duplicateDevice(s)!;
                 newSelected.push(newId);
@@ -354,16 +343,14 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
               // Copy device connections
               // NOTE: Set iteration is guaranteed to be in insertion ordedr
               // https://tc39.es/ecma262/multipage/keyed-collections.html#sec-set.prototype.foreach
-              for (const [idx, dev] of [
-                ...ctx.toolRef.current.selected,
-              ].entries()) {
+              for (const [idx, dev] of [...self.selected].entries()) {
                 const connections =
                   ctx.projectRef.current.getAllConnectedTo(dev);
                 for (const pair of connections) {
                   if (deviceOfIntf(pair[1]) == dev) pair.reverse();
 
                   const otherDev = deviceOfIntf(pair[1]);
-                  if (!ctx.toolRef.current.selected.has(otherDev)) continue;
+                  if (!self.selected.has(otherDev)) continue;
 
                   const otherIdx = oldSelected.findIndex(
                     (oldIdx) => oldIdx == otherDev,
@@ -380,14 +367,14 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
               }
 
               const newDecals = new Set<number>();
-              for (const s of ctx.toolRef.current.selectedDecals) {
+              for (const s of self.selectedDecals) {
                 const newId = ctx.projectRef.current.duplicateDecal(s)!;
                 newDecals.add(newId);
                 ctx.projectRef.current.mutDecal(newId)!.pos[0] += 10;
                 ctx.projectRef.current.mutDecal(newId)!.pos[1] += 10;
               }
-              ctx.toolRef.current.selected = new Set(newSelected);
-              ctx.toolRef.current.selectedDecals = newDecals;
+              self.selected = new Set(newSelected);
+              self.selectedDecals = newDecals;
               ctx.updateTool();
               ctx.updateProject();
               return;
@@ -397,15 +384,11 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
           }
       }
       if (
-        originalDevices.symmetricDifference(ctx.toolRef.current.selected).size >
-          0 ||
-        originalDecals.symmetricDifference(ctx.toolRef.current.selectedDecals)
-          .size > 0
+        originalDevices.symmetricDifference(self.selected).size > 0 ||
+        originalDecals.symmetricDifference(self.selectedDecals).size > 0
       ) {
-        ctx.toolRef.current.selected = new Set(ctx.toolRef.current.selected);
-        ctx.toolRef.current.selectedDecals = new Set(
-          ctx.toolRef.current.selectedDecals,
-        );
+        self.selected = new Set(self.selected);
+        self.selectedDecals = new Set(self.selectedDecals);
         ctx.updateTool();
       }
     },
