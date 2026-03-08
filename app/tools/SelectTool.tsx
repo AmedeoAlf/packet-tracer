@@ -22,6 +22,8 @@ export type SelectTool = Tool<{
   selectionRectangle?: Coords;
   stdout: string;
   stdin: string;
+
+  currDevicePanel?: string;
 }>;
 
 export function isSelectTool(tool: Tool<any>): tool is SelectTool {
@@ -109,20 +111,21 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             //   ctx.updateTool();
             // };
 
-            const panels: [string, DevicePanel<any>][] = [
-              [
-                "terminal",
-                TerminalEmulator(
-                  ctx.tool.stdin,
-                  (stdin) => {
-                    ctx.toolRef.current.stdin = stdin;
-                    ctx.updateTool();
-                  },
-                  ctx.tool.stdout,
-                ),
-              ],
-              ...Object.entries(emulator.configPanel),
-            ];
+            const panels: Record<string, DevicePanel<any>> = {
+              terminal: TerminalEmulator(
+                ctx.tool.stdin,
+                (stdin) => {
+                  ctx.toolRef.current.stdin = stdin;
+                  ctx.updateTool();
+                },
+                ctx.tool.stdout,
+              ),
+              ...emulator.configPanel,
+            };
+            const selectedPanel =
+              ctx.tool.currDevicePanel && ctx.tool.currDevicePanel in panels
+                ? ctx.tool.currDevicePanel
+                : "terminal";
             return (
               <>
                 <input
@@ -135,12 +138,20 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                     emuCtx.updateState();
                   }}
                 />
-                {panels.map(([k, v]) => (
-                  <div key={k} className="mb-2">
-                    <h2 className="text-lg font-bold">{k}</h2> <hr />
-                    {v(emuCtx)}
-                  </div>
-                ))}
+                <select
+                  value={selectedPanel}
+                  onChange={(ev) => {
+                    ctx.toolRef.current.currDevicePanel = ev.target.value;
+                    ctx.updateTool();
+                  }}
+                >
+                  {Object.keys(panels).map((panel) => (
+                    <option key={panel} className="mb-2">
+                      {panel}
+                    </option>
+                  ))}
+                </select>
+                {panels[selectedPanel](emuCtx)}
               </>
             );
           } else {
