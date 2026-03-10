@@ -8,7 +8,7 @@ export const TopBarBtns = memo(function TopBarBtns({
 }: {
   ctx: ToolCtx<any>;
 }) {
-  const CLASSNAME = "bg-slate-700 hover:brightness-80 active:brightness-70";
+  const CLASSNAME = "bg-slate-700";
   return (
     <BtnArray>
       <BtnArrEl

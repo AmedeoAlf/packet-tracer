@@ -10,7 +10,13 @@ export const BtnArrEl = memo(function BtnArrEl({
   className?: string;
 }) {
   return (
-    <button onClick={onClick} className={"px-4 h-9 " + (className ?? "")}>
+    <button
+      onClick={onClick}
+      className={
+        "px-4 h-9 hover:brightness-120 active:brightness-125 " +
+        (className ?? "")
+      }
+    >
       {children}
     </button>
   );
