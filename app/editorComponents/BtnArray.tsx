@@ -23,11 +23,18 @@ export const BtnArrEl = memo(function BtnArrEl({
 });
 export function BtnArray({
   children,
+  className,
 }: {
   children: ReturnType<typeof BtnArrEl>[];
+  className?: string;
 }) {
   return (
-    <div className="inline-flex gap-1 rounded-xl overflow-hidden size-max">
+    <div
+      className={
+        "inline-flex gap-1 rounded-xl overflow-hidden size-max " +
+        (className ?? "")
+      }
+    >
       {children}
     </div>
   );
