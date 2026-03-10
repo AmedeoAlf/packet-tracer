@@ -546,65 +546,53 @@ function SelectionActions({
   children: ReactNode;
 }) {
   const CLASSNAME = "bg-zinc-700 flex-1";
+  const Rect = (x: number, y: number) => (
+    <rect
+      x={x}
+      y={y}
+      width={6}
+      height={6}
+      rx={1}
+      ry={1}
+      stroke="white"
+      fill="none"
+    />
+  );
+  const Path = (d: string) => (
+    <path
+      d={d}
+      stroke="white"
+      fill="none"
+      strokeLinejoin="round"
+      strokeLinecap="round"
+    />
+  );
+  const VLine = (x: number, from: number, to: number) => (
+    <line
+      x1={x}
+      x2={x}
+      y1={from}
+      y2={to}
+      stroke="white"
+      strokeLinecap="round"
+    />
+  );
   return (
     <div className={"flex w-full items-center " + (className ?? "")}>
       {children}
       <BtnArray>
         <BtnArrEl className={CLASSNAME} onClick={duplicate}>
           <svg width={20} height={20} viewBox="0 0 10 10">
-            <rect
-              x={1}
-              y={1}
-              width={6}
-              height={6}
-              rx={1}
-              ry={1}
-              stroke="white"
-              fill="none"
-            />
-            <rect
-              x={3}
-              y={3}
-              width={6}
-              height={6}
-              rx={1}
-              ry={1}
-              stroke="white"
-              fill="none"
-            />
+            {Rect(1, 1)}
+            {Rect(3, 3)}
           </svg>
         </BtnArrEl>
         <BtnArrEl className={CLASSNAME} onClick={del}>
           <svg width={20} height={20} viewBox="0 0 12 12">
-            <path
-              d="M 2 3 l 1 1 V 10 q 0,1 1,1 H 8 q 1,0 1,-1 V 4 l 1 -1 z"
-              stroke="white"
-              fill="none"
-              strokeLinejoin="round"
-            />
-            <line
-              x1={5}
-              x2={5}
-              y1={4.6}
-              y2={9.4}
-              stroke="white"
-              strokeLinecap="round"
-            />
-            <line
-              x1={7}
-              x2={7}
-              y1={4.6}
-              y2={9.4}
-              stroke="white"
-              strokeLinecap="round"
-            />
-            <path
-              d="M 2.5 1.5 H 6 v -0.5 v 0.5 H 9.5"
-              stroke="white"
-              fill="none"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-            />
+            {Path("M 2.5 1.5 H 6 v -0.5 v 0.5 H 9.5")}
+            {VLine(7, 4.6, 9.4)}
+            {VLine(5, 4.6, 9.4)}
+            {Path("M 2 3 l 1 1 V 10 q 0,1 1,1 H 8 q 1,0 1,-1 V 4 l 1 -1 z")}
           </svg>
         </BtnArrEl>
       </BtnArray>
