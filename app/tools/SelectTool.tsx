@@ -10,9 +10,11 @@ import {
 import { Coords } from "../common";
 import { Device } from "../devices/Device";
 import { Decal } from "../Project";
-import { deviceOfIntf, idxOfIntf } from "../ProjectManager";
+import { deviceOfIntf, idxOfIntf, ProjectManager } from "../ProjectManager";
 import { makeLabelTool } from "./LabelTool";
 import { makeRectTool } from "./RectTool";
+import { BtnArray, BtnArrEl } from "../editorComponents/BtnArray";
+import { ReactNode } from "react";
 
 export type SelectTool = Tool<{
   selected: Set<number>;
@@ -131,6 +133,25 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                 : "terminal";
             return (
               <>
+                <SelectionActions
+                  duplicate={() => {
+                    duplicateSelection(
+                      ctx.toolRef.current,
+                      ctx.projectRef.current,
+                    );
+                    ctx.updateTool();
+                    ctx.updateProject();
+                  }}
+                  del={() => {
+                    ctx.projectRef.current.deleteDevice(device.id);
+                    ctx.toolRef.current.selected.clear();
+                    ctx.updateTool();
+                    ctx.updateProject();
+                  }}
+                  className="mb-2"
+                >
+                  <p className="flex-1">1 dispositivo selezionato</p>
+                </SelectionActions>
                 <input
                   className="text-xl font-bold flex-1 bg-zinc-800 w-full px-2 py-1 rounded-md border-b"
                   type="text"
@@ -186,7 +207,26 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             );
           }
         default:
-          return <p>Non ancora implementato</p>;
+          return (
+            <SelectionActions
+              duplicate={() => {
+                duplicateSelection(ctx.toolRef.current, ctx.projectRef.current);
+                ctx.updateTool();
+                ctx.updateProject();
+              }}
+              del={() => {
+                for (const id of ctx.toolRef.current.selected)
+                  ctx.projectRef.current.deleteDevice(id);
+                ctx.toolRef.current.selected.clear();
+                ctx.updateTool();
+                ctx.updateProject();
+              }}
+            >
+              <p className="flex-1">
+                {ctx.tool.selected.size} dispositivi selezionati
+              </p>
+            </SelectionActions>
+          );
       }
     },
     onEvent: (ctx, ev) => {
@@ -334,50 +374,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
               return;
             }
             case "d": {
-              const newSelected = new Array<number>();
-              const oldSelected = [...self.selected];
-              for (const s of oldSelected) {
-                const newId = ctx.projectRef.current.duplicateDevice(s)!;
-                newSelected.push(newId);
-                ctx.projectRef.current.mutDevice(newId)!.pos[0] += 10;
-                ctx.projectRef.current.mutDevice(newId)!.pos[1] += 10;
-              }
-
-              // Copy device connections
-              // NOTE: Set iteration is guaranteed to be in insertion ordedr
-              // https://tc39.es/ecma262/multipage/keyed-collections.html#sec-set.prototype.foreach
-              for (const [idx, dev] of [...self.selected].entries()) {
-                const connections =
-                  ctx.projectRef.current.getAllConnectedTo(dev);
-                for (const pair of connections) {
-                  if (deviceOfIntf(pair[1]) == dev) pair.reverse();
-
-                  const otherDev = deviceOfIntf(pair[1]);
-                  if (!self.selected.has(otherDev)) continue;
-
-                  const otherIdx = oldSelected.findIndex(
-                    (oldIdx) => oldIdx == otherDev,
-                  );
-                  if (otherIdx == -1) continue;
-
-                  ctx.projectRef.current.connect(
-                    newSelected[idx],
-                    idxOfIntf(pair[0]),
-                    newSelected[otherIdx],
-                    idxOfIntf(pair[1]),
-                  );
-                }
-              }
-
-              const newDecals = new Set<number>();
-              for (const s of self.selectedDecals) {
-                const newId = ctx.projectRef.current.duplicateDecal(s)!;
-                newDecals.add(newId);
-                ctx.projectRef.current.mutDecal(newId)!.pos[0] += 10;
-                ctx.projectRef.current.mutDecal(newId)!.pos[1] += 10;
-              }
-              self.selected = new Set(newSelected);
-              self.selectedDecals = newDecals;
+              duplicateSelection(ctx.toolRef.current, ctx.projectRef.current);
               ctx.updateTool();
               ctx.updateProject();
               return;
@@ -490,4 +487,127 @@ function TerminalEmulator<State extends InternalState>(
       </div>
     );
   };
+}
+
+// Must update tool and project after call
+function duplicateSelection(self: SelectTool, project: ProjectManager) {
+  const newSelected = new Array<number>();
+  const oldSelected = [...self.selected];
+  for (const s of oldSelected) {
+    const newId = project.duplicateDevice(s)!;
+    newSelected.push(newId);
+    project.mutDevice(newId)!.pos[0] += 10;
+    project.mutDevice(newId)!.pos[1] += 10;
+  }
+
+  // Copy device connections
+  // NOTE: Set iteration is guaranteed to be in insertion ordedr
+  // https://tc39.es/ecma262/multipage/keyed-collections.html#sec-set.prototype.foreach
+  for (const [idx, dev] of [...self.selected].entries()) {
+    const connections = project.getAllConnectedTo(dev);
+    for (const pair of connections) {
+      if (deviceOfIntf(pair[1]) == dev) pair.reverse();
+
+      const otherDev = deviceOfIntf(pair[1]);
+      if (!self.selected.has(otherDev)) continue;
+
+      const otherIdx = oldSelected.findIndex((oldIdx) => oldIdx == otherDev);
+      if (otherIdx == -1) continue;
+
+      project.connect(
+        newSelected[idx],
+        idxOfIntf(pair[0]),
+        newSelected[otherIdx],
+        idxOfIntf(pair[1]),
+      );
+    }
+  }
+
+  const newDecals = new Set<number>();
+  for (const s of self.selectedDecals) {
+    const newId = project.duplicateDecal(s)!;
+    newDecals.add(newId);
+    project.mutDecal(newId)!.pos[0] += 10;
+    project.mutDecal(newId)!.pos[1] += 10;
+  }
+  self.selected = new Set(newSelected);
+  self.selectedDecals = newDecals;
+}
+
+function SelectionActions({
+  duplicate,
+  del,
+  className,
+  children,
+}: {
+  duplicate: () => void;
+  del: () => void;
+  className?: string;
+  children: ReactNode;
+}) {
+  const CLASSNAME = "bg-zinc-700 flex-1";
+  return (
+    <div className={"flex w-full items-center " + (className ?? "")}>
+      {children}
+      <BtnArray>
+        <BtnArrEl className={CLASSNAME} onClick={duplicate}>
+          <svg width={20} height={20} viewBox="0 0 10 10">
+            <rect
+              x={1}
+              y={1}
+              width={6}
+              height={6}
+              rx={1}
+              ry={1}
+              stroke="white"
+              fill="none"
+            />
+            <rect
+              x={3}
+              y={3}
+              width={6}
+              height={6}
+              rx={1}
+              ry={1}
+              stroke="white"
+              fill="none"
+            />
+          </svg>
+        </BtnArrEl>
+        <BtnArrEl className={CLASSNAME} onClick={del}>
+          <svg width={20} height={20} viewBox="0 0 12 12">
+            <path
+              d="M 2 3 l 1 1 V 10 q 0,1 1,1 H 8 q 1,0 1,-1 V 4 l 1 -1 z"
+              stroke="white"
+              fill="none"
+              strokeLinejoin="round"
+            />
+            <line
+              x1={5}
+              x2={5}
+              y1={4.6}
+              y2={9.4}
+              stroke="white"
+              strokeLinecap="round"
+            />
+            <line
+              x1={7}
+              x2={7}
+              y1={4.6}
+              y2={9.4}
+              stroke="white"
+              strokeLinecap="round"
+            />
+            <path
+              d="M 2.5 1.5 H 6 v -0.5 v 0.5 H 9.5"
+              stroke="white"
+              fill="none"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          </svg>
+        </BtnArrEl>
+      </BtnArray>
+    </div>
+  );
 }
