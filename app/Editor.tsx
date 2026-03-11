@@ -36,7 +36,7 @@ export function Editor({
 }): ReactNode {
   const [shouldSave, setShouldSave] = useState(false);
   const [project, setProject] = useState(initialProject);
-  const [tool, setTool] = useState<Tool<any>>(makeSelectTool());
+  const [tool, setTool] = useState<Tool<any>>(() => makeSelectTool());
   const [lastTool, setLastTool] = useState<keyof typeof TOOLS>("select");
   const toolRef = useRef(tool);
   const projectRef = useRef(project);
