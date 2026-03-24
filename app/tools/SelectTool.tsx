@@ -15,6 +15,7 @@ import { makeLabelTool } from "./LabelTool";
 import { makeRectTool } from "./RectTool";
 import { BtnArray, BtnArrEl } from "../editorComponents/BtnArray";
 import { ReactNode } from "react";
+import { Button } from "../editorComponents/RoundBtn";
 
 export type SelectTool = Tool<{
   selected: Set<number>;
@@ -27,6 +28,7 @@ export type SelectTool = Tool<{
   previousCmds: string[];
 
   currDevicePanel?: string;
+  selectingDevicePanel: boolean;
 }>;
 
 export function isSelectTool(tool: Tool<any>): tool is SelectTool {
@@ -81,6 +83,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
     stdout: "= Terminal emulator =",
     lastCursorPos: undefined,
     previousCmds: [],
+    selectingDevicePanel: true,
     ...prev,
     toolname: "select",
     svgElements: (ctx) => {
@@ -116,7 +119,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             // };
 
             const panels: Record<string, DevicePanel<any>> = {
-              terminal: TerminalEmulator(
+              terminale: TerminalEmulator(
                 ctx.tool.stdin,
                 (stdin) => {
                   ctx.toolRef.current.stdin = stdin;
@@ -130,9 +133,9 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             const selectedPanel =
               ctx.tool.currDevicePanel && ctx.tool.currDevicePanel in panels
                 ? ctx.tool.currDevicePanel
-                : "terminal";
+                : "terminale";
             return (
-              <>
+              <div className="flex flex-col gap-2">
                 <SelectionActions
                   duplicate={() => {
                     duplicateSelection(
@@ -148,7 +151,6 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                     ctx.updateTool();
                     ctx.updateProject();
                   }}
-                  className="mb-2"
                 >
                   <p className="flex-1">1 dispositivo selezionato</p>
                 </SelectionActions>
@@ -162,21 +164,66 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                     emuCtx.updateState();
                   }}
                 />
-                <select
-                  value={selectedPanel}
-                  onChange={(ev) => {
-                    ctx.toolRef.current.currDevicePanel = ev.target.value;
+                <Button
+                  className="bg-zinc-800 flex-row"
+                  onClick={() => {
+                    ctx.toolRef.current.selectingDevicePanel =
+                      !ctx.tool.selectingDevicePanel;
                     ctx.updateTool();
                   }}
                 >
+                  <div className="flex items-center justify-center w-full gap-2">
+                    {selectedPanel}
+                    <svg
+                      viewBox="0 0 20 11"
+                      height={10}
+                      className={
+                        "transition " +
+                        (ctx.tool.selectingDevicePanel ? "rotate-180" : "")
+                      }
+                    >
+                      <path
+                        d="M 2 2 l 7 7 l 7 -7"
+                        stroke="white"
+                        strokeWidth={3}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                      />
+                    </svg>
+                  </div>
+                </Button>
+                <div
+                  className={
+                    "transition-all p-1 flex rounded-md overflow-y-auto flex-col gap-1 bg-zinc-800 " +
+                    (ctx.tool.selectingDevicePanel ? "h-30" : "h-0 scale-y-0")
+                  }
+                >
                   {Object.keys(panels).map((panel) => (
-                    <option key={panel} className="mb-2">
+                    <Button
+                      key={panel}
+                      onClick={
+                        panel == selectedPanel
+                          ? undefined
+                          : () => {
+                              ctx.toolRef.current.currDevicePanel = panel;
+                              ctx.toolRef.current.selectingDevicePanel = false;
+                              ctx.updateTool();
+                            }
+                      }
+                      className={
+                        "w-full " +
+                        (panel == selectedPanel
+                          ? "bg-zinc-800 brightness-90"
+                          : "bg-zinc-900")
+                      }
+                    >
                       {panel}
-                    </option>
+                    </Button>
                   ))}
-                </select>
+                </div>
                 {panels[selectedPanel](emuCtx)}
-              </>
+              </div>
             );
           } else {
             const decal = ctx.toolRef.current.selectedDecals
