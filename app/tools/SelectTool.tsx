@@ -15,7 +15,7 @@ import { makeLabelTool } from "./LabelTool";
 import { makeRectTool } from "./RectTool";
 import { BtnArray, BtnArrEl } from "../editorComponents/BtnArray";
 import { ReactNode } from "react";
-import { Button } from "../editorComponents/RoundBtn";
+import { DropDown } from "../editorComponents/DropDown";
 
 export type SelectTool = Tool<{
   selected: Set<number>;
@@ -164,64 +164,19 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                     emuCtx.updateState();
                   }}
                 />
-                <Button
-                  className="bg-zinc-800 flex-row"
-                  onClick={() => {
-                    ctx.toolRef.current.selectingDevicePanel =
-                      !ctx.tool.selectingDevicePanel;
+                <DropDown open={ctx.toolRef.current.selectingDevicePanel}
+                  setOpen={(open) => {
+                    ctx.toolRef.current.selectingDevicePanel = open;
                     ctx.updateTool();
                   }}
-                >
-                  <div className="flex items-center justify-center w-full gap-2">
-                    {selectedPanel}
-                    <svg
-                      viewBox="0 0 20 11"
-                      height={10}
-                      className={
-                        "transition " +
-                        (ctx.tool.selectingDevicePanel ? "rotate-180" : "")
-                      }
-                    >
-                      <path
-                        d="M 2 2 l 7 7 l 7 -7"
-                        stroke="white"
-                        strokeWidth={3}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        fill="none"
-                      />
-                    </svg>
-                  </div>
-                </Button>
-                <div
-                  className={
-                    "transition-all p-1 flex rounded-md overflow-y-auto flex-col gap-1 bg-zinc-800 " +
-                    (ctx.tool.selectingDevicePanel ? "h-30" : "h-0 scale-y-0")
-                  }
-                >
-                  {Object.keys(panels).map((panel) => (
-                    <Button
-                      key={panel}
-                      onClick={
-                        panel == selectedPanel
-                          ? undefined
-                          : () => {
-                              ctx.toolRef.current.currDevicePanel = panel;
-                              ctx.toolRef.current.selectingDevicePanel = false;
-                              ctx.updateTool();
-                            }
-                      }
-                      className={
-                        "w-full " +
-                        (panel == selectedPanel
-                          ? "bg-zinc-800 brightness-90"
-                          : "bg-zinc-900")
-                      }
-                    >
-                      {panel}
-                    </Button>
-                  ))}
-                </div>
+                  selected={selectedPanel}
+                  setSelected={(panel) => {
+                    ctx.toolRef.current.currDevicePanel = panel;
+                    ctx.toolRef.current.selectingDevicePanel = false;
+                    ctx.updateTool();
+                  }}
+                  panels={Object.keys(panels)}
+                />
                 {panels[selectedPanel](emuCtx)}
               </div>
             );
