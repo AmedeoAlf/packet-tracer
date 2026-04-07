@@ -164,7 +164,8 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
                     emuCtx.updateState();
                   }}
                 />
-                <DropDown open={ctx.toolRef.current.selectingDevicePanel}
+                <DropDown
+                  open={ctx.toolRef.current.selectingDevicePanel}
                   setOpen={(open) => {
                     ctx.toolRef.current.selectingDevicePanel = open;
                     ctx.updateTool();
