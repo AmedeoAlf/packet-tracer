@@ -100,52 +100,58 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
               Aggiungi
             </Button>
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th className="p-1"></th>
-                <th className="p-1">Rete</th>
-                <th className="p-1">Next hop</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ctx.state.routingTables.map((tableEntry, idx) => (
-                <tr key={idx}>
-                  <td>
-                    <Button
-                      onClick={() => {
-                        ctx.args = `routing set-priority ${idx} -1`.split(" ");
-                        runOnInterpreter(ctx);
-                      }}
-                    >
-                      ⬆️
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        ctx.args = `routing set-priority ${idx} 1`.split(" ");
-                        runOnInterpreter(ctx);
-                      }}
-                    >
-                      ⬇️
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        ctx.args = `routing remove ${idx}`.split(" ");
-                        runOnInterpreter(ctx);
-                      }}
-                    >
-                      ✖️
-                    </Button>
-                  </td>
-                  <td className="p-1">
-                    {ipv4ToString(tableEntry.netAddr)}/
-                    {countLeadingOnes(tableEntry.mask)}
-                  </td>
-                  <td className="p-1">{ipv4ToString(tableEntry.to)}</td>
+          {ctx.state.routingTables.length != 0 ? (
+            <table>
+              <thead>
+                <tr>
+                  <th className="p-1"></th>
+                  <th className="p-1">Rete</th>
+                  <th className="p-1">Next hop</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {ctx.state.routingTables.map((tableEntry, idx) => (
+                  <tr key={idx}>
+                    <td>
+                      <Button
+                        onClick={() => {
+                          ctx.args = `routing set-priority ${idx} -1`.split(
+                            " ",
+                          );
+                          runOnInterpreter(ctx);
+                        }}
+                      >
+                        ⬆️
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          ctx.args = `routing set-priority ${idx} 1`.split(" ");
+                          runOnInterpreter(ctx);
+                        }}
+                      >
+                        ⬇️
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          ctx.args = `routing remove ${idx}`.split(" ");
+                          runOnInterpreter(ctx);
+                        }}
+                      >
+                        ✖️
+                      </Button>
+                    </td>
+                    <td className="p-1">
+                      {ipv4ToString(tableEntry.netAddr)}/
+                      {countLeadingOnes(tableEntry.mask)}
+                    </td>
+                    <td className="p-1">{ipv4ToString(tableEntry.to)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            "Nessuna rotta inserita"
+          )}
         </>
       );
     },
