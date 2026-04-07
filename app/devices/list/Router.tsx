@@ -22,6 +22,11 @@ export type RouterInternalState = L3InternalState & {
   // UI for adding new routing tables
   rtNetworkInput_t?: string;
   rtDestinationInput_t?: string;
+
+  ifSelected_t?: number;
+  ifOpenDropDown_t?: boolean;
+  ifIpInput_t?: string;
+  ifSubnetInput_t?: string;
 };
 
 export const Router: DeviceFactory<RouterInternalState> = {

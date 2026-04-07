@@ -5,6 +5,7 @@ import { ICMPPacket, ICMPType } from "../../protocols/icmp";
 import {
   getMatchingInterface,
   ipv4ToString,
+  parseIpv4,
   PartialIPv4Packet,
   ProtocolCode,
 } from "../../protocols/rfc_760";
@@ -18,44 +19,134 @@ import { udpSend } from "@/app/virtualPrograms/udpSend";
 import { UDPPacket } from "@/app/protocols/udp";
 import { handleArpPacket } from "../utils/handleArpPacket";
 import { forwardIPv4Packet, sendIPv4Packet } from "../utils/sendIPv4Packet";
-import { countLeadingOnes } from "@/app/common";
+import { countLeadingOnes, throwString } from "@/app/common";
 import { Button } from "@/app/editorComponents/RoundBtn";
 import { routing } from "@/app/virtualPrograms/routing";
 import { gatewayCmd } from "@/app/virtualPrograms/gateway";
+import { DropDown } from "@/app/editorComponents/DropDown";
 
 export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   configPanel: {
     interfacce(ctx) {
+      const selectedIntfIdx = ctx.state.ifSelected_t ?? 0;
+      const interfaces = ctx.state.netInterfaces.map(
+        (intf, idx) => `${idx + 1} - ${intf.name}`,
+      );
+      const l2if = ctx.state.netInterfaces[selectedIntfIdx];
+      const l3if = ctx.state.l3Ifs.at(selectedIntfIdx);
       return (
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>IP</th>
-              <th>Subnet mask</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ctx.state.netInterfaces.map((val, idx) => {
-              const l3if = ctx.state.l3Ifs.at(idx);
-              return (
-                <tr key={idx}>
-                  <td className="p-1 max-w-1/4">{val.name}</td>
-                  <td className="p-1">
-                    {val.type} {val.maxMbps}&nbsp;Mbps
-                  </td>
-                  <td className="p-1">
-                    {l3if ? ipv4ToString(l3if.ip) : "No ip"}
-                  </td>
-                  <td className="p-1">
-                    {l3if ? ipv4ToString(l3if.mask) : "No mask"}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <>
+          <DropDown
+            open={ctx.state.ifOpenDropDown_t ?? true}
+            setOpen={(open) => {
+              ctx.state.ifOpenDropDown_t = open;
+              ctx.updateState();
+            }}
+            selected={interfaces[selectedIntfIdx]}
+            setSelected={(sel) => {
+              ctx.state.ifSelected_t = +sel.split(" - ")[0] - 1;
+              ctx.state.ifOpenDropDown_t = false;
+              ctx.state.ifIpInput_t = undefined;
+              ctx.state.ifSubnetInput_t = undefined;
+              ctx.updateState();
+            }}
+            panels={interfaces}
+          />
+          <p>Nome: {l2if.name}</p>
+          <p>
+            Tipo: {l2if.type} {l2if.maxMbps}&nbsp;Mbps
+          </p>
+          <form
+            onSubmit={(ev) => {
+              ev.preventDefault();
+              const fd = new FormData(ev.target as HTMLFormElement);
+              try {
+                const ip = (fd.get("ip") as string) ?? throwString("Empty ip");
+                const subnet =
+                  (fd.get("subnet") as string) ?? throwString("Empty subnet");
+
+                const parsedIp =
+                  parseIpv4(ip) ?? throwString("Invalid ip " + ip);
+                const parsedSubnet =
+                  parseIpv4(subnet) ??
+                  throwString("Invalid subnet mask " + subnet);
+
+                ctx.state.l3Ifs[selectedIntfIdx] = {
+                  ip: parsedIp,
+                  mask: parsedSubnet,
+                };
+                ctx.state.ifIpInput_t = undefined;
+                ctx.state.ifSubnetInput_t = undefined;
+                ctx.updateState();
+              } catch (e) {
+                // TODO: find a better way to notify
+                alert(e);
+              }
+            }}
+          >
+            <p>
+              Indirizzo ip:
+              <input
+                type="text"
+                name="ip"
+                value={
+                  ctx.state.ifIpInput_t ?? (l3if ? ipv4ToString(l3if.ip) : "")
+                }
+                onChange={(ev) => {
+                  ctx.state.ifIpInput_t = ev.target.value;
+                  ctx.updateState();
+                }}
+                className={
+                  typeof ctx.state.ifIpInput_t == "undefined"
+                    ? ""
+                    : "text-amber-400"
+                }
+                placeholder="0.0.0.0"
+              />
+            </p>
+            <p>
+              Subnet mask:
+              <input
+                type="text"
+                name="subnet"
+                value={
+                  ctx.state.ifSubnetInput_t ??
+                  (l3if ? ipv4ToString(l3if.mask) : "")
+                }
+                onChange={(ev) => {
+                  ctx.state.ifSubnetInput_t = ev.target.value;
+                  ctx.updateState();
+                }}
+                className={
+                  typeof ctx.state.ifSubnetInput_t == "undefined"
+                    ? ""
+                    : "text-amber-400"
+                }
+                placeholder="255.255.255.0"
+              />
+            </p>
+            <Button
+              type="submit"
+              className="bg-zinc-800 disabled:opacity-70"
+              disabled={
+                typeof ctx.state.ifSubnetInput_t == "undefined" &&
+                typeof ctx.state.ifIpInput_t == "undefined"
+              }
+            >
+              Imposta
+            </Button>{" "}
+            <Button
+              type="button"
+              className="bg-zinc-800"
+              onClick={() => {
+                ctx.state.l3Ifs[selectedIntfIdx] = null;
+                ctx.updateState();
+              }}
+            >
+              Pulisci indirizzo
+            </Button>
+          </form>
+        </>
       );
     },
     "Tabelle di routing"(ctx) {

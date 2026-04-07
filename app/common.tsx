@@ -118,3 +118,13 @@ export function filterObject<T extends object>(
 
 export type MapRecord<M extends Map<any, any>> =
   M extends Map<any, infer I> ? I : never;
+
+export function throwOnUndefined<T>(value: T | undefined, msg?: string): T {
+  if (typeof value == "undefined")
+    throw msg ?? "Value shouldn't have been undefined";
+  return value;
+}
+
+export function throwString(msg: string = "Assertion failed"): never {
+  throw msg;
+}

@@ -15,7 +15,6 @@ export function DropDown({
 }) {
   return (
     <>
-      {" "}
       <Button className="bg-zinc-800 flex-row" onClick={() => setOpen(!open)}>
         <div className="flex items-center justify-center w-full gap-2">
           {selected}
