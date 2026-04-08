@@ -22,7 +22,7 @@
  * simulatore)
  */
 
-import { Layer2Packet, MAC_BROADCAST, MacAddress } from "./802_3";
+import { EtherType, Layer2Packet, MAC_BROADCAST, MacAddress } from "./802_3";
 import { IPv4Address } from "./rfc_760";
 import { Buffer } from "node:buffer";
 
@@ -80,12 +80,13 @@ export class ARPPacket {
       this.senderMAC,
       this.targetMAC || MAC_BROADCAST,
     );
-    pkt._arpPacket = true;
+    pkt.etherType = EtherType.arp;
     return pkt;
   }
 
   static fromL2(l2Packet: Layer2Packet): ARPPacket {
-    if (!l2Packet._arpPacket) throw "Tried to parse a non-arp packet as one";
+    if (l2Packet.etherType != EtherType.arp)
+      throw "Tried to parse a non-arp packet as one";
     const bytes = l2Packet.payload;
     if (bytes.length < 28)
       throw `Buffer too small (${bytes.length} < 28) to be an ARPPacket`;

@@ -25,12 +25,17 @@ export function MACToString(mac: number): string {
   );
 }
 
+export enum EtherType {
+  dhcp = 0x0800,
+  arp = 0x0806,
+}
+
 export class Layer2Packet {
   to: MacAddress;
   from: MacAddress;
-  vlanTag?: number; // https://en.wikipedia.org/wiki/IEEE_802.1Q#Frame_format
   payload: Buffer;
-  _arpPacket: boolean = false;
+  etherType?: EtherType;
+  vlanTag?: number; // https://en.wikipedia.org/wiki/IEEE_802.1Q#Frame_format
   constructor(
     payload: Buffer,
     from: MacAddress,
@@ -58,10 +63,7 @@ export class Layer2Packet {
       packetBuf.writeUInt32BE(0x81000000 | (0xfff & this.vlanTag), cursor);
       cursor += 4;
     }
-    packetBuf.writeUInt16BE(
-      this._arpPacket ? 0x0806 : this.payload.byteLength,
-      cursor,
-    );
+    packetBuf.writeUInt16BE(this.etherType ?? this.payload.byteLength, cursor);
     cursor += 2;
     packetBuf.set(this.payload, cursor);
     return packetBuf;
@@ -79,28 +81,44 @@ export class Layer2Packet {
     const to = readMac();
     const from = readMac();
     let vlanTag = undefined;
+
+    // Check for 802.1Q header
     if (bytes.readUInt16BE(cursor) == 0x8100) {
       vlanTag = bytes.readUInt16BE(cursor + 2) & 0xfff;
       cursor += 4;
     }
-    if (bytes.readUInt16BE(cursor) == 0x0806) {
-      // ARP packet
-      cursor += 2;
-      const pkt = new Layer2Packet(
-        bytes.subarray(cursor, cursor + 28),
-        from,
-        to,
-        vlanTag,
-      );
-      pkt._arpPacket = true;
-      return pkt;
+
+    const maybeEtherType = bytes.readUInt16BE(cursor);
+    switch (maybeEtherType) {
+      case EtherType.arp: {
+        cursor += 2;
+        const pkt = new Layer2Packet(
+          bytes.subarray(cursor, cursor + 28),
+          from,
+          to,
+          vlanTag,
+        );
+        pkt.etherType = EtherType.arp;
+        return pkt;
+      }
+      case EtherType.dhcp: {
+        cursor += 2;
+        const pkt = new Layer2Packet(
+          // may someone tell me how am I supposed to get the length of a DHCP packet
+          // https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol#Discovery
+          bytes.subarray(cursor),
+          from,
+          to,
+          vlanTag,
+        );
+        pkt.etherType = EtherType.dhcp;
+        return pkt;
+      }
+      default:
+        // Otherwise its a packet len
+        cursor += 2;
+        const payload = bytes.subarray(cursor, cursor + maybeEtherType);
+        return new Layer2Packet(payload, from, to, vlanTag);
     }
-    const len = bytes.readUInt16BE(cursor);
-    cursor += 2;
-    const payload = bytes.subarray(cursor, cursor + len);
-    return new Layer2Packet(payload, from, to, vlanTag);
-  }
-  type(): "ip" | "arp" {
-    return this._arpPacket ? "arp" : "ip";
   }
 }

@@ -6,7 +6,7 @@ import {
   PartialIPv4Packet,
   ProtocolCode,
 } from "@/app/protocols/rfc_760";
-import { Layer2Packet, MAC_BROADCAST } from "@/app/protocols/802_3";
+import { EtherType, Layer2Packet, MAC_BROADCAST } from "@/app/protocols/802_3";
 import { handleArpPacket } from "./handleArpPacket";
 import { ARPPacket } from "@/app/protocols/rfc_826";
 import { ICMPPacket, ICMPType } from "@/app/protocols/icmp";
@@ -18,7 +18,7 @@ export function recvIPv4Packet(
   intf: number,
 ): IPv4Packet | undefined {
   const l2Packet = Layer2Packet.fromBytes(data);
-  if (l2Packet.type() == "arp") {
+  if (l2Packet.etherType == EtherType.arp) {
     handleArpPacket(ctx, ARPPacket.fromL2(l2Packet), intf);
     return;
   }
