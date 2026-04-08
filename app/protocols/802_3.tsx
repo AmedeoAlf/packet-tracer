@@ -115,7 +115,7 @@ export class Layer2Packet {
         return pkt;
       }
       default:
-        // Otherwise its a packet len
+        // Otherwise it's a packet len
         cursor += 2;
         const payload = bytes.subarray(cursor, cursor + maybeEtherType);
         return new Layer2Packet(payload, from, to, vlanTag);
