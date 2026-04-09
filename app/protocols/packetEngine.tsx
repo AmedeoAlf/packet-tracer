@@ -7,7 +7,7 @@ abstract class Field<T> {
   constructor(
     public name: string,
     public def?: T,
-  ) { }
+  ) {}
 }
 
 export class U32Field extends Field<number> {
@@ -108,14 +108,13 @@ export class PacketField<T extends Record<string, any>> extends Field<T> {
 }
 
 export class PacketSerializer<T extends Record<string, any>> {
-  beforeToBytes(_value: T) { }
-  afterToBytes(_into: Buffer, _value: T) { }
+  beforeToBytes(_value: T) {}
+  afterToBytes(_into: Buffer, _value: T) {}
 
-  beforeFromBytes(_bytes: Buffer) { }
-  afterFromBytes(_bytes: Buffer, _value: T) { }
+  beforeFromBytes(_bytes: Buffer) {}
+  afterFromBytes(_bytes: Buffer, _value: T) {}
 
-
-  constructor(public fields: Field<any>[]) { }
+  constructor(public fields: Field<any>[]) {}
 
   computeSizeOf(value: T): number {
     return this.fields
