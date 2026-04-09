@@ -39,7 +39,7 @@ export enum EtherType {
   arp = 0x0806,
 }
 
-export type Layer2P = {
+export type EthernetFrame = {
   dst: MacAddress;
   src: MacAddress;
   vlanTag?: number;
@@ -48,7 +48,7 @@ export type Layer2P = {
   crc?: number;
 };
 
-class EthernetFrameSerializerConstructor extends PacketSerializer<Layer2P> {
+class EthernetFrameSerializerConstructor extends PacketSerializer<EthernetFrame> {
   constructor() {
     super([
       new MACField("dst"),
@@ -60,7 +60,7 @@ class EthernetFrameSerializerConstructor extends PacketSerializer<Layer2P> {
     ]);
   }
 
-  protected beforeToBytes(value: Layer2P): void {
+  protected beforeToBytes(value: EthernetFrame): void {
     // If value under MTU/unset compute it
     if (
       typeof value.lenOrEthertype == "undefined" ||
