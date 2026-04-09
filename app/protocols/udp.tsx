@@ -12,36 +12,33 @@
  * simulatore)
  */
 
-export class UDPPacket {
+import { FillingBufferField, PacketSerializer, U16Field } from "./packetEngine";
+
+export type UDPPacket = {
   source: number;
   destination: number;
+  length?: number;
+  checksum?: number;
   payload: Buffer;
+};
 
-  constructor(source: number, destination: number, payload: Buffer) {
-    this.source = source;
-    this.destination = destination;
-    this.payload = payload;
+class UDPPacketSerializerConstructor extends PacketSerializer<UDPPacket> {
+  constructor() {
+    super([
+      new U16Field("source"),
+      new U16Field("destination"),
+      new U16Field("length", 0),
+      new U16Field("checksum", 0),
+      new FillingBufferField("payload"),
+    ]);
   }
 
-  toBytes(): Buffer {
-    const buf = Buffer.alloc(this.payload.length + 8);
-    buf.writeUInt16BE(this.source);
-    buf.writeUInt16BE(this.destination, 2);
-    buf.writeUInt16BE(this.payload.length + 8, 4);
-    buf.set(this.payload, 8);
-    return buf;
+  beforeToBytes(value: UDPPacket): void {
+    value.length = value.payload.length + 8;
   }
-
-  static fromBytes(bytes: Buffer) {
-    if (bytes.length < 8)
-      throw `Can't call fromBytes on UDPPacket smaller than 8 bytes (was ${bytes.length})`;
-    const packetLen = bytes.readUInt16BE(4);
-    if (packetLen > bytes.length)
-      throw `Can't call fromBytes on UDPPacket smaller its declared size (${bytes.length} vs. ${packetLen})`;
-    return new UDPPacket(
-      bytes.readUInt16BE(),
-      bytes.readUInt16BE(2),
-      bytes.subarray(8, packetLen),
-    );
+  afterFromBytes(_: Buffer, value: UDPPacket): void {
+    value.length = value.length ?? 0 - 8;
   }
 }
+
+export const UDPSerializer = new UDPPacketSerializerConstructor();
