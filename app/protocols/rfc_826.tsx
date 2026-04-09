@@ -22,7 +22,7 @@
  * simulatore)
  */
 
-import { EtherType, Layer2Packet, MAC_BROADCAST, MacAddress } from "./802_3";
+import { EtherType, EthernetFrame, MAC_BROADCAST, MacAddress } from "./802_3";
 import { IPv4Address } from "./rfc_760";
 import { Buffer } from "node:buffer";
 
@@ -59,7 +59,7 @@ export class ARPPacket {
     );
   }
 
-  toL2(): Layer2Packet {
+  toL2(): EthernetFrame {
     const buf = Buffer.alloc(28);
     buf.writeUInt32BE(0x00010800); // HW type (ethernet) + Protocol type (IPv4)
     buf.writeUInt16BE(0x0604, 4); // HW len (6 = sizeof MAC) + Protocl len (4 = sizeof IPv4)
@@ -75,17 +75,16 @@ export class ARPPacket {
 
     buf.writeUInt32BE(this.targetIP, 24);
 
-    const pkt = new Layer2Packet(
-      buf,
-      this.senderMAC,
-      this.targetMAC || MAC_BROADCAST,
-    );
-    pkt.etherType = EtherType.arp;
-    return pkt;
+    return {
+      payload: buf,
+      src: this.senderMAC,
+      dst: this.targetMAC || MAC_BROADCAST,
+      lenOrEthertype: EtherType.arp,
+    };
   }
 
-  static fromL2(l2Packet: Layer2Packet): ARPPacket {
-    if (l2Packet.etherType != EtherType.arp)
+  static fromL2(l2Packet: EthernetFrame): ARPPacket {
+    if (l2Packet.lenOrEthertype != EtherType.arp)
       throw "Tried to parse a non-arp packet as one";
     const bytes = l2Packet.payload;
     if (bytes.length < 28)
