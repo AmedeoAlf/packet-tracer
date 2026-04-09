@@ -5,7 +5,7 @@ import {
   parseIpv4,
   ProtocolCode,
 } from "../protocols/rfc_760";
-import { UDPPacket } from "../protocols/udp";
+import { UDPSerializer } from "../protocols/udp";
 
 export const udpSend = {
   desc: "Sends and UDP packet",
@@ -40,11 +40,11 @@ export const udpSend = {
               ctx,
               toIp,
               ProtocolCode.udp,
-              new UDPPacket(
-                +ctx.args![2],
-                +ctx.args![3],
-                Buffer.from(ctx.args!.at(4) ?? []),
-              ).toBytes(),
+              UDPSerializer.toBuffer({
+                source: +ctx.args![2],
+                destination: +ctx.args![3],
+                payload: Buffer.from(ctx.args!.at(4) ?? []),
+              }),
             );
           },
         },
