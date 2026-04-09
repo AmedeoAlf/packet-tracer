@@ -133,6 +133,12 @@ export class PacketSerializer<T extends Record<string, any>> {
     this.afterToBytes(into, value);
   }
 
+  toBuffer(value: T) {
+    const buf = Buffer.alloc(this.computeSizeOf(value));
+    this.toBytes(buf, value);
+    return buf;
+  }
+
   fromBytes(bytes: Buffer): T {
     this.beforeFromBytes(bytes);
     const result: Record<string, any> = {};
