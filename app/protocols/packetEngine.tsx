@@ -108,11 +108,11 @@ export class PacketField<T extends Record<string, any>> extends Field<T> {
 }
 
 export class PacketSerializer<T extends Record<string, any>> {
-  beforeToBytes(_value: T) {}
-  afterToBytes(_into: Buffer, _value: T) {}
+  private beforeToBytes(_value: T) {}
+  private afterToBytes(_into: Buffer, _value: T) {}
 
-  beforeFromBytes(_bytes: Buffer) {}
-  afterFromBytes(_bytes: Buffer, _value: T) {}
+  private beforeFromBytes(_bytes: Buffer) {}
+  private afterFromBytes(_bytes: Buffer, _value: T) {}
 
   constructor(public fields: Field<any>[]) {}
 
