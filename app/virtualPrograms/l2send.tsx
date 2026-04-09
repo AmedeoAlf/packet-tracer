@@ -1,5 +1,5 @@
 import { SubCommand, InternalState } from "../emulators/DeviceEmulator";
-import { Layer2Packet } from "../protocols/802_3";
+import { EthernetFrameSerializer, MAC_BROADCAST } from "../protocols/802_3";
 
 function parseInterface(
   from: string,
@@ -54,10 +54,11 @@ export const l2send = {
             const ifIdx = parseInterface(ctx.args![1], ctx.state)!;
             ctx.sendOnIf(
               ifIdx,
-              new Layer2Packet(
-                Buffer.from(ctx.args![3], "base64"),
-                ctx.state.netInterfaces[ifIdx].mac,
-              ).toBytes(),
+              EthernetFrameSerializer.toBuffer({
+                payload: Buffer.from(ctx.args![3], "base64"),
+                src: ctx.state.netInterfaces[ifIdx].mac,
+                dst: MAC_BROADCAST,
+              }),
             );
           },
           done: true,

@@ -7,8 +7,8 @@ import {
 } from "@/app/protocols/rfc_760";
 import { EmulatorContext } from "../DeviceEmulator";
 import { ARPPacket } from "@/app/protocols/rfc_826";
-import { Layer2Packet } from "@/app/protocols/802_3";
-import { filterObject } from "@/app/common";
+import { filterObject, throwString } from "@/app/common";
+import { EthernetFrameSerializer } from "@/app/protocols/802_3";
 
 export function sendIPv4Packet<State extends L3InternalState>(
   ctx: Pick<EmulatorContext<State>, "state" | "sendOnIf" | "schedule">,
@@ -63,11 +63,13 @@ export function forwardIPv4Packet<State extends L3InternalState>(
   for (const p of payloads) {
     ctx.sendOnIf(
       intf,
-      new Layer2Packet(
-        p,
-        ctx.state.netInterfaces[intf].mac,
-        ctx.state.macTable_t.get(targetIp),
-      ).toBytes(),
+      EthernetFrameSerializer.toBuffer({
+        src: ctx.state.netInterfaces[intf].mac,
+        dst:
+          ctx.state.macTable_t.get(targetIp) ??
+          throwString("How did I get here withouth an arp packet???"),
+        payload: p,
+      }),
     );
   }
   return true;

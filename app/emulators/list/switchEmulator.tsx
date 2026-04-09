@@ -1,4 +1,4 @@
-import { Layer2Packet } from "../../protocols/802_3";
+import { EthernetFrameSerializer } from "@/app/protocols/802_3";
 import { hello } from "../../virtualPrograms/hello";
 import { interfaces } from "../../virtualPrograms/interfaces";
 import { l2send } from "../../virtualPrograms/l2send";
@@ -47,9 +47,9 @@ export const switchEmulator: DeviceEmulator<InternalState> = {
     },
   },
   packetHandler(ctx, data, from_intf) {
-    const l2Packet = Layer2Packet.fromBytes(data);
+    const l2Packet = EthernetFrameSerializer.fromBytes(data);
     const myInterface = ctx.state.netInterfaces.findIndex(
-      (v) => v.mac == l2Packet.to,
+      (v) => v.mac == l2Packet.dst,
     );
     // Non facciamo nulla se il pacchetto era destinato all'interfaccia dello switch
 

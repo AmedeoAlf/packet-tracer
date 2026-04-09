@@ -6,7 +6,11 @@ import {
   PartialIPv4Packet,
   ProtocolCode,
 } from "@/app/protocols/rfc_760";
-import { EtherType, Layer2Packet, MAC_BROADCAST } from "@/app/protocols/802_3";
+import {
+  EthernetFrameSerializer,
+  EtherType,
+  MAC_BROADCAST,
+} from "@/app/protocols/802_3";
 import { handleArpPacket } from "./handleArpPacket";
 import { ARPPacket } from "@/app/protocols/rfc_826";
 import { ICMPPacket, ICMPType } from "@/app/protocols/icmp";
@@ -17,8 +21,8 @@ export function recvIPv4Packet(
   data: Buffer,
   intf: number,
 ): IPv4Packet | undefined {
-  const l2Packet = Layer2Packet.fromBytes(data);
-  if (l2Packet.etherType == EtherType.arp) {
+  const l2Packet = EthernetFrameSerializer.fromBytes(data);
+  if (l2Packet.lenOrEthertype == EtherType.arp) {
     handleArpPacket(ctx, ARPPacket.fromL2(l2Packet), intf);
     return;
   }
@@ -33,9 +37,9 @@ export function recvIPv4Packet(
       const sendTo = getMatchingInterface(ctx.state.l3Ifs, destination);
       // Devo (posso?) fare routing?
       if (sendTo != -1 && sendTo != intf) {
-        l2Packet.from = ctx.state.netInterfaces[intf].mac;
-        l2Packet.to = MAC_BROADCAST;
-        ctx.sendOnIf(sendTo, l2Packet.toBytes());
+        l2Packet.src = ctx.state.netInterfaces[intf].mac;
+        l2Packet.dst = MAC_BROADCAST;
+        ctx.sendOnIf(sendTo, EthernetFrameSerializer.toBuffer(l2Packet));
       }
       return;
     }

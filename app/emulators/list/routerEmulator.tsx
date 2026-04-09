@@ -1,6 +1,6 @@
 import { ARPPacket } from "@/app/protocols/rfc_826";
 import { RouterInternalState } from "../../devices/list/Router";
-import { EtherType, Layer2Packet } from "../../protocols/802_3";
+import { EthernetFrameSerializer, EtherType } from "../../protocols/802_3";
 import { ICMPPacket, ICMPType } from "../../protocols/icmp";
 import {
   getMatchingInterface,
@@ -248,8 +248,8 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
     },
   },
   packetHandler(ctx, data, intf) {
-    const l2Packet = Layer2Packet.fromBytes(data);
-    if (l2Packet.etherType == EtherType.arp) {
+    const l2Packet = EthernetFrameSerializer.fromBytes(data);
+    if (l2Packet.lenOrEthertype == EtherType.arp) {
       handleArpPacket(ctx, ARPPacket.fromL2(l2Packet), intf);
       return;
     }
