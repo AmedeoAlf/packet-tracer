@@ -40,100 +40,51 @@ export enum HType {
   ethernet = 1,
 }
 
-abstract class DHCPPacket {
-  abstract op: number;
-
-  constructor(
-    public hType: HType = HType.ethernet, // Assuming ethernet
-    public hLen: number = 6, // MAC address is 6 bytes
-    public hOps: number = 0, // Wikipedia always reports 0x0
-    public xId: number,
-    public secs: number = 0, // Wikipedia always reports 0x0
-    public flags: number = 0, // Should be 0x8000 for broadcast, we don't implement that
-    public cIAddr: number,
-    public yIAddr: number,
-    public sIAddr: number,
-    public gIAddr: number,
-    public cHAddr: Buffer,
-    public bootp: Buffer,
-  ) {}
-
-  static fromBytes(bytes: Buffer): DHCPPacket {
-    let constructor: typeof DHCPRequest | typeof DHCPResponse;
-    switch (bytes.readUInt8()) {
-      case 1:
-        constructor = DHCPRequest;
-        break;
-      case 2:
-        constructor = DHCPResponse;
-        break;
-      default:
-        throw "Invalid OP parameter in dhcppacket parsing";
-    }
-
-    return new constructor(
-      bytes.readUInt8(1), // hType
-      bytes.readUInt8(2), // hLen
-      bytes.readUInt8(3), // hOps
-      bytes.readUInt32BE(4), // xId
-      bytes.readUInt16BE(8), // secs
-      bytes.readUInt16BE(10), // flags
-      bytes.readUInt32BE(12), // cIAddr
-      bytes.readUInt32BE(16), // yIAddr
-      bytes.readUInt32BE(20), // sIAddr
-      bytes.readUInt32BE(24), // gIAddr
-      bytes.subarray(28, 44), // cHAddr
-      bytes.subarray(44, 236), // bootp
-    );
-  }
-
-  toBytes(): Buffer {
-    const buf = Buffer.alloc(236);
-    buf.writeUInt32BE(this.op);
-
-    buf.writeUInt8(this.hType, 1);
-    buf.writeUInt8(this.hLen, 2);
-    buf.writeUInt8(this.hOps, 3);
-    buf.writeUInt32BE(this.xId, 4);
-    buf.writeUInt16BE(this.secs, 8);
-    buf.writeUInt16BE(this.flags, 10);
-    buf.writeUInt32BE(this.cIAddr, 12);
-    buf.writeUInt32BE(this.yIAddr, 16);
-    buf.writeUInt32BE(this.sIAddr, 20);
-    buf.writeUInt32BE(this.gIAddr, 24);
-    buf.set(this.cHAddr, 28);
-    buf.set(this.bootp, 44);
-    buf.set(this.bootp, 44);
-
-    buf.writeUInt32BE(0x63825363, 236); // magic cookie (not checked)
-
-    return buf;
-  }
+export enum DHCPOp {
+  request = 1,
+  response = 2,
 }
 
-class DHCPRequest extends DHCPPacket {
-  op = 1;
+export const DHCPSerializer = new PacketSerializer<DHCPPacket>([
+  new U8Field("op"),
+  new U8Field("hType", HType.ethernet),
+  new U8Field("hLen", 6), // MAC length
+  new U8Field("hOps", 0),
+  new U32Field("xId", 0),
+  new U16Field("secs", 0),
+  new U16Field("flags", 0),
+  new U32Field("cIAddr", 0),
+  new U32Field("yIAddr", 0),
+  new U32Field("sIAddr", 0),
+  new U32Field("gIAddr", 0),
+  new FixedBufferField("cHAddr", 16),
+  new FixedBufferField("bootp", 192),
+  new U32Field("magic", 0x63825363),
+]);
 
-  static DHCPDISCOVER(mac: MacAddress): DHCPRequest {
-    const cHAddr = Buffer.alloc(16);
-    cHAddr.writeBigUInt64BE(BigInt(mac) << BigInt(16));
-    return new DHCPRequest(
-      HType.ethernet,
-      6,
-      0,
-      randomU32(),
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      cHAddr,
-      Buffer.alloc(0),
-    );
-  }
-}
+type DHCPPacket = {
+  op: DHCPOp;
+  hType?: HType;
+  hLen?: number;
+  hOps?: number;
+  xId?: number;
+  secs?: number;
+  flags?: number;
+  cIAddr?: number;
+  yIAddr?: number;
+  sIAddr?: number;
+  gIAddr?: number;
+  cHAddr?: Buffer;
+  bootp?: Buffer;
+};
 
-class DHCPResponse extends DHCPPacket {
-  op = 2;
+export function DHCPDISCOVER(mac: MacAddress): DHCPPacket {
+  const cHAddr = Buffer.alloc(16);
+  cHAddr.writeBigUInt64BE(BigInt(mac) << BigInt(16));
+  return {
+    op: DHCPOp.request,
+    hType: HType.ethernet,
+    xId: randomU32(),
+    cHAddr,
+  };
 }
