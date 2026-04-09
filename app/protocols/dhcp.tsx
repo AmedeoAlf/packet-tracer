@@ -35,6 +35,7 @@
 
 import { randomU32 } from "../common";
 import { MacAddress } from "./802_3";
+import { FixedBufferField, PacketSerializer, U16Field, U32Field, U8Field } from "./packetEngine";
 
 export enum HType {
   ethernet = 1,
