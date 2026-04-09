@@ -40,13 +40,13 @@ export function forwardIPv4Packet<State extends L3InternalState>(
   if (!ctx.state.macTable_t.has(targetIp)) {
     ctx.sendOnIf(
       intf,
-      new ARPPacket(
-        ctx.state.netInterfaces[intf].mac,
-        ctx.state.l3Ifs[intf]!.ip,
-        targetIp,
-      )
-        .toL2()
-        .toBytes(),
+      EthernetFrameSerializer.toBuffer(
+        new ARPPacket(
+          ctx.state.netInterfaces[intf].mac,
+          ctx.state.l3Ifs[intf]!.ip,
+          targetIp,
+        ).toL2(),
+      ),
     );
     ctx.state.packetsWaitingForARP_t[targetIp] ??= [];
     ctx.state.packetsWaitingForARP_t[targetIp].push(packet);

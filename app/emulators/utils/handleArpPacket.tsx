@@ -2,6 +2,7 @@ import { L3InternalStateBase } from "@/app/protocols/rfc_760";
 import { EmulatorContext } from "../DeviceEmulator";
 import { ARPPacket } from "@/app/protocols/rfc_826";
 import { forwardIPv4Packet } from "./sendIPv4Packet";
+import { EthernetFrameSerializer } from "@/app/protocols/802_3";
 
 export function handleArpPacket<State extends L3InternalStateBase>(
   ctx: EmulatorContext<State>,
@@ -33,7 +34,9 @@ export function handleArpPacket<State extends L3InternalStateBase>(
   ctx.state.macTable_t.set(packet.senderIP, packet.senderMAC);
   ctx.sendOnIf(
     intf,
-    packet.respondWith(ctx.state.netInterfaces[intf].mac).toL2().toBytes(),
+    EthernetFrameSerializer.toBuffer(
+      packet.respondWith(ctx.state.netInterfaces[intf].mac).toL2(),
+    ),
   );
   // ctx.updateState();
 
