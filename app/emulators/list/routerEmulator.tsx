@@ -16,7 +16,7 @@ import { ping } from "../../virtualPrograms/ping";
 import { DeviceEmulator, runOnInterpreter } from "../DeviceEmulator";
 import { arptable } from "@/app/virtualPrograms/arptable";
 import { udpSend } from "@/app/virtualPrograms/udpSend";
-import { UDPPacket } from "@/app/protocols/udp";
+import { UDPSerializer } from "@/app/protocols/udp";
 import { handleArpPacket } from "../utils/handleArpPacket";
 import { forwardIPv4Packet, sendIPv4Packet } from "../utils/sendIPv4Packet";
 import { countLeadingOnes, throwString } from "@/app/common";
@@ -315,7 +315,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
           }
           break;
         case ProtocolCode.udp:
-          const udpPacket = UDPPacket.fromBytes(packet.payload);
+          const udpPacket = UDPSerializer.fromBytes(packet.payload);
           if (ctx.state.udpSocket_t)
             ctx.state.udpSocket_t(udpPacket, packet.source);
           break;
