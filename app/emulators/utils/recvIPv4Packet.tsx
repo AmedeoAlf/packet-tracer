@@ -22,7 +22,7 @@ export function recvIPv4Packet(
   intf: number,
 ): IPv4Packet | undefined {
   const l2Packet = EthernetFrameSerializer.fromBytes(data);
-  if (l2Packet.lenOrEthertype == EtherType.arp) {
+  if (l2Packet.lenOrEtherType == EtherType.arp) {
     handleArpPacket(ctx, ARPPacket.fromL2(l2Packet), intf);
     return;
   }

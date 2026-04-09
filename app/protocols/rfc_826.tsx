@@ -79,12 +79,12 @@ export class ARPPacket {
       payload: buf,
       src: this.senderMAC,
       dst: this.targetMAC || MAC_BROADCAST,
-      lenOrEthertype: EtherType.arp,
+      lenOrEtherType: EtherType.arp,
     };
   }
 
   static fromL2(l2Packet: EthernetFrame): ARPPacket {
-    if (l2Packet.lenOrEthertype != EtherType.arp)
+    if (l2Packet.lenOrEtherType != EtherType.arp)
       throw "Tried to parse a non-arp packet as one";
     const bytes = l2Packet.payload;
     if (bytes.length < 28)

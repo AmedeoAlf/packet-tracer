@@ -43,7 +43,7 @@ export type EthernetFrame = {
   dst: MacAddress;
   src: MacAddress;
   vlanTag?: number;
-  lenOrEthertype?: number;
+  lenOrEtherType?: number;
   payload: Buffer;
   crc?: number;
 };
@@ -53,7 +53,7 @@ class EthernetFrameSerializerConstructor extends PacketSerializer<EthernetFrame>
     super([
       new MACField("dst"),
       new MACField("src"),
-      new VLANTagField("vlanTag", 0),
+      new VLANTagField("vlanTag"),
       new U16Field("lenOrEtherType", 0),
       new FillingBufferField("payload", 4),
       new U32Field("crc", 0),
@@ -63,10 +63,10 @@ class EthernetFrameSerializerConstructor extends PacketSerializer<EthernetFrame>
   protected beforeToBytes(value: EthernetFrame): void {
     // If value under MTU/unset compute it
     if (
-      typeof value.lenOrEthertype == "undefined" ||
-      value.lenOrEthertype <= 1500
+      typeof value.lenOrEtherType == "undefined" ||
+      value.lenOrEtherType <= 1500
     )
-      value.lenOrEthertype = value.payload.byteLength;
+      value.lenOrEtherType = value.payload.byteLength;
   }
 }
 

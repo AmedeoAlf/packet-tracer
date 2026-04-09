@@ -249,7 +249,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   },
   packetHandler(ctx, data, intf) {
     const l2Packet = EthernetFrameSerializer.fromBytes(data);
-    if (l2Packet.lenOrEthertype == EtherType.arp) {
+    if (l2Packet.lenOrEtherType == EtherType.arp) {
       handleArpPacket(ctx, ARPPacket.fromL2(l2Packet), intf);
       return;
     }
