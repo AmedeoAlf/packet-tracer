@@ -33,10 +33,10 @@ class UDPPacketSerializerConstructor extends PacketSerializer<UDPPacket> {
     ]);
   }
 
-  beforeToBytes(value: UDPPacket): void {
+  protected beforeToBytes(value: UDPPacket): void {
     value.length = value.payload.length + 8;
   }
-  afterFromBytes(_: Buffer, value: UDPPacket): void {
+  protected afterFromBytes(_: Buffer, value: UDPPacket): void {
     value.length = value.length ?? 0 - 8;
   }
 }
