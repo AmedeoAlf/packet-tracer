@@ -1,3 +1,5 @@
+import { trustMeBroCast } from "../common";
+
 abstract class Field<T> {
   abstract serialize(into: Buffer, value: T): void;
   abstract deserialize(bytes: Buffer): T;
@@ -5,10 +7,10 @@ abstract class Field<T> {
   constructor(
     public name: string,
     public def?: T,
-  ) {}
+  ) { }
 }
 
-class U32Field extends Field<number> {
+export class U32Field extends Field<number> {
   serialize(into: Buffer, value: number): void {
     into.writeUInt32BE(value);
   }
@@ -20,7 +22,7 @@ class U32Field extends Field<number> {
   }
 }
 
-class U16Field extends Field<number> {
+export class U16Field extends Field<number> {
   serialize(into: Buffer, value: number): void {
     into.writeUInt16BE(value);
   }
@@ -32,7 +34,7 @@ class U16Field extends Field<number> {
   }
 }
 
-class U8Field extends Field<number> {
+export class U8Field extends Field<number> {
   serialize(into: Buffer, value: number): void {
     into.writeUInt8(value);
   }
@@ -44,7 +46,7 @@ class U8Field extends Field<number> {
   }
 }
 
-class FixedBufferField extends Field<Buffer> {
+export class FixedBufferField extends Field<Buffer> {
   constructor(
     public name: string,
     public length: number,
@@ -64,7 +66,7 @@ class FixedBufferField extends Field<Buffer> {
   }
 }
 
-class FillingBufferField extends Field<Buffer> {
+export class FillingBufferField extends Field<Buffer> {
   constructor(
     public name: string,
     public leaveTrail: number = 0,
@@ -84,7 +86,7 @@ class FillingBufferField extends Field<Buffer> {
   }
 }
 
-class PacketField<T extends Record<string, any>> extends Field<T> {
+export class PacketField<T extends Record<string, any>> extends Field<T> {
   constructor(
     public name: string,
     public serializer: PacketSerializer<T>,
@@ -94,7 +96,7 @@ class PacketField<T extends Record<string, any>> extends Field<T> {
   }
 
   serialize(into: Buffer, value: T): void {
-    into.set(this.serializer.toBytes(value));
+    this.serializer.toBytes(into, value);
   }
   deserialize(bytes: Buffer): T {
     return this.serializer.fromBytes(bytes);
@@ -105,8 +107,15 @@ class PacketField<T extends Record<string, any>> extends Field<T> {
   }
 }
 
-class PacketSerializer<T extends Record<string, any>> {
-  constructor(public fields: Field<any>[]) {}
+export class PacketSerializer<T extends Record<string, any>> {
+  beforeToBytes(_value: T) { }
+  afterToBytes(_into: Buffer, _value: T) { }
+
+  beforeFromBytes(_bytes: Buffer) { }
+  afterFromBytes(_bytes: Buffer, _value: T) { }
+
+
+  constructor(public fields: Field<any>[]) { }
 
   computeSizeOf(value: T): number {
     return this.fields
@@ -114,28 +123,30 @@ class PacketSerializer<T extends Record<string, any>> {
       .reduce((acc, val) => acc + val);
   }
 
-  toBytes(value: T): Buffer {
-    const pkt = Buffer.alloc(this.computeSizeOf(value));
-
-    let subarr = pkt;
+  toBytes(into: Buffer, value: T) {
+    this.beforeToBytes(value);
+    let subarr = into;
     for (const f of this.fields) {
       const val = value[f.name] ?? f.def;
       if (typeof val !== "undefined") f.serialize(subarr, val);
       subarr = subarr.subarray(f.getSizeFor(val));
     }
-
-    return pkt;
+    this.afterToBytes(into, value);
   }
 
   fromBytes(bytes: Buffer): T {
+    this.beforeFromBytes(bytes);
     const result: Record<string, any> = {};
 
+    // TODO: handle packets too small
     for (const f of this.fields) {
       const val = f.deserialize(bytes);
       result[f.name] = val;
       bytes = bytes.subarray(f.getSizeFor(val));
     }
 
-    return result as T;
+    trustMeBroCast<T>(result);
+    this.afterFromBytes(bytes, result);
+    return result;
   }
 }
