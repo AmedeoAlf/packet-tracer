@@ -107,11 +107,41 @@ export class PacketField<T extends Record<string, any>> extends Field<T> {
   }
 }
 
+type OpaquePacket<T extends Record<string, any>> = [
+  value: T,
+  serializer: PacketSerializer<T>,
+];
+
+export class OpaquePacketField extends Field<OpaquePacket<any>> {
+  constructor(
+    public name: string,
+    public getDeserializer: (bytes: Buffer) => PacketSerializer<any>,
+  ) {
+    super(name);
+  }
+
+  serialize(into: Buffer, [value, serializer]: OpaquePacket<any>): void {
+    serializer.toBytes(into, value);
+  }
+  deserialize(bytes: Buffer): any {
+    return this.getDeserializer(bytes).fromBytes(bytes);
+  }
+  getSizeFor(valueSerializer?: OpaquePacket<any>): number {
+    if (!valueSerializer) return 0;
+    const [value, serializer] = valueSerializer;
+    return serializer.computeSizeOf(value);
+  }
+}
+
 export class PacketSerializer<T extends Record<string, any>> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected beforeToBytes(_value: T) {}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected afterToBytes(_into: Buffer, _value: T) {}
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected beforeFromBytes(_bytes: Buffer) {}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected afterFromBytes(_bytes: Buffer, _value: T) {}
 
   constructor(public fields: Field<any>[]) {}
