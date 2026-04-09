@@ -59,6 +59,24 @@ export class MACField extends Field<number> {
   }
 }
 
+export class VLANTagField extends Field<number | undefined> {
+  serialize(into: Buffer, value: number | undefined): void {
+    if (typeof value == "undefined") return;
+    into.writeUInt16BE(0x8100);
+    into.writeUInt16BE(value & 0xfff, 2);
+  }
+  deserialize(bytes: Buffer): number | undefined {
+    const val = bytes.readUInt16BE();
+    // No 802.1Q header? https://en.wikipedia.org/wiki/IEEE_802.1Q#Frame_format
+    if (val != 0x8100) return;
+    return bytes.readUInt16BE(2) & 0xfff;
+  }
+  getSizeFor(value: number | undefined): number {
+    if (typeof value == "undefined") return 0;
+    return 4;
+  }
+}
+
 export class FixedBufferField extends Field<Buffer> {
   constructor(
     public name: string,
