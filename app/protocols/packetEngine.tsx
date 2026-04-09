@@ -46,6 +46,19 @@ export class U8Field extends Field<number> {
   }
 }
 
+export class MACField extends Field<number> {
+  serialize(into: Buffer, value: number): void {
+    into.writeUInt16BE(Math.floor(value / 2 ** 32));
+    into.writeUInt32BE(value % 0x100000000, 2);
+  }
+  deserialize(bytes: Buffer): number {
+    return bytes.readUInt16BE() * 2 ** 32 + bytes.readUInt32BE(2);
+  }
+  getSizeFor(): number {
+    return 6;
+  }
+}
+
 export class FixedBufferField extends Field<Buffer> {
   constructor(
     public name: string,
