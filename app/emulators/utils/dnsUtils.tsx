@@ -12,7 +12,7 @@ import {
   ResponseCode,
   RRType,
 } from "@/app/protocols/dns_emu";
-import { UDPPacket } from "@/app/protocols/udp";
+import { UDPSerializer } from "@/app/protocols/udp";
 import { sendIPv4Packet } from "./sendIPv4Packet";
 
 export function getDns(
@@ -74,6 +74,14 @@ export async function resolveAddresses(
     return true;
   });
   const query = new DNSQueryPacket(0, dnsQuestions);
-  const udpPacket = new UDPPacket(port, 53, query.toBytes());
-  sendIPv4Packet(ctx, dns, ProtocolCode.udp, udpPacket.toBytes());
+  sendIPv4Packet(
+    ctx,
+    dns,
+    ProtocolCode.udp,
+    UDPSerializer.toBuffer({
+      source: port,
+      destination: 53,
+      payload: query.toBytes(),
+    }),
+  );
 }

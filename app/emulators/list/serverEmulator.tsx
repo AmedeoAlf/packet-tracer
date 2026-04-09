@@ -17,7 +17,7 @@ import {
   parseIpv4,
   ProtocolCode,
 } from "@/app/protocols/rfc_760";
-import { UDPPacket } from "@/app/protocols/udp";
+import { UDPSerializer } from "@/app/protocols/udp";
 import { isError, OSDir, readFile, readSettingsFile } from "../utils/osFiles";
 import {
   DNSPacket,
@@ -98,7 +98,7 @@ export function serverPacketHandler(
 ) {
   switch (packet.protocol) {
     case ProtocolCode.udp:
-      const udpPacket = UDPPacket.fromBytes(packet.payload);
+      const udpPacket = UDPSerializer.fromBytes(packet.payload);
       if (ctx.state.udpSockets_t.has(udpPacket.destination)) {
         const completed = ctx.state.udpSockets_t
           .get(udpPacket.destination)!
@@ -159,11 +159,11 @@ function dnsPacketHandler(
     ctx,
     ipSource,
     ProtocolCode.udp,
-    new UDPPacket(
-      udpPacket.toPort,
-      udpPacket.fromPort,
-      response.toBytes(),
-    ).toBytes(),
+    UDPSerializer.toBuffer({
+      destination: udpPacket.fromPort,
+      source: udpPacket.toPort,
+      payload: response.toBytes(),
+    }),
   );
 }
 

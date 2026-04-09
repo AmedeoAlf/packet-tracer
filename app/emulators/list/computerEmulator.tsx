@@ -6,7 +6,7 @@ import { ping } from "../../virtualPrograms/ping";
 import { DeviceEmulator, EmulatorContext } from "../DeviceEmulator";
 import { arptable } from "@/app/virtualPrograms/arptable";
 import { udpSend } from "@/app/virtualPrograms/udpSend";
-import { UDPPacket } from "@/app/protocols/udp";
+import { UDPSerializer } from "@/app/protocols/udp";
 import { OSInternalState } from "@/app/devices/list/Computer";
 import { nslookup } from "@/app/virtualPrograms/nslookup";
 import { cat } from "@/app/virtualPrograms/cat";
@@ -65,7 +65,7 @@ export function computerPacketHandler(
 ) {
   switch (packet.protocol) {
     case ProtocolCode.udp:
-      const udpPacket = UDPPacket.fromBytes(packet.payload);
+      const udpPacket = UDPSerializer.fromBytes(packet.payload);
       const completed = ctx.state.udpSockets_t
         .get(udpPacket.destination)
         ?.call(null, [
