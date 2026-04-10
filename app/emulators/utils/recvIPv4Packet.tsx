@@ -13,7 +13,11 @@ import {
 } from "@/app/protocols/802_3";
 import { handleArpPacket } from "./handleArpPacket";
 import { ARPPacket } from "@/app/protocols/rfc_826";
-import { ICMPPacket, ICMPType } from "@/app/protocols/icmp";
+import {
+  echoResponse,
+  ICMPPacketSerializer,
+  ICMPType,
+} from "@/app/protocols/icmp";
 import { sendIPv4Packet } from "./sendIPv4Packet";
 
 export function recvIPv4Packet(
@@ -63,14 +67,14 @@ export function recvIPv4Packet(
 
     // Gestisci i pacchetti echo ICMP
     if (packet.protocol == ProtocolCode.icmp) {
-      const icmpPacket = ICMPPacket.fromBytes(packet.payload);
+      const icmpPacket = ICMPPacketSerializer.fromBytes(packet.payload);
       switch (icmpPacket.type) {
         case ICMPType.echoRequest:
           sendIPv4Packet(
             ctx,
             packet.source,
             ProtocolCode.icmp,
-            ICMPPacket.echoResponse(icmpPacket).toBytes(),
+            ICMPPacketSerializer.toBuffer(echoResponse(icmpPacket)),
           );
         default:
           if (ctx.state.rawSocketFd_t)

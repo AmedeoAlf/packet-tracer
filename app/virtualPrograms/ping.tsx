@@ -1,6 +1,10 @@
 import { EmulatorContext, SubCommand } from "../emulators/DeviceEmulator";
 import { sendIPv4Packet } from "../emulators/utils/sendIPv4Packet";
-import { ICMPPacket } from "../protocols/icmp";
+import {
+  echoRequest,
+  echoResponseHeader,
+  ICMPPacketSerializer,
+} from "../protocols/icmp";
 import {
   parseIpv4,
   ipv4ToString,
@@ -29,14 +33,17 @@ export const ping = {
       let done = false;
       ctx.state.rawSocketFd_t = (ctx, packet) => {
         done = true;
-        const seq = ICMPPacket.fromBytes(packet.payload).echoResponseHeader()
-          .seq;
+        const seq = echoResponseHeader(
+          ICMPPacketSerializer.fromBytes(packet.payload),
+        ).seq;
         ctx.write(
           `From ${ipv4ToString(packet.source)}: icmp_seq=${seq} ttl=${packet.ttl} time=${ctx.currTick - start} ms`,
         );
         ctx.state.rawSocketFd_t = undefined;
       };
-      const req = ICMPPacket.echoRequest(0, 0, Buffer.alloc(0)).toBytes();
+      const req = ICMPPacketSerializer.toBuffer(
+        echoRequest(0, 0, Buffer.alloc(0)),
+      );
       sendIPv4Packet(ctx, addr, ProtocolCode.icmp, req);
       ctx.schedule(100, (ctx) => {
         ctx.state.rawSocketFd_t = undefined;

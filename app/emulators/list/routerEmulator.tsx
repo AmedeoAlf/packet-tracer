@@ -1,7 +1,11 @@
 import { ARPPacket } from "@/app/protocols/rfc_826";
 import { RouterInternalState } from "../../devices/list/Router";
 import { EthernetFrameSerializer, EtherType } from "../../protocols/802_3";
-import { ICMPPacket, ICMPType } from "../../protocols/icmp";
+import {
+  echoResponse,
+  ICMPPacketSerializer,
+  ICMPType,
+} from "../../protocols/icmp";
 import {
   getMatchingInterface,
   ipv4ToString,
@@ -298,7 +302,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
 
       switch (packet.protocol) {
         case ProtocolCode.icmp:
-          const icmpPacket = ICMPPacket.fromBytes(packet.payload);
+          const icmpPacket = ICMPPacketSerializer.fromBytes(packet.payload);
           // Gestisci i pacchetti echo ICMP
           switch (icmpPacket.type) {
             case ICMPType.echoRequest:
@@ -306,7 +310,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
                 ctx,
                 packet.source,
                 ProtocolCode.icmp,
-                ICMPPacket.echoResponse(icmpPacket).toBytes(),
+                ICMPPacketSerializer.toBuffer(echoResponse(icmpPacket)),
               );
               break;
             default:
