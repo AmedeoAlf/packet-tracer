@@ -14,6 +14,13 @@
  * simulatore)
  */
 
+import {
+  FillingBufferField,
+  PacketSerializer,
+  U16Field,
+  U32Field,
+} from "./packetEngine";
+
 // https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages
 export enum ICMPType {
   echo = 0x0000,
@@ -28,47 +35,43 @@ export enum ICMPType {
 }
 
 // https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Header
-export class ICMPPacket {
-  type: ICMPType; // type + code
+export type ICMPPacket = {
+  type: ICMPType;
+  checksum?: number;
   extraHeader: number;
-  payload: Buffer;
+  payload?: Buffer;
+};
 
-  constructor(type: ICMPType, extraHeader: number, payload: Buffer) {
-    this.type = type;
-    this.extraHeader = extraHeader;
-    this.payload = payload;
-  }
+export const ICMPPacketSerializer = new PacketSerializer<ICMPPacket>([
+  new U16Field("type"),
+  new U16Field("checksum"),
+  new U32Field("extraHeader"),
+  new FillingBufferField("payload"),
+]);
 
-  static echoRequest(id: number, seq: number, payload: Buffer): ICMPPacket {
-    return new ICMPPacket(ICMPType.echoRequest, (id << 16) | seq, payload);
-  }
+export function echoRequest(
+  id: number,
+  seq: number,
+  payload: Buffer,
+): ICMPPacket {
+  return {
+    type: ICMPType.echoRequest,
+    extraHeader: (id << 16) | seq,
+    payload,
+  };
+}
 
-  static echoResponse(echoRequest: ICMPPacket): ICMPPacket {
-    if (echoRequest.type != ICMPType.echoRequest) throw "Not an echo request";
-    return new ICMPPacket(
-      ICMPType.echo,
-      echoRequest.extraHeader,
-      echoRequest.payload,
-    );
-  }
+export function echoResponse(echoRequest: ICMPPacket): ICMPPacket {
+  if (echoRequest.type != ICMPType.echoRequest) throw "Not an echo request";
+  return {
+    ...echoRequest,
+    type: ICMPType.echo,
+  };
+}
 
-  echoResponseHeader(): { id: number; seq: number } {
-    return { id: this.extraHeader >> 16, seq: this.extraHeader & 0xffff };
-  }
-
-  toBytes(): Buffer {
-    const buf = Buffer.alloc(8 + this.payload.byteLength);
-    buf.writeUInt16BE(this.type);
-    buf.writeUInt32BE(this.extraHeader, 4);
-    buf.set(this.payload, 8);
-    return buf;
-  }
-
-  static fromBytes(bytes: Buffer): ICMPPacket {
-    return new ICMPPacket(
-      bytes.readUInt16BE(0),
-      bytes.readUInt32BE(4),
-      bytes.subarray(8),
-    );
-  }
+export function echoResponseHeader(packet: ICMPPacket): {
+  id: number;
+  seq: number;
+} {
+  return { id: packet.extraHeader >> 16, seq: packet.extraHeader & 0xffff };
 }
