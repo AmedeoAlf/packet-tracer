@@ -36,12 +36,15 @@
 import { randomU32 } from "../common";
 import { MacAddress } from "./802_3";
 import {
+  DHCPTLVField,
+  DHCPTLVOption,
   FixedBufferField,
   PacketSerializer,
   U16Field,
   U32Field,
   U8Field,
 } from "./packetEngine";
+import { IPv4Address } from "./rfc_760";
 
 export enum HType {
   ethernet = 1,
@@ -67,6 +70,7 @@ export const DHCPSerializer = new PacketSerializer<DHCPPacket>([
   new FixedBufferField("cHAddr", 16),
   new FixedBufferField("bootp", 192),
   new U32Field("magic", 0x63825363),
+  new DHCPTLVField("options"),
 ]);
 
 type DHCPPacket = {
@@ -83,6 +87,7 @@ type DHCPPacket = {
   gIAddr?: number;
   cHAddr?: Buffer;
   bootp?: Buffer;
+  options?: DHCPTLVOption[];
 };
 
 export function DHCPDISCOVER(mac: MacAddress): DHCPPacket {
@@ -93,5 +98,20 @@ export function DHCPDISCOVER(mac: MacAddress): DHCPPacket {
     hType: HType.ethernet,
     xId: randomU32(),
     cHAddr,
+  };
+}
+
+export function makeDHCPOffer(
+  dhcpDiscover: DHCPPacket,
+  serverAddr: IPv4Address,
+  offered: IPv4Address,
+): DHCPPacket {
+  if (dhcpDiscover.op != DHCPOp.request) throw "Not a request";
+
+  return {
+    ...dhcpDiscover,
+    op: DHCPOp.response,
+    yIAddr: offered,
+    sIAddr: serverAddr,
   };
 }

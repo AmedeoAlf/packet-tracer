@@ -117,6 +117,46 @@ export class FillingBufferField extends Field<Buffer> {
   }
 }
 
+export type DHCPTLVOption = [tag: number, value: Buffer];
+export class DHCPTLVField extends Field<DHCPTLVOption[]> {
+  constructor(
+    public name: string,
+    public stopTag: number = 0xff,
+    public def?: DHCPTLVOption[],
+  ) {
+    super(name, def);
+  }
+
+  serialize(into: Buffer, options: DHCPTLVOption[]): void {
+    let cursor = 0;
+    for (const [tag, value] of options) {
+      into.writeUInt8(tag, cursor);
+      into.writeUInt8(value.byteLength, cursor + 1);
+      into.set(value, cursor + 2);
+      cursor += 2 + value.byteLength;
+    }
+  }
+  deserialize(bytes: Buffer): DHCPTLVOption[] {
+    const options: DHCPTLVOption[] = [];
+    let cursor = 0;
+    while (
+      cursor < bytes.byteLength ||
+      bytes.readUInt8(cursor) == this.stopTag
+    ) {
+      const len = bytes.readUInt8(cursor + 1);
+      options.push([
+        bytes.readUInt8(cursor),
+        bytes.subarray(cursor + 2, cursor + 2 + len),
+      ]);
+      cursor += 2 + len;
+    }
+    return options;
+  }
+  getSizeFor(value?: DHCPTLVOption[]): number {
+    return value?.reduce((acc, val) => acc + 2 + val[1].byteLength, 0) ?? 0;
+  }
+}
+
 export class PacketField<T extends Record<string, any>> extends Field<T> {
   constructor(
     public name: string,
