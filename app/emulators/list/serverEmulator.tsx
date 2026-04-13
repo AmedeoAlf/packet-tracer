@@ -33,6 +33,7 @@ import {
   HttpResponse,
   ResponseCode as HttpResponseCode,
 } from "@/app/protocols/http";
+import { curl } from "@/app/virtualPrograms/curl";
 
 export const defaultServerFS: OSDir = {
   etc: {
@@ -78,6 +79,7 @@ export const serverEmulator: DeviceEmulator<OSInternalState> = {
     shell: {
       subcommands: {
         hello: hello,
+        curl,
         interfaces: interfacesL3,
         l2send: l2send,
         ping: ping as any,
