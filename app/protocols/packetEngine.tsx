@@ -117,7 +117,7 @@ export class FillingBufferField extends Field<Buffer> {
   }
 }
 
-export type DHCPTLVOption = [tag: number, value: Buffer];
+export type DHCPTLVOption = readonly [tag: number, value: Buffer];
 export class DHCPTLVField extends Field<DHCPTLVOption[]> {
   constructor(
     public name: string,
@@ -135,6 +135,7 @@ export class DHCPTLVField extends Field<DHCPTLVOption[]> {
       into.set(value, cursor + 2);
       cursor += 2 + value.byteLength;
     }
+    into.writeUInt8(this.stopTag);
   }
   deserialize(bytes: Buffer): DHCPTLVOption[] {
     const options: DHCPTLVOption[] = [];
@@ -153,7 +154,10 @@ export class DHCPTLVField extends Field<DHCPTLVOption[]> {
     return options;
   }
   getSizeFor(value?: DHCPTLVOption[]): number {
-    return value?.reduce((acc, val) => acc + 2 + val[1].byteLength, 0) ?? 0;
+    return (
+      (value?.reduce((acc, val) => acc + 2 + val[1].byteLength, 0) ?? 0) +
+      1 /* stop byte */
+    );
   }
 }
 

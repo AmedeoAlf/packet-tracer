@@ -132,3 +132,29 @@ export function throwString(msg: string = "Assertion failed"): never {
 export function randomU32(): number {
   return Math.floor(Math.random() * 2 ** 32);
 }
+
+export function bufferOf<T>(
+  elSize: number,
+  write: (buf: Buffer, t: T) => void,
+  ...elements: T[]
+): Buffer {
+  const b = Buffer.alloc(elSize * elements.length);
+  let cursor = b;
+  for (const el of elements) {
+    write(cursor, el);
+    cursor = cursor.subarray(elSize);
+  }
+  return b;
+}
+
+export const bufferOfU8: (...els: number[]) => Buffer = bufferOf.bind(
+  null,
+  1,
+  (buf, el) => void buf.writeUInt8(el as number),
+);
+
+export const bufferOfU32BE: (...els: number[]) => Buffer = bufferOf.bind(
+  null,
+  4,
+  (buf, el) => void buf.writeUInt32BE(el as number),
+);
