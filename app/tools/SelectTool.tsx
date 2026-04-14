@@ -399,6 +399,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
 }
 
 export function splitArgs(cmd: string) {
+  if (cmd == "") return [""];
   const args = cmd.split(" ").filter((it) => it);
   if (cmd.endsWith(" ")) args.push("");
   return args;
