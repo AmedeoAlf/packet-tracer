@@ -85,3 +85,18 @@ export async function resolveAddresses(
     }),
   );
 }
+
+export async function resolveAddressSimple(ctx: EmulatorContext<OSInternalState>, dns: IPv4Address, domain: string, callback: (ctx: EmulatorContext<OSInternalState>, ip: IPv4Address, error?: string) => void) {
+  await resolveAddresses(ctx, dns, [new DNSQuestion(domain)], (ctx, answers, err) => {
+    if (typeof err == 'string') {
+      callback(ctx, 0, err);
+      return;
+    }
+    const ans = answers.find(it => Array.isArray(it) && it[0] == domain) as ResolvedARecord | undefined;
+    if (typeof ans == 'undefined') {
+      callback(ctx, 0, "Server did not send a response to domain");
+    } else {
+      callback(ctx, ans[1][0]);
+    }
+  });
+}
