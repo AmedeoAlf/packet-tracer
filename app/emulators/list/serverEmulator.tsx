@@ -34,6 +34,7 @@ import {
   ResponseCode as HttpResponseCode,
 } from "@/app/protocols/http";
 import { curl } from "@/app/virtualPrograms/curl";
+import { gatewayCmd } from "@/app/virtualPrograms/gateway";
 
 export const defaultServerFS: OSDir = {
   etc: {
@@ -78,7 +79,8 @@ export const serverEmulator: DeviceEmulator<OSInternalState> = {
   cmdInterpreter: {
     shell: {
       subcommands: {
-        hello: hello,
+        gateway: gatewayCmd,
+        hello,
         curl,
         interfaces: interfacesL3,
         l2send: l2send,
