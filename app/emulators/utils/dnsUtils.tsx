@@ -16,9 +16,9 @@ import { UDPSerializer } from "@/app/protocols/udp";
 import { sendIPv4Packet } from "./sendIPv4Packet";
 
 export function getDns(
-  ctx: Pick<EmulatorContext<OSInternalState>, "write" | "state">,
+  filesystem: OSInternalState["filesystem"],
 ): IPv4Address | string {
-  const dnsStr = readFile(ctx.state.filesystem, "/etc/dns");
+  const dnsStr = readFile(filesystem, "/etc/dns");
   if (typeof dnsStr != "string") {
     return "File di configurazione non presente, esegui\nwriteFile /etc/dns 1.1.1.1";
   }

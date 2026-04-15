@@ -49,7 +49,7 @@ function NetworkField({
 export function impostazioniDiRete(
   ctx: EmulatorContext<ComputerInternalState>,
 ) {
-  const dnsOrErr = getDns(ctx);
+  const dnsOrErr = getDns(ctx.state.filesystem);
   const dns = typeof dnsOrErr == "string" ? undefined : dnsOrErr;
   return (
     <>

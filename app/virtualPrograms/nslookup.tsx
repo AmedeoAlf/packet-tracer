@@ -13,7 +13,7 @@ export const nslookup = {
   then: {
     done: true,
     run(ctx: EmulatorContext<OSInternalState>) {
-      const dns = getDns(ctx);
+      const dns = getDns(ctx.state.filesystem);
       if (typeof dns == "string") {
         ctx.write("Errore: " + dns);
         return;

@@ -25,7 +25,7 @@ export const curl = {
         return;
       }
 
-      const dns = getDns(ctx);
+      const dns = getDns((ctx.state as OSInternalState).filesystem);
       if (typeof dns == "string") {
         ctx.write(dns);
         return;
