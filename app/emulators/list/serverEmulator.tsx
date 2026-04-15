@@ -35,6 +35,7 @@ import {
 } from "@/app/protocols/http";
 import { curl } from "@/app/virtualPrograms/curl";
 import { gatewayCmd } from "@/app/virtualPrograms/gateway";
+import { impostazioniDiRete } from "../panels/impostazioniDiRete";
 
 export const defaultServerFS: OSDir = {
   etc: {
@@ -64,9 +65,7 @@ export const defaultServerFS: OSDir = {
 
 export const serverEmulator: DeviceEmulator<OSInternalState> = {
   configPanel: {
-    wip() {
-      return <>UI Work in progress</>;
-    },
+    "Impostazioni di rete": impostazioniDiRete,
   },
   packetHandler(ctx, data, intf) {
     try {
