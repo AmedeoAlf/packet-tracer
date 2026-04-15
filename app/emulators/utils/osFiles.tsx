@@ -67,6 +67,7 @@ export function writeFile(
   return OSError.NoErr;
 }
 
+// Creates required directories for the file
 export function writeFileInLocation(
   filesystem: OSInternalState["filesystem"],
   path: string,
@@ -81,6 +82,18 @@ export function writeFileInLocation(
     node = node[f];
   }
   node[filename] = content;
+}
+
+export function removeFile(
+  filesystem: OSInternalState["filesystem"],
+  path: string,
+): OSError {
+  const folders = path.split("/");
+  const filename = folders.pop()!;
+  const folder = getDir(filesystem, folders.join("/"));
+  if (isError(folder)) return folder;
+  delete folder[filename];
+  return OSError.NoErr;
 }
 
 export function listAll(filesystem: OSDir, prefix = "/"): string[] {
