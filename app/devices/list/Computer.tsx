@@ -41,7 +41,16 @@ export type OSInternalState = L3InternalState & {
   tcpSockets_t: Map<number, TCPConnectionState>;
 };
 
-export const Computer: DeviceFactory<OSInternalState> = {
+export type ComputerInternalState = OSInternalState & {
+  fieldIp_t?: string;
+  fieldSubnet_t?: string;
+  fieldGateway_t?: string;
+  fieldDns_t?: string;
+
+  netSeterror_t?: string;
+};
+
+export const Computer: DeviceFactory<ComputerInternalState> = {
   proto: {
     iconId: "#pc-icon",
     emulator: computerEmulator,
