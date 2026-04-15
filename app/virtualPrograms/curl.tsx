@@ -26,10 +26,8 @@ export const curl = {
       }
 
       const dns = getDns(ctx);
-      if (typeof dns == "undefined") {
-        ctx.write(
-          "Configure dns to resolve server addresses (write the ip in /etc/dns)",
-        );
+      if (typeof dns == "string") {
+        ctx.write(dns);
         return;
       }
       resolveAddressSimple(ctx, dns, address, (ctx, ip, error) => {

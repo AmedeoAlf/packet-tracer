@@ -17,16 +17,14 @@ import { sendIPv4Packet } from "./sendIPv4Packet";
 
 export function getDns(
   ctx: Pick<EmulatorContext<OSInternalState>, "write" | "state">,
-): IPv4Address | undefined {
+): IPv4Address | string {
   const dnsStr = readFile(ctx.state.filesystem, "/etc/dns");
   if (typeof dnsStr != "string") {
-    ctx.write("Can't find /etc/dns");
-    return;
+    return "File di configurazione non presente, esegui\nwriteFile /etc/dns 1.1.1.1";
   }
   const dns = parseIpv4(dnsStr);
   if (dns === undefined) {
-    ctx.write("DNS is configured improperly (edit /etc/dns)");
-    return;
+    return "Indirizzo contenuto in /etc/dns non valido";
   }
   return dns;
 }

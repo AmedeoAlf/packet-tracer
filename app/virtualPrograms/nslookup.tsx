@@ -14,7 +14,10 @@ export const nslookup = {
     done: true,
     run(ctx: EmulatorContext<OSInternalState>) {
       const dns = getDns(ctx);
-      if (dns === undefined) return;
+      if (typeof dns == "string") {
+        ctx.write("Errore: " + dns);
+        return;
+      }
       ctx.write(`Server ${ipv4ToString(dns)}`);
       resolveAddresses(
         ctx,
