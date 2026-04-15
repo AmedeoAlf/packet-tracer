@@ -20,14 +20,16 @@ export const curl = {
       const ip = parseIpv4(address);
 
       // The user passed an IP as destination, no DNS needed
-      if (typeof ip !== 'undefined') {
+      if (typeof ip !== "undefined") {
         curlRequest(ctx, ip, resource);
         return;
       }
 
       const dns = getDns(ctx);
-      if (typeof dns == 'undefined') {
-        ctx.write("Configure dns to resolve server addresses (write the ip in /etc/dns)");
+      if (typeof dns == "undefined") {
+        ctx.write(
+          "Configure dns to resolve server addresses (write the ip in /etc/dns)",
+        );
         return;
       }
       resolveAddressSimple(ctx, dns, address, (ctx, ip, error) => {
@@ -41,14 +43,19 @@ export const curl = {
   },
 } satisfies SubCommand<OSInternalState>;
 
-function curlRequest(ctx: EmulatorContext<OSInternalState>, ip: IPv4Address, resource: string, domain?: string) {
+function curlRequest(
+  ctx: EmulatorContext<OSInternalState>,
+  ip: IPv4Address,
+  resource: string,
+  domain?: string,
+) {
   const socket = dialTCP(ctx, ip, 80, (ctx, socket) => {
     send(
       ctx,
       socket,
       new HttpRequest("/" + resource, {
         "user-agent": "curl",
-        "host": domain
+        host: domain,
       }).toBytes(),
     );
     recv(ctx.state, socket, (ctx, data) => {
