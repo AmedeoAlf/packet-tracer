@@ -158,3 +158,7 @@ export const bufferOfU32BE: (...els: number[]) => Buffer = bufferOf.bind(
   4,
   (buf, el) => void buf.writeUInt32BE(el as number),
 );
+
+export type KeysOfType<T, V> = {
+  [K in keyof T]: T[K] extends V ? K : never;
+}[keyof T];
