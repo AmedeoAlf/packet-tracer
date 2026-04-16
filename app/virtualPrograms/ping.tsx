@@ -15,20 +15,12 @@ import {
 export const ping = {
   desc: "Sends an echo request",
   paramDesc: "Target IP",
-  autocomplete() {
-    return [];
-  },
-  validate(_, past) {
-    return parseIpv4(past[1]) !== undefined;
-  },
+  autocomplete: () => [],
+  validate: (_, past) => parseIpv4(past[1]) !== undefined,
   then: {
     done: true,
     run(ctx: EmulatorContext<L3InternalState>) {
-      const addr = parseIpv4(ctx.args![1]);
-      if (addr == undefined) {
-        ctx.write(`Invalid address ${ctx.args![1]}`);
-        return;
-      }
+      const addr = parseIpv4(ctx.args![1])!;
       const start = ctx.currTick;
       let done = false;
       ctx.state.rawSocketFd_t = (ctx, packet) => {
@@ -46,8 +38,8 @@ export const ping = {
       );
       sendIPv4Packet(ctx, addr, ProtocolCode.icmp, req);
       ctx.schedule(100, (ctx) => {
-        ctx.state.rawSocketFd_t = undefined;
         if (!done) {
+          ctx.state.rawSocketFd_t = undefined;
           ctx.write("Request timeout");
         }
       });
