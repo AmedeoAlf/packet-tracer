@@ -55,6 +55,13 @@ export enum DHCPOp {
   response = 2,
 }
 
+export enum MessageType {
+  discover = 1,
+  offer = 2,
+  request = 3,
+  acknowledgement = 4,
+}
+
 const OP_subnet = (subnet: IPv4Address) =>
   [0x01, bufferOfU32BE(subnet)] as const;
 const OP_router = (router: IPv4Address) =>
@@ -63,9 +70,11 @@ const OP_domainServer = (...servers: IPv4Address[]) =>
   [0x06, bufferOfU32BE(...servers)] as const;
 const OP_requestIp = (ip: IPv4Address) => [0x32, bufferOfU8(ip)] as const;
 const OP_leaseTime = (time: number) => [0x33, bufferOfU32BE(time)] as const;
+const OP_dhcpServer = (server: IPv4Address) =>
+  [0x36, bufferOfU32BE(server)] as const;
 const OP_parameterReqList = (...list: number[]) =>
   [0x37, bufferOfU8(...list)] as const;
-const OP_messageType = (type: number) => [0x53, bufferOfU8(type)] as const;
+const OP_messageType = (type: MessageType) => [0x53, bufferOfU8(type)] as const;
 
 export const DHCPSerializer = new PacketSerializer<DHCPPacket>([
   new U8Field("op"),
@@ -102,7 +111,7 @@ type DHCPPacket = {
   options?: DHCPTLVOption[];
 };
 
-export function DHCPDISCOVER(
+export function makeDHCPDiscover(
   mac: MacAddress,
   requestedIp: IPv4Address,
 ): DHCPPacket {
@@ -114,7 +123,7 @@ export function DHCPDISCOVER(
     xId: randomU32(),
     cHAddr,
     options: [
-      OP_messageType(1),
+      OP_messageType(MessageType.discover),
       OP_requestIp(requestedIp),
       // from wikipedia, should be subnet mask, router, domain name and idk
       OP_parameterReqList(0x01, 0x03, 0x0f, 0x06),
@@ -122,28 +131,83 @@ export function DHCPDISCOVER(
   };
 }
 
-export function makeDHCPOffer(
-  dhcpDiscover: DHCPPacket,
-  serverAddr: IPv4Address,
-  offered: IPv4Address,
-  subnet: IPv4Address,
-  dnsServers: IPv4Address[],
-  leaseTime: number = 86400,
-  router: IPv4Address = serverAddr,
-): DHCPPacket {
-  if (dhcpDiscover.op != DHCPOp.request) throw "Not a request";
+type DHCPOfferData = {
+  from: DHCPPacket;
+  serverAddr: IPv4Address;
+  offered: IPv4Address;
+  subnet: IPv4Address;
+  dnsServers: IPv4Address[];
+  leaseTime?: number; // default 86400
+  router?: IPv4Address; // default serverAddr
+};
 
+// returns offer withouth checks
+function _dhcpOffer(
+  messageType: MessageType,
+  {
+    from,
+    offered,
+    serverAddr,
+    dnsServers,
+    subnet,
+    router,
+    leaseTime,
+  }: DHCPOfferData,
+): DHCPPacket {
+  if (from.op != DHCPOp.request) throw "DHCP packet is not from client";
   return {
-    ...dhcpDiscover,
+    ...from,
     op: DHCPOp.response,
     yIAddr: offered,
     sIAddr: serverAddr,
     options: [
-      OP_messageType(2),
+      OP_messageType(messageType),
       OP_subnet(subnet),
-      OP_router(router),
-      OP_leaseTime(leaseTime),
+      OP_router(router ?? serverAddr),
+      OP_leaseTime(leaseTime ?? 86400),
       OP_domainServer(...dnsServers),
     ],
   };
+}
+
+export function makeDHCPOffer(data: DHCPOfferData): DHCPPacket {
+  if (tlvField(data.from, 0x1)?.at(0) !== MessageType.discover)
+    throw "Not a request";
+
+  return _dhcpOffer(MessageType.offer, data);
+}
+
+export function makeDHCPRequest(dhcpOffer: DHCPPacket): DHCPPacket {
+  if (tlvField(dhcpOffer, 0x1)?.at(0) !== MessageType.offer)
+    throw "Not an offer";
+
+  return {
+    ...dhcpOffer,
+    op: DHCPOp.request,
+    yIAddr: 0,
+    options: [
+      OP_messageType(MessageType.request),
+      OP_requestIp(dhcpOffer.yIAddr!),
+      OP_dhcpServer(dhcpOffer.sIAddr!),
+    ],
+  };
+}
+
+export function makeDHCPAck(data: DHCPOfferData): DHCPPacket {
+  if (tlvField(data.from, 0x1)?.compare(bufferOfU8(MessageType.request)) !== 0)
+    throw "Not a request";
+
+  if (tlvField(data.from, 0x32)?.compare(bufferOfU32BE(data.offered)) !== 0)
+    throw "Offered IP does not match request";
+
+  return _dhcpOffer(MessageType.acknowledgement, data);
+}
+
+export function tlvField(
+  packet: DHCPPacket,
+  field: number,
+): Buffer | undefined {
+  return packet.options?.find((opt) => opt[0] == field)?.at(1) as
+    | Buffer
+    | undefined;
 }
