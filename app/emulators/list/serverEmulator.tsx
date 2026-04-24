@@ -83,7 +83,7 @@ export const serverEmulator: DeviceEmulator<OSInternalState> = {
         curl,
         interfaces: interfacesL3,
         l2send: l2send,
-        ping: ping as any,
+        ping,
         arptable: arptable,
         "udp-send": udpSend,
         nslookup: nslookup,

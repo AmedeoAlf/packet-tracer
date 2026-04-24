@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { trustMeBroCast } from "../common";
 
 abstract class Field<T> {

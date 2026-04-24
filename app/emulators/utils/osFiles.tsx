@@ -48,6 +48,7 @@ export function readFile(
 export function readSettingsFile(
   filesystem: OSInternalState["filesystem"],
   file: string,
+  // FIXME: should return any
 ): Record<string, any> | undefined {
   const f = readFile(filesystem, file);
   if (isError(f)) return;

@@ -1,8 +1,8 @@
-import { OSInternalState } from "@/app/devices/list/Computer";
 import { EmulatorContext } from "../DeviceEmulator";
 import {
   getMatchingInterface,
   IPv4Packet,
+  L3InternalState,
   PartialIPv4Packet,
   ProtocolCode,
 } from "@/app/protocols/rfc_760";
@@ -20,8 +20,8 @@ import {
 } from "@/app/protocols/icmp";
 import { sendIPv4Packet } from "./sendIPv4Packet";
 
-export function recvIPv4Packet(
-  ctx: EmulatorContext<OSInternalState>,
+export function recvIPv4Packet<State extends L3InternalState>(
+  ctx: EmulatorContext<State>,
   data: Buffer,
   intf: number,
 ): IPv4Packet | undefined {
@@ -78,7 +78,10 @@ export function recvIPv4Packet(
           );
         default:
           if (ctx.state.rawSocketFd_t)
-            ctx.state.rawSocketFd_t(ctx as any, packet);
+            ctx.state.rawSocketFd_t(
+              ctx as unknown as EmulatorContext<L3InternalState>,
+              packet,
+            );
       }
       return;
     }
