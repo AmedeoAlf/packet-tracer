@@ -1,4 +1,4 @@
-import { EmulatorContext, SubCommand } from "../emulators/DeviceEmulator";
+import { SubCommand } from "../emulators/DeviceEmulator";
 import { sendIPv4Packet } from "../emulators/utils/sendIPv4Packet";
 import {
   echoRequest,
@@ -12,14 +12,16 @@ import {
   ProtocolCode,
 } from "../protocols/rfc_760";
 
-export const ping = {
+export const ping = <
+  State extends L3InternalState<State>,
+>(): SubCommand<State> => ({
   desc: "Sends an echo request",
   paramDesc: "Target IP",
   autocomplete: () => [],
   validate: (_, past) => parseIpv4(past[1]) !== undefined,
   then: {
     done: true,
-    run(ctx: EmulatorContext<L3InternalState>) {
+    run(ctx) {
       const addr = parseIpv4(ctx.args![1])!;
       const start = ctx.currTick;
       let done = false;
@@ -45,4 +47,4 @@ export const ping = {
       });
     },
   },
-} satisfies SubCommand<L3InternalState>;
+});

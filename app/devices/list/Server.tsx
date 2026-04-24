@@ -9,7 +9,9 @@ import { OSInternalState } from "./Computer";
 import { defaultL3InternalState } from "@/app/protocols/rfc_760";
 import { deepCopy } from "@/app/common";
 
-export const Server: DeviceFactory<OSInternalState> = {
+export type ServerInternalState = OSInternalState<ServerInternalState>;
+
+export const Server: DeviceFactory<ServerInternalState> = {
   proto: {
     iconId: "#server-icon",
     emulator: serverEmulator,

@@ -2,9 +2,10 @@ import { EthernetFrameSerializer } from "@/app/protocols/802_3";
 import { hello } from "../../virtualPrograms/hello";
 import { interfaces } from "../../virtualPrograms/interfaces";
 import { l2send } from "../../virtualPrograms/l2send";
-import { DeviceEmulator, InternalState } from "../DeviceEmulator";
+import { DeviceEmulator } from "../DeviceEmulator";
+import { SwitchInternalState } from "@/app/devices/list/Switch";
 
-export const switchEmulator: DeviceEmulator<InternalState> = {
+export const switchEmulator: DeviceEmulator<SwitchInternalState> = {
   configPanel: {
     "pannello meme"() {
       return (
@@ -40,9 +41,9 @@ export const switchEmulator: DeviceEmulator<InternalState> = {
   cmdInterpreter: {
     shell: {
       subcommands: {
-        hello,
-        interfaces,
-        l2send,
+        hello: hello(),
+        interfaces: interfaces(),
+        l2send: l2send(),
       },
     },
   },

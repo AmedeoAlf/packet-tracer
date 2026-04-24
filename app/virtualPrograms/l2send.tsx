@@ -1,9 +1,9 @@
-import { SubCommand, InternalState } from "../emulators/DeviceEmulator";
+import { InternalState, SubCommand } from "../emulators/DeviceEmulator";
 import { EthernetFrameSerializer, MAC_BROADCAST } from "../protocols/802_3";
 
-function parseInterface(
+function parseInterface<State extends InternalState<State>>(
   from: string,
-  state: InternalState,
+  state: State,
 ): number | undefined {
   switch (true) {
     case !isNaN(+from): {
@@ -17,7 +17,9 @@ function parseInterface(
   }
 }
 
-export const l2send = {
+export const l2send = <
+  State extends InternalState<State>,
+>(): SubCommand<State> => ({
   desc: "Sends a raw layer 2 packet",
   paramDesc: "Interface",
   autocomplete(state) {
@@ -66,4 +68,4 @@ export const l2send = {
       },
     },
   },
-} satisfies SubCommand<InternalState>;
+});

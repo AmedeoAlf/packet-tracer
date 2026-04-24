@@ -314,8 +314,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
               );
               break;
             default:
-              if (ctx.state.rawSocketFd_t)
-                ctx.state.rawSocketFd_t(ctx as any, packet);
+              if (ctx.state.rawSocketFd_t) ctx.state.rawSocketFd_t(ctx, packet);
           }
           break;
         case ProtocolCode.udp:
@@ -332,14 +331,14 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   cmdInterpreter: {
     shell: {
       subcommands: {
-        hello,
-        interfaces: interfacesL3,
-        l2send,
-        ping: ping as any,
-        arptable,
-        "udp-send": udpSend,
+        hello: hello(),
+        interfaces: interfacesL3(),
+        l2send: l2send(),
+        ping: ping(),
+        arptable: arptable(),
+        "udp-send": udpSend(),
+        gateway: gatewayCmd(),
         routing,
-        gateway: gatewayCmd as any,
       },
     },
   },

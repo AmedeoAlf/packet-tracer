@@ -42,27 +42,27 @@ export const computerEmulator: DeviceEmulator<ComputerInternalState> = {
   cmdInterpreter: {
     shell: {
       subcommands: {
-        hello: hello,
-        interfaces: interfacesL3,
-        l2send: l2send,
-        ping: ping as any,
-        arptable: arptable,
-        "udp-send": udpSend,
-        nslookup: nslookup,
-        cat: cat,
-        writeFile: writeFile,
-        ls: ls,
-        tcphello,
-        tcplisten,
-        curl,
-        gateway: gatewayCmd,
+        hello: hello(),
+        interfaces: interfacesL3(),
+        l2send: l2send(),
+        ping: ping(),
+        arptable: arptable(),
+        "udp-send": udpSend(),
+        nslookup: nslookup(),
+        cat: cat(),
+        writeFile: writeFile(),
+        ls: ls(),
+        tcphello: tcphello(),
+        tcplisten: tcplisten(),
+        curl: curl(),
+        gateway: gatewayCmd(),
       },
     },
   },
 };
 
-export function computerPacketHandler(
-  ctx: EmulatorContext<OSInternalState>,
+export function computerPacketHandler<State extends OSInternalState<State>>(
+  ctx: EmulatorContext<State>,
   packet: IPv4Packet,
 ) {
   switch (packet.protocol) {
@@ -88,8 +88,8 @@ export function computerPacketHandler(
   ctx.updateState();
 }
 
-export function tcpPacketHandler(
-  ctx: EmulatorContext<OSInternalState>,
+export function tcpPacketHandler<State extends OSInternalState<State>>(
+  ctx: EmulatorContext<State>,
   packet: IPv4Packet,
 ) {
   if (packet.protocol !== ProtocolCode.tcp)

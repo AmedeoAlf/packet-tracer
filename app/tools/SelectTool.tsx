@@ -120,7 +120,8 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
             //   ctx.updateTool();
             // };
 
-            const panels: Record<string, DevicePanel<InternalState>> = {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const panels: Record<string, DevicePanel<InternalState<any>>> = {
               terminale: TerminalEmulator(
                 ctx.tool.stdin,
                 (stdin) => {
@@ -412,7 +413,7 @@ export function splitArgs(cmd: string) {
 }
 
 // NOTE: oldCmds is expected to be consistent and is appended to
-function TerminalEmulator<State extends InternalState>(
+function TerminalEmulator<State extends InternalState<State>>(
   inputBar: string,
   setInputBar: (s: string) => void,
   content: string,

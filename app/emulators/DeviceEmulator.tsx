@@ -1,9 +1,9 @@
 import { ReactNode } from "react";
 import { Device } from "../devices/Device";
-import { AnyTool, Tool, ToolCtx } from "../tools/Tool";
+import { AnyTool, ToolCtx } from "../tools/Tool";
 import { MacAddress } from "../protocols/802_3";
 import { toInterfaceId } from "../ProjectManager";
-import { isSelectTool, SelectTool } from "../tools/SelectTool";
+import { isSelectTool } from "../tools/SelectTool";
 
 export interface NetworkInterface {
   type: "serial" | "copper" | "fiber";
@@ -12,41 +12,41 @@ export interface NetworkInterface {
   mac: MacAddress;
 }
 
-export type InternalState = {
+export interface InternalState<TSelf extends InternalState<TSelf>> {
   netInterfaces: Array<NetworkInterface>;
-  currShell?: Command<InternalState>;
-};
+  currShell?: Command<TSelf>;
+}
 
 interface AutoCompleteOption {
   option: string;
   desc: string;
 }
-export type Command<State extends InternalState> =
+export type Command<State extends InternalState<State>> =
   | {
       autocomplete: (state: State, past: string[]) => AutoCompleteOption[];
       validate: (state: State, past: string[]) => boolean;
       paramDesc: string;
       then: Command<State>;
-      run?: (ctx: EmulatorContext<any>) => void;
+      run?: (ctx: EmulatorContext<State>) => void;
     }
   | {
       subcommands: Record<string, SubCommand<State>>;
-      run?: (ctx: EmulatorContext<any>) => void;
+      run?: (ctx: EmulatorContext<State>) => void;
     }
   | {
-      run: (ctx: EmulatorContext<any>) => void;
+      run: (ctx: EmulatorContext<State>) => void;
       done: true;
     };
 
-export type SubCommand<State extends InternalState> = Command<State> & {
+export type SubCommand<State extends InternalState<State>> = Command<State> & {
   desc: string;
 };
 
-export type Interpreter<State extends InternalState> = {
+export type Interpreter<State extends InternalState<State>> = {
   shell: Command<State>;
 };
 
-export type EmulatorContext<State extends InternalState> = {
+export type EmulatorContext<State extends InternalState<State>> = {
   interpreter: Interpreter<State>;
   currTick: number;
   sendOnIf: (ifIdx: number, data: Buffer) => void;
@@ -57,7 +57,7 @@ export type EmulatorContext<State extends InternalState> = {
   write: (msg: string) => void;
 };
 
-export function runOnInterpreter<State extends InternalState>(
+export function runOnInterpreter<State extends InternalState<State>>(
   ctx: EmulatorContext<State>,
 ) {
   if (!ctx.args) return;
@@ -89,7 +89,7 @@ export function runOnInterpreter<State extends InternalState>(
 }
 
 // last element in ctx.args must be "" to get all autocomplete options
-export function getAutoComplete<State extends InternalState>(
+export function getAutoComplete<State extends InternalState<State>>(
   ctx: EmulatorContext<State>,
 ) {
   if (ctx.args == undefined) return;
@@ -168,11 +168,11 @@ export function getAutoComplete<State extends InternalState>(
   return;
 }
 
-export type DevicePanel<State extends InternalState> = (
+export type DevicePanel<State extends InternalState<State>> = (
   ctx: EmulatorContext<State>,
 ) => ReactNode;
 
-export interface DeviceEmulator<State extends InternalState> {
+export interface DeviceEmulator<State extends InternalState<State>> {
   configPanel: { [k: string]: DevicePanel<State> };
   cmdInterpreter: Interpreter<State>;
   packetHandler: (
@@ -185,6 +185,7 @@ export interface DeviceEmulator<State extends InternalState> {
 export function buildEmulatorContext(
   device: Device,
   toolCtx: ToolCtx<AnyTool>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): EmulatorContext<any> {
   const emulator = device.emulator;
   const tool = toolCtx.toolRef.current;

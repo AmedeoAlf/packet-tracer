@@ -20,7 +20,7 @@ import {
 } from "@/app/protocols/icmp";
 import { sendIPv4Packet } from "./sendIPv4Packet";
 
-export function recvIPv4Packet<State extends L3InternalState>(
+export function recvIPv4Packet<State extends L3InternalState<State>>(
   ctx: EmulatorContext<State>,
   data: Buffer,
   intf: number,
@@ -78,10 +78,7 @@ export function recvIPv4Packet<State extends L3InternalState>(
           );
         default:
           if (ctx.state.rawSocketFd_t)
-            ctx.state.rawSocketFd_t(
-              ctx as unknown as EmulatorContext<L3InternalState>,
-              packet,
-            );
+            ctx.state.rawSocketFd_t(ctx as EmulatorContext<State>, packet);
       }
       return;
     }

@@ -4,10 +4,11 @@ import { exampleDeviceEmulator } from "../../emulators/list/exampleDeviceEmulato
 import { randomMAC } from "../../protocols/802_3";
 import { DeviceFactory } from "../Device";
 
-export type ExampleDeviceInternalState = InternalState & {
-  exampleProp1: number;
-  exampleProp2: string;
-};
+export type ExampleDeviceInternalState =
+  InternalState<ExampleDeviceInternalState> & {
+    exampleProp1: number;
+    exampleProp2: string;
+  };
 
 // Un tipo di dispositivo non è altro che una nuova DeviceFactory
 export const ExampleDevice: DeviceFactory<ExampleDeviceInternalState> = {

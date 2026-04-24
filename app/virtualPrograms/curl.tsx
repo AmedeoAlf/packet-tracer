@@ -5,7 +5,9 @@ import { send, recv, close, dialTCP } from "../emulators/utils/sockets";
 import { HttpRequest, HttpResponse } from "../protocols/http";
 import { IPv4Address, parseIpv4 } from "../protocols/rfc_760";
 
-export const curl = {
+export const curl = <
+  State extends OSInternalState<State>,
+>(): SubCommand<State> => ({
   desc: "Gets the content of a resource through http",
   autocomplete: () => [],
   paramDesc: "Address",
@@ -25,7 +27,7 @@ export const curl = {
         return;
       }
 
-      const dns = getDns((ctx.state as OSInternalState).filesystem);
+      const dns = getDns(ctx.state.filesystem);
       if (typeof dns == "string") {
         ctx.write(dns);
         return;
@@ -39,10 +41,10 @@ export const curl = {
       });
     },
   },
-} satisfies SubCommand<OSInternalState>;
+});
 
-function curlRequest(
-  ctx: EmulatorContext<OSInternalState>,
+function curlRequest<State extends OSInternalState<State>>(
+  ctx: EmulatorContext<State>,
   ip: IPv4Address,
   resource: string,
   domain?: string,

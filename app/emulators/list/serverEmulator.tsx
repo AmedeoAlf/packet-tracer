@@ -5,7 +5,7 @@ import { ping } from "../../virtualPrograms/ping";
 import { DeviceEmulator, EmulatorContext } from "../DeviceEmulator";
 import { arptable } from "@/app/virtualPrograms/arptable";
 import { udpSend } from "@/app/virtualPrograms/udpSend";
-import { OSInternalState, TCPCallback } from "@/app/devices/list/Computer";
+import { TCPCallback } from "@/app/devices/list/Computer";
 import { nslookup } from "@/app/virtualPrograms/nslookup";
 import { cat } from "@/app/virtualPrograms/cat";
 import { writeFile } from "@/app/virtualPrograms/writeFile";
@@ -36,6 +36,7 @@ import {
 import { curl } from "@/app/virtualPrograms/curl";
 import { gatewayCmd } from "@/app/virtualPrograms/gateway";
 import { impostazioniDiRete } from "../panels/impostazioniDiRete";
+import { ServerInternalState } from "@/app/devices/list/Server";
 
 export const defaultServerFS: OSDir = {
   etc: {
@@ -63,7 +64,7 @@ export const defaultServerFS: OSDir = {
   },
 };
 
-export const serverEmulator: DeviceEmulator<OSInternalState> = {
+export const serverEmulator: DeviceEmulator<ServerInternalState> = {
   configPanel: {
     "Impostazioni di rete": impostazioniDiRete,
   },
@@ -78,25 +79,25 @@ export const serverEmulator: DeviceEmulator<OSInternalState> = {
   cmdInterpreter: {
     shell: {
       subcommands: {
-        gateway: gatewayCmd,
-        hello,
-        curl,
-        interfaces: interfacesL3,
-        l2send: l2send,
-        ping,
-        arptable: arptable,
-        "udp-send": udpSend,
-        nslookup: nslookup,
-        cat: cat,
-        writeFile: writeFile,
-        ls: ls,
+        gateway: gatewayCmd(),
+        interfaces: interfacesL3(),
+        l2send: l2send(),
+        arptable: arptable(),
+        "udp-send": udpSend(),
+        nslookup: nslookup(),
+        hello: hello(),
+        curl: curl(),
+        ping: ping(),
+        cat: cat(),
+        writeFile: writeFile(),
+        ls: ls(),
       },
     },
   },
 };
 
 export function serverPacketHandler(
-  ctx: EmulatorContext<OSInternalState>,
+  ctx: EmulatorContext<ServerInternalState>,
   packet: IPv4Packet,
 ) {
   switch (packet.protocol) {
@@ -124,7 +125,7 @@ export function serverPacketHandler(
 }
 
 function dnsPacketHandler(
-  ctx: EmulatorContext<OSInternalState>,
+  ctx: EmulatorContext<ServerInternalState>,
   udpPacket: OSUDPPacket,
   ipSource: IPv4Address,
 ) {
@@ -170,7 +171,11 @@ function dnsPacketHandler(
   );
 }
 
-const httpRequestHandler: TCPCallback = (ctx, socket, payload) => {
+const httpRequestHandler: TCPCallback<ServerInternalState> = (
+  ctx,
+  socket,
+  payload,
+) => {
   if (payload.length == 0) return;
   const settings = readSettingsFile(ctx.state.filesystem, "/etc/http");
   if (!settings?.on) return;
@@ -204,7 +209,7 @@ const httpRequestHandler: TCPCallback = (ctx, socket, payload) => {
   send(ctx, socket, response.toBytes());
 };
 
-export function serverInitServices(state: OSInternalState) {
+export function serverInitServices(state: ServerInternalState) {
   readUDP(
     state,
     ([ctx, packet]) => {

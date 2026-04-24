@@ -26,7 +26,7 @@
  * simulatore)
  */
 
-import { RouterInternalState } from "../devices/list/Router";
+import { isRouterInternalState } from "../devices/list/Router";
 import { EmulatorContext, InternalState } from "../emulators/DeviceEmulator";
 import { MacAddress } from "./802_3";
 
@@ -62,22 +62,18 @@ export function getMatchingInterface(
   return interfaces.findIndex((v) => v && (v.ip & v.mask) == (ip & v.mask));
 }
 
-type L3InternalStateProps = {
+export interface L3InternalState<
+  TSelf extends L3InternalState<TSelf>,
+> extends InternalState<TSelf> {
+  rawSocketFd_t?: (ctx: EmulatorContext<TSelf>, packet: IPv4Packet) => void;
   ipPackets_t: Map<number, PartialIPv4Packet>;
   l3Ifs: (L3Interface | null)[];
   gateway: IPv4Address;
   macTable_t: Map<IPv4Address, MacAddress>;
   packetsWaitingForARP_t: Record<IPv4Address, IPv4Packet[]>;
-};
-export type L3InternalStateBase = InternalState & L3InternalStateProps;
-export type L3InternalState = InternalState & {
-  rawSocketFd_t?: (
-    ctx: EmulatorContext<L3InternalState>,
-    packet: IPv4Packet,
-  ) => void;
-} & L3InternalStateProps;
+}
 
-export function defaultL3InternalState(): L3InternalStateBase {
+export function defaultL3InternalState(): L3InternalState<any> {
   return {
     ipPackets_t: new Map(),
     packetsWaitingForARP_t: [],
@@ -249,8 +245,8 @@ export class PartialIPv4Packet extends IPv4Packet {
   }
 }
 
-export function targetIP(
-  state: L3InternalState | RouterInternalState,
+export function targetIP<State extends L3InternalState<State>>(
+  state: State,
   destination: IPv4Address,
 ): { intf: number; ok: boolean; targetIp: IPv4Address } {
   let targetIp = destination;
@@ -258,7 +254,7 @@ export function targetIP(
   let intf = getMatchingInterface(state.l3Ifs, targetIp);
   // Il pacchetto non è su una rete disponibile -> invia al gateway
   if (intf == -1) {
-    if ("routingTables" in state) {
+    if (isRouterInternalState(state)) {
       const tableEntry = state.routingTables.find(
         (it) => (it.netAddr & it.mask) == (targetIp & it.mask),
       );

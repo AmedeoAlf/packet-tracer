@@ -1,13 +1,11 @@
 import { SubCommand } from "../emulators/DeviceEmulator";
 import { sendIPv4Packet } from "../emulators/utils/sendIPv4Packet";
-import {
-  L3InternalStateBase,
-  parseIpv4,
-  ProtocolCode,
-} from "../protocols/rfc_760";
+import { L3InternalState, parseIpv4, ProtocolCode } from "../protocols/rfc_760";
 import { UDPSerializer } from "../protocols/udp";
 
-export const udpSend = {
+export const udpSend = <
+  State extends L3InternalState<State>,
+>(): SubCommand<State> => ({
   desc: "Sends and UDP packet",
   paramDesc: "Destination ip",
   autocomplete: () => [],
@@ -51,4 +49,4 @@ export const udpSend = {
       },
     },
   },
-} satisfies SubCommand<L3InternalStateBase>;
+});

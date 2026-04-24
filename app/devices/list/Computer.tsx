@@ -12,36 +12,40 @@ import {
 import { EmulatorContext } from "@/app/emulators/DeviceEmulator";
 import { OSDir } from "@/app/emulators/utils/osFiles";
 
-export type UDPCallbackParams = [
-  ctx: EmulatorContext<OSInternalState>,
+export type UDPCallbackParams<State extends OSInternalState<State>> = [
+  ctx: EmulatorContext<State>,
   p: OSUDPPacket,
 ];
-export type TCPCallback = (
-  ctx: EmulatorContext<OSInternalState>,
+
+export type TCPCallback<State extends OSInternalState<State>> = (
+  ctx: EmulatorContext<State>,
   socket: number,
   payload: Buffer,
 ) => void;
-export type TCPConnectionState =
+
+export type TCPConnectionState<State extends OSInternalState<State>> =
   | {
       state: "listen";
-      callback: TCPCallback;
+      callback: TCPCallback<State>;
     }
   | {
       state: "syn_recved" | "accepted" | "syn_sent" | "connected" | "closing";
-      callback: TCPCallback;
+      callback: TCPCallback<State>;
       address: IPv4Address;
       port: number;
       seq: number;
       ack: number;
     };
 
-export type OSInternalState = L3InternalState & {
+export interface OSInternalState<
+  TSelf extends OSInternalState<TSelf>,
+> extends L3InternalState<TSelf> {
   filesystem: OSDir;
-  udpSockets_t: Map<number, (params: UDPCallbackParams) => boolean>;
-  tcpSockets_t: Map<number, TCPConnectionState>;
-};
+  udpSockets_t: Map<number, (params: UDPCallbackParams<TSelf>) => boolean>;
+  tcpSockets_t: Map<number, TCPConnectionState<TSelf>>;
+}
 
-export type ComputerInternalState = OSInternalState & {
+export type ComputerInternalState = OSInternalState<ComputerInternalState> & {
   fieldIp_t?: string;
   fieldSubnet_t?: string;
   fieldGateway_t?: string;

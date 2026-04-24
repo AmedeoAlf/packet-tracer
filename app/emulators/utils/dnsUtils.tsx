@@ -1,6 +1,6 @@
 import { OSInternalState } from "@/app/devices/list/Computer";
 import { EmulatorContext } from "../DeviceEmulator";
-import { readFile } from "./osFiles";
+import { OSDir, readFile } from "./osFiles";
 import { IPv4Address, parseIpv4, ProtocolCode } from "@/app/protocols/rfc_760";
 import { readUDP } from "./sockets";
 import {
@@ -15,9 +15,7 @@ import {
 import { UDPSerializer } from "@/app/protocols/udp";
 import { sendIPv4Packet } from "./sendIPv4Packet";
 
-export function getDns(
-  filesystem: OSInternalState["filesystem"],
-): IPv4Address | string {
+export function getDns(filesystem: OSDir): IPv4Address | string {
   const dnsStr = readFile(filesystem, "/etc/dns");
   if (typeof dnsStr != "string") {
     return "File di configurazione non presente, esegui\nwriteFile /etc/dns 1.1.1.1";
@@ -30,17 +28,17 @@ export function getDns(
 }
 
 export type ResolvedARecord = [string, IPv4Address[]];
-export type ResolvedAddressesCallback = (
-  ctx: EmulatorContext<OSInternalState>,
+export type ResolvedAddressesCallback<State extends OSInternalState<State>> = (
+  ctx: EmulatorContext<State>,
   answers: (ResolvedARecord | ResourceRecord)[],
   error?: string,
 ) => void;
 
-export async function resolveAddresses(
-  ctx: EmulatorContext<OSInternalState>,
+export async function resolveAddresses<State extends OSInternalState<State>>(
+  ctx: EmulatorContext<State>,
   dns: IPv4Address,
   dnsQuestions: DNSQuestion[],
-  callback: ResolvedAddressesCallback,
+  callback: ResolvedAddressesCallback<State>,
 ) {
   const port = readUDP(ctx.state, ([ctx, packet]) => {
     if (packet.from != dns) {
@@ -84,12 +82,14 @@ export async function resolveAddresses(
   );
 }
 
-export async function resolveAddressSimple(
-  ctx: EmulatorContext<OSInternalState>,
+export async function resolveAddressSimple<
+  State extends OSInternalState<State>,
+>(
+  ctx: EmulatorContext<State>,
   dns: IPv4Address,
   domain: string,
   callback: (
-    ctx: EmulatorContext<OSInternalState>,
+    ctx: EmulatorContext<State>,
     ip: IPv4Address,
     error?: string,
   ) => void,

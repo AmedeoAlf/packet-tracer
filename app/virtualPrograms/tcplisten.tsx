@@ -2,7 +2,9 @@ import { OSInternalState } from "../devices/list/Computer";
 import { SubCommand } from "../emulators/DeviceEmulator";
 import { listenAndAcceptTCP, recv, close } from "../emulators/utils/sockets";
 
-export const tcplisten = {
+export const tcplisten = <
+  State extends OSInternalState<State>,
+>(): SubCommand<State> => ({
   desc: "Waits for a tcp connection and packet",
   autocomplete: () => [],
   validate: (_, past) => {
@@ -35,4 +37,4 @@ export const tcplisten = {
       },
     },
   },
-} satisfies SubCommand<OSInternalState>;
+});

@@ -8,9 +8,9 @@ import { IPv4Address, ProtocolCode } from "@/app/protocols/rfc_760";
 import { sendIPv4Packet } from "./sendIPv4Packet";
 import { TCPPacket } from "@/app/protocols/tcp";
 
-export function readUDP(
-  state: OSInternalState,
-  callback: (params: UDPCallbackParams) => boolean,
+export function readUDP<State extends OSInternalState<State>>(
+  state: State,
+  callback: (params: UDPCallbackParams<State>) => boolean,
   port?: number,
 ) {
   if (port === undefined) {
@@ -21,20 +21,20 @@ export function readUDP(
   return port;
 }
 
-export function listenAndAcceptTCP(
-  state: OSInternalState,
+export function listenAndAcceptTCP<State extends OSInternalState<State>>(
+  state: State,
   port: number,
-  onAccept: TCPCallback,
+  onAccept: TCPCallback<State>,
 ) {
   state.tcpSockets_t.set(port, { state: "listen", callback: onAccept });
   return port;
 }
 
-export function dialTCP(
-  ctx: EmulatorContext<OSInternalState>,
+export function dialTCP<State extends OSInternalState<State>>(
+  ctx: EmulatorContext<State>,
   address: IPv4Address,
   port: number,
-  onConnect: TCPCallback,
+  onConnect: TCPCallback<State>,
 ): number {
   let sourcePort = 0xc000;
   while (ctx.state.tcpSockets_t.has(++sourcePort));
@@ -55,10 +55,10 @@ export function dialTCP(
   return sourcePort;
 }
 
-export function recv(
-  state: OSInternalState,
+export function recv<State extends OSInternalState<State>>(
+  state: State,
   socket: number,
-  callback: (ctx: EmulatorContext<OSInternalState>, data: Buffer) => void,
+  callback: (ctx: EmulatorContext<State>, data: Buffer) => void,
 ): boolean {
   const sock = state.tcpSockets_t.get(socket);
   if (!sock) return false;
@@ -67,8 +67,8 @@ export function recv(
   return true;
 }
 
-export function send(
-  ctx: EmulatorContext<OSInternalState>,
+export function send<State extends OSInternalState<State>>(
+  ctx: EmulatorContext<State>,
   socket: number,
   payload: Buffer,
 ) {
@@ -90,7 +90,10 @@ export function send(
   );
 }
 
-export function close(ctx: EmulatorContext<OSInternalState>, socket: number) {
+export function close<State extends OSInternalState<State>>(
+  ctx: EmulatorContext<State>,
+  socket: number,
+) {
   const connection = ctx.state.tcpSockets_t.get(socket);
   if (!connection) return;
   if (connection.state != "listen") {

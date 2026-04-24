@@ -15,7 +15,7 @@ import { ICONS } from "./ICONS";
  * prototipo), l'id del tag <g> con la sua icona e l'emulatore del dispositivo
  * virtuale usato.
  */
-export interface DeviceFactory<State extends InternalState> {
+export interface DeviceFactory<State extends InternalState<State>> {
   proto: {
     deviceType: DeviceType;
     iconId: keyof typeof ICONS;
@@ -35,14 +35,17 @@ export interface DeviceFactory<State extends InternalState> {
  * configurazione dell'apparato; ma in realtà comprende lo stato del sistema
  * operativo e lo stato delle interfacce.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Device = DeviceFactory<any>["proto"] & {
   readonly id: number;
   name: string;
   pos: Coords;
-  internalState: InternalState;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  internalState: InternalState<any>;
 };
 
 export function makeDevice(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   factory: DeviceFactory<any>,
   id: number,
   pos: Coords,
@@ -54,6 +57,7 @@ export function makeDevice(
       id,
       pos,
       name,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } satisfies Omit<Device, keyof DeviceFactory<any>["proto"]>,
     factory.proto,
   );

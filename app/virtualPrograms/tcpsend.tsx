@@ -3,7 +3,9 @@ import { SubCommand } from "../emulators/DeviceEmulator";
 import { send, close, dialTCP } from "../emulators/utils/sockets";
 import { parseIpv4 } from "../protocols/rfc_760";
 
-export const tcphello = {
+export const tcphello = <
+  State extends OSInternalState<State>,
+>(): SubCommand<State> => ({
   desc: 'Establishes a tcp connection, sends a packet with "Hello!", then closes the connection',
   paramDesc: "Address",
   autocomplete: () => [],
@@ -25,8 +27,7 @@ export const tcphello = {
           close(ctx, socket);
         });
         ctx.schedule(50, (ctx) => {
-          const state = ctx.state as OSInternalState;
-          if (!state.tcpSockets_t.has(socket)) return;
+          if (!ctx.state.tcpSockets_t.has(socket)) return;
           ctx.write("Could not establish/terminate connection");
           close(ctx, socket);
         });
@@ -34,4 +35,4 @@ export const tcphello = {
       done: true,
     },
   },
-} satisfies SubCommand<OSInternalState>;
+});

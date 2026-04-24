@@ -1,5 +1,3 @@
-import { OSInternalState } from "@/app/devices/list/Computer";
-
 export enum OSError {
   NoErr,
   FileNotFound,
@@ -18,10 +16,7 @@ export type OSFile = string | OSDir;
 
 export type OSDir = { [k: string]: OSFile };
 
-export function getDir(
-  filesystem: OSInternalState["filesystem"],
-  file: string,
-): OSDir | OSError {
+export function getDir(filesystem: OSDir, file: string): OSDir | OSError {
   const folders = file.split("/").filter((it) => it);
   let curr = filesystem;
   for (const f of folders.filter((it) => it)) {
@@ -32,10 +27,7 @@ export function getDir(
   return curr;
 }
 
-export function readFile(
-  filesystem: OSInternalState["filesystem"],
-  file: string,
-): string | OSError {
+export function readFile(filesystem: OSDir, file: string): string | OSError {
   const folders = file.split("/").filter((it) => it);
   const filename = folders.pop()!;
   const folder = getDir(filesystem, folders.join("/"));
@@ -46,7 +38,7 @@ export function readFile(
 }
 
 export function readSettingsFile(
-  filesystem: OSInternalState["filesystem"],
+  filesystem: OSDir,
   file: string,
   // FIXME: should return any
 ): Record<string, any> | undefined {
@@ -56,7 +48,7 @@ export function readSettingsFile(
 }
 
 export function writeFile(
-  filesystem: OSInternalState["filesystem"],
+  filesystem: OSDir,
   path: string,
   content: string,
 ): OSError {
@@ -70,7 +62,7 @@ export function writeFile(
 
 // Creates required directories for the file
 export function writeFileInLocation(
-  filesystem: OSInternalState["filesystem"],
+  filesystem: OSDir,
   path: string,
   content: string,
 ) {
@@ -85,10 +77,7 @@ export function writeFileInLocation(
   node[filename] = content;
 }
 
-export function removeFile(
-  filesystem: OSInternalState["filesystem"],
-  path: string,
-): OSError {
+export function removeFile(filesystem: OSDir, path: string): OSError {
   const folders = path.split("/");
   const filename = folders.pop()!;
   const folder = getDir(filesystem, folders.join("/"));

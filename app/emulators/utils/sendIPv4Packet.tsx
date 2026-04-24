@@ -10,7 +10,7 @@ import { ARPPacket } from "@/app/protocols/rfc_826";
 import { filterObject, throwString } from "@/app/common";
 import { EthernetFrameSerializer } from "@/app/protocols/802_3";
 
-export function sendIPv4Packet<State extends L3InternalState>(
+export function sendIPv4Packet<State extends L3InternalState<State>>(
   ctx: Pick<EmulatorContext<State>, "state" | "sendOnIf" | "schedule">,
   destination: IPv4Address,
   protocol: ProtocolCode,
@@ -29,7 +29,7 @@ export function sendIPv4Packet<State extends L3InternalState>(
   return forwardIPv4Packet(ctx, packet, packet.destination);
 }
 
-export function forwardIPv4Packet<State extends L3InternalState>(
+export function forwardIPv4Packet<State extends L3InternalState<State>>(
   ctx: Pick<EmulatorContext<State>, "state" | "sendOnIf" | "schedule">,
   packet: IPv4Packet,
   destinationMACFrom: IPv4Address,

@@ -1,18 +1,20 @@
 import { OSInternalState } from "../devices/list/Computer";
-import { SubCommand, EmulatorContext } from "../emulators/DeviceEmulator";
+import { SubCommand } from "../emulators/DeviceEmulator";
 import { getDns, resolveAddresses } from "../emulators/utils/dnsUtils";
 import { DNSQuestion } from "../protocols/dns_emu";
 import { ipv4ToString } from "../protocols/rfc_760";
 
 // NOTE: does not check packet ids
-export const nslookup = {
+export const nslookup = <
+  State extends OSInternalState<State>,
+>(): SubCommand<State> => ({
   desc: "Resolves a domain",
   validate: () => true,
   autocomplete: () => [],
   paramDesc: "Domain to resolve",
   then: {
     done: true,
-    run(ctx: EmulatorContext<OSInternalState>) {
+    run(ctx) {
       const dns = getDns(ctx.state.filesystem);
       if (typeof dns == "string") {
         ctx.write("Errore: " + dns);
@@ -41,4 +43,4 @@ export const nslookup = {
       ).catch((e) => console.log("Got error in resolveAddresses", e));
     },
   },
-} satisfies SubCommand<OSInternalState>;
+});

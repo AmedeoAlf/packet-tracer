@@ -1,10 +1,10 @@
-import { L3InternalStateBase } from "@/app/protocols/rfc_760";
 import { EmulatorContext } from "../DeviceEmulator";
 import { ARPPacket } from "@/app/protocols/rfc_826";
 import { forwardIPv4Packet } from "./sendIPv4Packet";
 import { EthernetFrameSerializer } from "@/app/protocols/802_3";
+import { L3InternalState } from "@/app/protocols/rfc_760";
 
-export function handleArpPacket<State extends L3InternalStateBase>(
+export function handleArpPacket<State extends L3InternalState<State>>(
   ctx: EmulatorContext<State>,
   packet: ARPPacket,
   intf: number,
