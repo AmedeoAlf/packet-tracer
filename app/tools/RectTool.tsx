@@ -1,15 +1,15 @@
 import { Coords } from "../common";
 import { ProjectManager } from "../ProjectManager";
 import { isSelectTool, SelectTool } from "./SelectTool";
-import { Tool } from "./Tool";
+import { Tool, ToolConstructor } from "./Tool";
 
-export type RectTool = Tool<{
+export type RectTool = Tool<RectTool> & {
   startPos?: Coords;
   currPos?: Coords;
   fill?: string;
   stroke?: string;
   editing?: number;
-}>;
+};
 
 function rectProps(
   mousedown: Coords,
@@ -23,10 +23,10 @@ function rectProps(
   };
 }
 
-export function makeRectTool(
+export const makeRectTool: ToolConstructor<RectTool> = (
   prev: RectTool | SelectTool | object = {},
   project: ProjectManager,
-): RectTool {
+): RectTool => {
   const selectedDecal =
     isSelectTool(prev) && prev.selectedDecals.size == 1
       ? prev.selectedDecals.values().next().value
@@ -217,7 +217,7 @@ export function makeRectTool(
       }
     },
   };
-}
+};
 
 function ColorSelectorRow({
   name,

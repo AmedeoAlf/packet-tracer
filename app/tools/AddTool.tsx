@@ -1,16 +1,18 @@
-import { Tool, ToolCtx } from "./Tool";
+import { Tool, ToolConstructor, ToolCtx } from "./Tool";
 import { DeviceType, deviceTypesDB } from "../devices/deviceTypesDB";
 import { capitalize, Coords, trustMeBroCast } from "../common";
 import { memo, MouseEventHandler, ReactNode } from "react";
 import { ICONS } from "../devices/ICONS";
 import { SelectableCard } from "../editorComponents/SelectableCard";
 
-export type AddTool = Tool<{
+export type AddTool = Tool<AddTool> & {
   deviceType: keyof typeof deviceTypesDB;
   cursorPos: Coords;
-}>;
+};
 
-export function makeAddTool(prev: AddTool | object = {}): AddTool {
+export const makeAddTool: ToolConstructor<AddTool> = (
+  prev: AddTool | object = {},
+): AddTool => {
   return {
     cursorPos: [-10000, 0],
     deviceType: Object.keys(deviceTypesDB)[0] as DeviceType,
@@ -51,7 +53,7 @@ export function makeAddTool(prev: AddTool | object = {}): AddTool {
       );
     },
   };
-}
+};
 
 function DeviceTypeComponent({
   type,

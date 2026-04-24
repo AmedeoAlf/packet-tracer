@@ -1,12 +1,8 @@
 import { memo } from "react";
 import { Project } from "../Project";
 import { Device } from "../devices/Device";
-import { Tool } from "../tools/Tool";
-import {
-  isDeviceHighlighted,
-  isSelectTool,
-  SelectTool,
-} from "../tools/SelectTool";
+import { AnyTool } from "../tools/Tool";
+import { isDeviceHighlighted, isSelectTool } from "../tools/SelectTool";
 
 // Utility function che disegna i dispositivi del progetto, opzionalmente
 // evidenziandoli
@@ -16,7 +12,7 @@ export const Devices = memo(
     tool,
   }: {
     devices: Project["devices"];
-    tool: Tool<object> | SelectTool;
+    tool: AnyTool;
   }) {
     const highlighted = isSelectTool(tool)
       ? isDeviceHighlighted.bind(null, tool)

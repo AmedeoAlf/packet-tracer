@@ -1,8 +1,10 @@
-import { Tool } from "./Tool";
+import { Tool, ToolConstructor } from "./Tool";
 
-export type HandTool = Tool<{ holding: boolean }>;
+export type HandTool = Tool<HandTool> & { holding: boolean };
 
-export function makeHandTool(prev: HandTool | object = {}): HandTool {
+export const makeHandTool: ToolConstructor<HandTool> = (
+  prev: HandTool | object = {},
+): HandTool => {
   return {
     holding: false,
     ...prev,
@@ -52,4 +54,4 @@ export function makeHandTool(prev: HandTool | object = {}): HandTool {
       return <></>;
     },
   };
-}
+};

@@ -1,5 +1,5 @@
 import { Device } from "../devices/Device";
-import { Tool, ToolCtx } from "./Tool";
+import { Tool, ToolConstructor, ToolCtx } from "./Tool";
 import { Coords } from "../common";
 import { intfColor } from "../editorComponents/Cables";
 import { ProjectManager, toInterfaceId } from "../ProjectManager";
@@ -8,14 +8,14 @@ import { Button } from "../editorComponents/RoundBtn";
 import { memo } from "react";
 import { isSelectTool, SelectTool } from "./SelectTool";
 
-export type ConnectTool = Tool<{
+export type ConnectTool = Tool<ConnectTool> & {
   deviceA?: Device;
   idxA?: number;
   deviceB?: Device;
   idxB?: number;
   errorMsg?: string;
   cursorPos?: Coords;
-}>;
+};
 
 function clearSelection({ toolRef, updateTool }: ToolCtx<ConnectTool>) {
   toolRef.current.deviceA = undefined;
@@ -73,10 +73,10 @@ function migrateSelectedDevices(
   };
 }
 
-export function makeConnectTool(
+export const makeConnectTool: ToolConstructor<ConnectTool> = (
   prev: ConnectTool | SelectTool | object = {},
   project: ProjectManager,
-): ConnectTool {
+): ConnectTool => {
   const selectedDevices = migrateSelectedDevices(prev, project);
   return {
     ...prev,
@@ -224,7 +224,7 @@ export function makeConnectTool(
       return <></>;
     },
   };
-}
+};
 
 const InterfaceSelector = memo(
   function InterfaceSelector({

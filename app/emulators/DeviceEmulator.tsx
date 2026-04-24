@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Device } from "../devices/Device";
-import { Tool, ToolCtx } from "../tools/Tool";
+import { AnyTool, Tool, ToolCtx } from "../tools/Tool";
 import { MacAddress } from "../protocols/802_3";
 import { toInterfaceId } from "../ProjectManager";
 import { isSelectTool, SelectTool } from "../tools/SelectTool";
@@ -184,7 +184,7 @@ export interface DeviceEmulator<State extends InternalState> {
 
 export function buildEmulatorContext(
   device: Device,
-  toolCtx: ToolCtx<SelectTool | Tool<object>>,
+  toolCtx: ToolCtx<AnyTool>,
 ): EmulatorContext<any> {
   const emulator = device.emulator;
   const tool = toolCtx.toolRef.current;

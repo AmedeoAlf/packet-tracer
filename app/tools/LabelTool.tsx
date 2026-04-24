@@ -1,15 +1,15 @@
 import { Coords } from "../common";
 import { ProjectManager } from "../ProjectManager";
 import { isSelectTool, SelectTool } from "./SelectTool";
-import { Tool, ToolCtx } from "./Tool";
+import { Tool, ToolConstructor, ToolCtx } from "./Tool";
 
-export type LabelTool = Tool<{
+export type LabelTool = Tool<LabelTool> & {
   currInput?: {
     text: string;
     fg: string;
     pos: Coords;
   };
-}>;
+};
 
 function finalizeCurrinput(ctx: ToolCtx<LabelTool>) {
   ctx.projectRef.current.addDecal({
@@ -22,10 +22,10 @@ function finalizeCurrinput(ctx: ToolCtx<LabelTool>) {
   ctx.revertTool();
 }
 
-export function makeLabelTool(
-  prev: SelectTool | LabelTool | object = {},
+export const makeLabelTool: ToolConstructor<LabelTool> = (
+  prev: SelectTool | LabelTool | object,
   project: ProjectManager,
-): LabelTool {
+): LabelTool => {
   let currInput = (prev as LabelTool).currInput;
   if (isSelectTool(prev) && prev.selectedDecals.size == 1) {
     const selectedDecalIdx = prev.selectedDecals.values().next().value!;
@@ -110,4 +110,4 @@ export function makeLabelTool(
       }
     },
   };
-}
+};

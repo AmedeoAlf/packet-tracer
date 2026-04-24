@@ -1,11 +1,7 @@
 import { memo, ReactNode } from "react";
 import { Decal } from "../Project";
-import { Tool } from "../tools/Tool";
-import {
-  isDecalHighlighted,
-  isSelectTool,
-  SelectTool,
-} from "../tools/SelectTool";
+import { AnyTool } from "../tools/Tool";
+import { isDecalHighlighted, isSelectTool } from "../tools/SelectTool";
 
 export const Decals = memo(
   function Decals({
@@ -13,7 +9,7 @@ export const Decals = memo(
     tool,
   }: {
     decals: (Decal | null)[];
-    tool: Tool<object> | SelectTool;
+    tool: AnyTool;
   }): ReactNode {
     const highlighted = isSelectTool(tool)
       ? isDecalHighlighted.bind(null, tool)

@@ -8,7 +8,7 @@ import {
   KeyboardEvent,
   WheelEventHandler,
 } from "react";
-import { CanvasEvent, Tool, ToolCtx, TOOLS } from "./tools/Tool";
+import { AnyTool, CanvasEvent, ToolCtx, TOOLS } from "./tools/Tool";
 import { makeSelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { Cables } from "./editorComponents/Cables";
@@ -36,7 +36,7 @@ export function Editor({
 }): ReactNode {
   const [shouldSave, setShouldSave] = useState(false);
   const [project, setProject] = useState(initialProject);
-  const [tool, setTool] = useState<Tool<any>>(() => makeSelectTool());
+  const [tool, setTool] = useState<AnyTool>(() => makeSelectTool({}, project));
   const [lastTool, setLastTool] = useState<keyof typeof TOOLS>("select");
   const toolRef = useRef(tool);
   const projectRef = useRef(project);
@@ -46,7 +46,7 @@ export function Editor({
   const svgCanvas = useRef<SVGSVGElement>(null);
   let svgPt = svgCanvas.current?.createSVGPoint();
 
-  const toolCtx: ToolCtx<Tool<object>> = {
+  const toolCtx: ToolCtx<AnyTool> = {
     tool,
     project,
     toolRef,
@@ -193,7 +193,7 @@ export function Editor({
 
 // buildEventHandler per eventi "keydown" e "keyup"
 function buildKeyboardEventHandler(
-  ctx: ToolCtx<Tool<object>>,
+  ctx: ToolCtx<AnyTool>,
   type: Extract<CanvasEvent["type"], "keydown" | "keyup">,
 ) {
   return (ev: KeyboardEvent<HTMLDivElement>) => {
@@ -218,7 +218,7 @@ function buildKeyboardEventHandler(
 // `CanvasEvent`, costruito a partire dal tipo di evento DOM specificato
 function buildMouseEventHandler(
   toDOMPoint: ((x: number, y: number) => DOMPoint) | undefined,
-  ctx: ToolCtx<Tool<object>>,
+  ctx: ToolCtx<AnyTool>,
   type: Exclude<CanvasEvent["type"], "keydown" | "keyup">,
 ): (ev: MouseEvent) => void {
   const getPos = (ev: MouseEvent): Coords => {
@@ -268,7 +268,7 @@ function buildMouseEventHandler(
 }
 
 function canvasWheelEventHandler(
-  ctx: ToolCtx<object>,
+  ctx: ToolCtx<AnyTool>,
   toDOMPoint: ((x: number, y: number) => DOMPoint) | undefined,
   canvasSize: Coords | undefined,
 ): WheelEventHandler {

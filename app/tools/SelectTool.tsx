@@ -1,4 +1,4 @@
-import { Tool, ToolConstructor } from "./Tool";
+import { AnyTool, Tool, ToolConstructor } from "./Tool";
 import {
   buildEmulatorContext,
   DevicePanel,
@@ -17,7 +17,7 @@ import { BtnArray, BtnArrEl } from "../editorComponents/BtnArray";
 import { ReactNode } from "react";
 import { DropDown } from "../editorComponents/DropDown";
 
-export type SelectTool = Tool<{
+export type SelectTool = Tool<SelectTool> & {
   selected: Set<number>;
   selectedDecals: Set<number>;
   lastCursorPos?: Coords;
@@ -29,10 +29,10 @@ export type SelectTool = Tool<{
 
   currDevicePanel?: string;
   selectingDevicePanel: boolean;
-}>;
+};
 
-export function isSelectTool(tool: Tool<any>): tool is SelectTool {
-  return tool.toolname == "select";
+export function isSelectTool(tool: AnyTool | object): tool is SelectTool {
+  return "toolname" in tool ? tool.toolname == "select" : false;
 }
 
 export function isDeviceHighlighted(tool: SelectTool, dev: Device) {
@@ -75,7 +75,9 @@ export function isDecalHighlighted(tool: SelectTool, dec: Decal) {
   );
 }
 
-export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
+export const makeSelectTool: ToolConstructor<SelectTool> = (
+  prev: SelectTool | object = {},
+): SelectTool => {
   return {
     selected: new Set<number>(),
     selectedDecals: new Set<number>(),
@@ -118,7 +120,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
             //   ctx.updateTool();
             // };
 
-            const panels: Record<string, DevicePanel<any>> = {
+            const panels: Record<string, DevicePanel<InternalState>> = {
               terminale: TerminalEmulator(
                 ctx.tool.stdin,
                 (stdin) => {
@@ -244,8 +246,12 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
           const decalIdx = self.selectedDecals.values().next().value!;
           const decal = ctx.projectRef.current.immutableDecals[decalIdx]!;
 
-          const setTool = (constructor: ToolConstructor) => {
-            ctx.toolRef.current = constructor(self, ctx.projectRef.current);
+          const setTool = (constructor: ToolConstructor<AnyTool>) => {
+            ctx.toolRef.current = constructor(
+              self,
+              ctx.projectRef.current,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ) as any;
             ctx.updateTool();
           };
 
@@ -396,7 +402,7 @@ export function makeSelectTool(prev: SelectTool | object = {}): SelectTool {
       }
     },
   };
-}
+};
 
 export function splitArgs(cmd: string) {
   if (cmd == "") return [""];

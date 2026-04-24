@@ -39,14 +39,14 @@ export type CanvasEvent =
       consumed: boolean;
     } & { type: "keydown" | "keyup" });
 
-export type Tool<Ext extends object> = {
-  readonly toolname: keyof typeof TOOLS;
-  readonly onEvent: (ctx: ToolCtx<Tool<Ext>>, ev: CanvasEvent) => void;
-  readonly panel: (ctx: ToolCtx<Tool<Ext>>) => ReactNode | undefined;
-  readonly svgElements: (ctx: ToolCtx<Tool<Ext>>) => ReactNode;
-} & Ext;
+export interface Tool<TSelf extends Tool<TSelf>> {
+  toolname: keyof typeof TOOLS;
+  onEvent: (ctx: ToolCtx<TSelf>, ev: CanvasEvent) => void;
+  panel: (ctx: ToolCtx<TSelf>) => ReactNode | undefined;
+  svgElements: (ctx: ToolCtx<TSelf>) => ReactNode;
+}
 
-export type ToolCtx<T extends Tool<any>> = {
+export type ToolCtx<T extends Tool<T>> = {
   project: ProjectManager;
   projectRef: RefObject<ProjectManager>;
 
@@ -62,10 +62,14 @@ export type ToolCtx<T extends Tool<any>> = {
   revertTool: () => void;
 };
 
-export type ToolConstructor = (
-  prev: Tool<any> | object,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyTool = Tool<any>;
+
+export type ToolConstructor<T extends Tool<T>> = (
+  prev: Tool<T> | object,
   project: ProjectManager,
-) => Tool<any>;
+) => T;
+
 export const TOOLS = {
   select: makeSelectTool,
   add: makeAddTool,
@@ -73,7 +77,7 @@ export const TOOLS = {
   connect: makeConnectTool,
   label: makeLabelTool,
   rect: makeRectTool,
-} satisfies Record<string, ToolConstructor>;
+};
 
 export const TOOL_LIST = [
   "select",

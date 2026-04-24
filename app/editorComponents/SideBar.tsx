@@ -1,10 +1,10 @@
 import { memo, ReactNode, useEffect, useState } from "react";
-import { Tool, ToolCtx } from "../tools/Tool";
+import { AnyTool, Tool, ToolCtx } from "../tools/Tool";
 
 // La barra laterale dell'interfaccia: il suo contenuto è intermente deciso dal
 // tool in uso.
 export const SideBar = memo(
-  function SideBar({ toolCtx }: { toolCtx: ToolCtx<Tool<object>> }): ReactNode {
+  function SideBar({ toolCtx }: { toolCtx: ToolCtx<AnyTool> }): ReactNode {
     const [open, setOpen] = useState(true);
     const [resizing, setResizing] = useState(false);
     const [width, setWidth] = useState(420);
@@ -32,7 +32,7 @@ export const SideBar = memo(
         [K in keyof DocumentEventMap]: (
           this: Document,
           ev: DocumentEventMap[K],
-        ) => any;
+        ) => void;
       }>;
       Object.entries(events).forEach(([k, v]) =>
         document.addEventListener(k as keyof DocumentEventMap, v as any),
