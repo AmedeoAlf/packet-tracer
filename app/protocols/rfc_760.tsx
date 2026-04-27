@@ -26,7 +26,7 @@
  * simulatore)
  */
 
-import { isRouterInternalState } from "../devices/list/Router";
+import { RouterInternalState } from "../devices/list/Router";
 import { EmulatorContext, InternalState } from "../emulators/DeviceEmulator";
 import { MacAddress } from "./802_3";
 
@@ -146,7 +146,7 @@ export class IPv4Packet {
       header.writeUInt16BE(packet.byteLength, 2); // Total length
       header.writeUInt16BE(
         (+moreFragments << 29) | // More fragments flag
-          ((offs + this.offset) >> 3), // Fragment offset
+        ((offs + this.offset) >> 3), // Fragment offset
         6,
       );
       packet.set(header);
@@ -254,6 +254,13 @@ export function targetIP<State extends L3InternalState<State>>(
   let intf = getMatchingInterface(state.l3Ifs, targetIp);
   // Il pacchetto non è su una rete disponibile -> invia al gateway
   if (intf == -1) {
+    function isRouterInternalState(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      state: L3InternalState<any>,
+    ): state is RouterInternalState {
+      return "routingTables" in state;
+    }
+
     if (isRouterInternalState(state)) {
       const tableEntry = state.routingTables.find(
         (it) => (it.netAddr & it.mask) == (targetIp & it.mask),

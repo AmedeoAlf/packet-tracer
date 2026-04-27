@@ -15,13 +15,6 @@ export type RoutingTableEntry = {
   to: IPv4Address;
 };
 
-export function isRouterInternalState(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  state: L3InternalState<any>,
-): state is RouterInternalState {
-  return "routingTables" in state;
-}
-
 export type RouterInternalState = L3InternalState<RouterInternalState> & {
   routingTables: RoutingTableEntry[];
   udpSocket_t?: (packet: UDPPacket, from: IPv4Address) => void;
