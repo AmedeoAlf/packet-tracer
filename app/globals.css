@@ -1,10 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: var(--color-gray-50);
   --foreground: #171717;
   --h-spec-cont: calc(100vh - 50px);
   --h-spec-cont-opt: calc(100vh - 200px - 20px);
+
+  --topbar: var(--color-sky-500);
+  --ontopbar: var(--color-sky-300);
+  --selected: var(--color-sky-200);
+  --selected-border: var(--color-sky-300);
 }
 
 @theme inline {
@@ -12,12 +17,22 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-topbar: var(--topbar);
+  --color-ontopbar: var(--ontopbar);
+  --color-selected: var(--selected);
+  --color-selected-border: var(--selected-border);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: var(--color-gray-700);
     --foreground: #ededed;
+
+    --topbar: var(--color-slate-800);
+    --ontopbar: var(--color-slate-700);
+    --selected: var(--color-sky-900);
+    --selected-border: var(--color-sky-800);
   }
 }
 

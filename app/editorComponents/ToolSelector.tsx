@@ -18,7 +18,7 @@ export const ToolSelector = memo(
   }): ReactNode {
     return (
       <div className="fixed bottom-1 w-full flex justify-center pointer-events-none">
-        <div className="bg-slate-800 w-max h-min flex flex-wrap justify-center gap-1 p-2 rounded-2xl pointer-events-auto">
+        <div className="bg-topbar w-max h-min flex flex-wrap justify-center gap-1 p-2 rounded-2xl pointer-events-auto">
           {TOOL_LIST.map((it) => (
             <SelectableCard
               key={it}

@@ -8,7 +8,7 @@ export const TopBarBtns = memo(function TopBarBtns({
 }: {
   ctx: ToolCtx<any>;
 }) {
-  const CLASSNAME = "bg-slate-700";
+  const CLASSNAME = "bg-ontopbar";
   return (
     <BtnArray>
       <BtnArrEl

@@ -146,7 +146,7 @@ export class IPv4Packet {
       header.writeUInt16BE(packet.byteLength, 2); // Total length
       header.writeUInt16BE(
         (+moreFragments << 29) | // More fragments flag
-        ((offs + this.offset) >> 3), // Fragment offset
+          ((offs + this.offset) >> 3), // Fragment offset
         6,
       );
       packet.set(header);

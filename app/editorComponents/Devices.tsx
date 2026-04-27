@@ -71,8 +71,8 @@ const DeviceComponent = memo(function DeviceComponent({
         x={device.pos[0]}
         y={device.pos[1] + 40}
         width="100px"
+        fill="var(--foreground)"
         textAnchor="middle"
-        fill="#ffffff"
         {...dataProps}
       >
         {device.name}

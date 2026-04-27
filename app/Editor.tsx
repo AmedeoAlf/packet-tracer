@@ -130,7 +130,7 @@ export function Editor({
       onKeyUp={buildKeyboardEventHandler(toolCtx, "keyup")}
       tabIndex={0}
     >
-      <div className="bg-slate-800 fixed top-0 w-full h-[50px] indent-1.5em border-b-[.1em] border-solid border-slate-900 flex items-center px-1">
+      <div className="bg-topbar fixed top-0 w-full h-[50px] indent-1.5em flex items-center px-1">
         <TopBarBtns ctx={toolCtx} />
 
         <p className="inline ml-3">
@@ -160,7 +160,7 @@ export function Editor({
         onMouseEnter={mouseHandler("mouseenter")}
         onMouseLeave={mouseHandler("mouseleave")}
         onWheel={canvasWheelEventHandler(toolCtx, svgToDOMPoint, canvasSize)}
-        className={`bg-${svgCanvas.current ? "gray-700" : "gray-100"} -z-1 w-full h-screen transition-colors select-none`}
+        className={`bg-${svgCanvas.current ? "bg-background" : "gray-100"} -z-1 w-full h-screen transition-colors select-none`}
         viewBox={svgViewBox.join(" ")}
         ref={(svg) => {
           svgCanvas.current = svg;
