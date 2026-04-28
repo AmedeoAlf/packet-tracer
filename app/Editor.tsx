@@ -130,7 +130,7 @@ export function Editor({
       onKeyUp={buildKeyboardEventHandler(toolCtx, "keyup")}
       tabIndex={0}
     >
-      <div className="bg-topbar fixed top-0 w-full h-[50px] indent-1.5em flex items-center px-1">
+      <div className="bg-topbar fixed top-0 w-full h-[50px] indent-1.5em flex items-center px-1 border-b-2 border-topbar-border">
         <TopBarBtns ctx={toolCtx} />
 
         <p className="inline ml-3">

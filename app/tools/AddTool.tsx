@@ -20,7 +20,7 @@ export const makeAddTool: ToolConstructor<AddTool> = (
     toolname: "add",
     panel: (ctx) => (
       <div className="m-2">
-        <div className="rounded-md font-bold px-2 p-1 bg-gray-700 text-gray-400">
+        <div className="rounded-md font-bold px-2 p-1 bg-onsidebar text-cardfg">
           Usa shift+click per aggiungere rapidamente
         </div>
         <p className="mt-2">Dispositivo selezionato:</p>

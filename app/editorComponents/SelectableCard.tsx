@@ -15,7 +15,7 @@ export function SelectableCard({
     "transition p-1 rounded-sm border-3 select-none flex flex-col items-center " +
     (isSelected
       ? "bg-selected border-selected-border "
-      : "bg-topbar border-slate-700 hover:brightness-120 ") +
+      : "bg-topbar border-topbar-border hover:brightness-120 ") +
     className;
   return (
     <button className={className} onClick={onClick}>
