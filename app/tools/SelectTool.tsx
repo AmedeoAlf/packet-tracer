@@ -547,37 +547,15 @@ function duplicateSelection(self: SelectTool, project: ProjectManager) {
 
 function Square(props: { size: number; x: number; y: number }) {
   const { size, ...other } = props;
-  return (
-    <rect
-      width={size}
-      height={size}
-      rx={1}
-      ry={1}
-      {...other}
-    />
-  );
+  return <rect width={size} height={size} rx={1} ry={1} {...other} />;
 }
 
 function Path(props: { d: string }) {
-  return (
-    <path
-      strokeLinejoin="round"
-      strokeLinecap="round"
-      {...props}
-    />
-  );
+  return <path strokeLinejoin="round" strokeLinecap="round" {...props} />;
 }
 
 function VLine({ x, from, to }: { x: number; from: number; to: number }) {
-  return (
-    <line
-      x1={x}
-      x2={x}
-      y1={from}
-      y2={to}
-      strokeLinecap="round"
-    />
-  );
+  return <line x1={x} x2={x} y1={from} y2={to} strokeLinecap="round" />;
 }
 
 function SelectionActions({
@@ -593,7 +571,12 @@ function SelectionActions({
 }) {
   const CLASSNAME = "bg-onsidebar flex-1";
   return (
-    <div className={"flex w-full items-center stroke-foreground fill-none " + (className ?? "")}>
+    <div
+      className={
+        "flex w-full items-center stroke-foreground fill-none " +
+        (className ?? "")
+      }
+    >
       {children}
       <BtnArray>
         <BtnArrEl className={CLASSNAME} onClick={duplicate}>

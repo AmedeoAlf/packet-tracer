@@ -15,9 +15,11 @@
   --sidebar: var(--color-zinc-100);
   --onsidebar: var(--color-zinc-300);
 
-  --primary: var(--color-sky-300);
+  --primary: var(--color-sky-400);
   --temp: var(--color-yellow-600);
   --cardfg: var(--color-gray-700);
+
+  --bad: var(--color-red-400);
 }
 
 @theme inline {
@@ -39,6 +41,7 @@
   --color-temp: var(--temp);
 
   --color-cardfg: var(--cardfg);
+  --color-bad: var(--bad);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -57,6 +60,7 @@
     --primary: var(--color-sky-700);
     --temp: var(--color-amber-300);
     --cardfg: var(--color-gray-300);
+    --bad: var(--color-red-600);
   }
 }
 

@@ -90,7 +90,7 @@ export const makeConnectTool: ToolConstructor<ConnectTool> = (
           </div>
           <div className="flex flex-wrap indent-0">
             {!ctx.tool.deviceA ? (
-              <div className="h-8 rounded-md font-bold m-2 px-2 p-1 bg-gray-700 text-gray-400">
+              <div className="h-8 rounded-md font-bold m-2 px-2 p-1 text-cardfg">
                 Seleziona il primo dispositivo
               </div>
             ) : (
@@ -105,7 +105,7 @@ export const makeConnectTool: ToolConstructor<ConnectTool> = (
                   }}
                 />
                 {!ctx.tool.deviceB ? (
-                  <div className="h-8 rounded-md font-bold m-2 px-2 p-1 bg-gray-700 text-gray-400">
+                  <div className="h-8 rounded-md font-bold m-2 px-2 p-1 text-cardfg">
                     Seleziona il secondo dispositivo
                   </div>
                 ) : (
@@ -244,16 +244,16 @@ const InterfaceSelector = memo(
     const isConnected = (i: number) =>
       ctx.project.getConnectedTo(toInterfaceId(device.id, i)) !== undefined;
     return (
-      <div className="p-[10px] w-[50%] text-black">
-        <div className="resize-none rounded-md bg-white h-6 w-full mb-[10px]">
+      <div className="p-[10px] w-[50%]">
+        <div className="rounded-md font-bold p-1 text-center w-full mb-1">
           {device.name}
         </div>
 
         {device.internalState.netInterfaces.map((intf, i) => (
           <div key={i} className="flex items-center justify-between m-1">
-            <div className="bg-white h-6 w-17 rounded-md">{intf.name}</div>
+            <div className="w-17 rounded-md">{intf.name}</div>
             {i === intfIdx ? (
-              <Button className="text-blue-900 bg-blue-400">Selezionata</Button>
+              <Button className="bg-ontopbar">Selezionata</Button>
             ) : isConnected(i) ? (
               <Button
                 onClick={() => {
@@ -261,7 +261,7 @@ const InterfaceSelector = memo(
                   ctx.updateProject();
                   selectIntf(i);
                 }}
-                className="text-red-900 bg-red-400 hover:brightness-130 active:bg-red-300 active:brightness-100"
+                className="text-foreground bg-bad hover:brightness-130 active:bg-red-300 active:brightness-100"
               >
                 Scollega
               </Button>
@@ -270,7 +270,7 @@ const InterfaceSelector = memo(
                 onClick={() => {
                   selectIntf(i);
                 }}
-                className="text-slate-900 bg-slate-400 hover:brightness-110 active:brightness-120"
+                className="text-background bg-cardfg hover:brightness-110 active:brightness-120"
               >
                 Seleziona
               </Button>
@@ -294,12 +294,12 @@ const ConnectBtn = memo(
     return canConnect(connectTool.tool) ? (
       <Button
         onClick={() => connect(connectTool)}
-        className="w-full p-0 bg-green-900 text-green-200 hover:bg-green-800 active:bg-green-700"
+        className="w-full p-0 bg-primary hover:brightness-90 active:brightness-80"
       >
         Collega [c]
       </Button>
     ) : (
-      <Button className="w-full p-0 bg-gray-800 text-gray-500">
+      <Button className="w-full p-0 bg-onsidebar text-cardfg">
         Seleziona due interfacce compatibili
       </Button>
     );

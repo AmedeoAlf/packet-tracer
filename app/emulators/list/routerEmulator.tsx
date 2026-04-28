@@ -101,9 +101,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
                   ctx.updateState();
                 }}
                 className={
-                  typeof ctx.state.ifIpInput_t == "undefined"
-                    ? ""
-                    : "text-temp"
+                  typeof ctx.state.ifIpInput_t == "undefined" ? "" : "text-temp"
                 }
                 placeholder="0.0.0.0"
               />

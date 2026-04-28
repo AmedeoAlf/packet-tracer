@@ -60,7 +60,7 @@ export const SideBar = memo(
               >
                 <div
                   className={
-                    "transition-all bg-slate-100 w-1 rounded-full pointer-events-none " +
+                    "transition-all bg-foreground w-1 rounded-full pointer-events-none " +
                     (resizing ? "h-7" : "h-10 group-hover:h-9")
                   }
                 ></div>
@@ -80,11 +80,12 @@ export const SideBar = memo(
           <svg
             width={10}
             height={20}
-            className={"m-3 transition " + (open ? "-scale-x-100" : "")}
+            className={
+              "m-3 transition stroke-foreground " + (open ? "-scale-x-100" : "")
+            }
           >
             <path
               d="M 8 18 L 2 10 L 8 2 "
-              stroke="white"
               strokeWidth="2"
               fill="none"
               strokeLinejoin="round"

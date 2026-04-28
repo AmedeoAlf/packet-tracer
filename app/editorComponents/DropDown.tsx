@@ -15,7 +15,10 @@ export function DropDown({
 }) {
   return (
     <div className="flex flex-col">
-      <Button className="bg-onsidebar flex-row w-full" onClick={() => setOpen(!open)}>
+      <Button
+        className="bg-onsidebar flex-row w-full"
+        onClick={() => setOpen(!open)}
+      >
         <div className="flex items-center justify-center w-full gap-2">
           {selected}
           <svg
