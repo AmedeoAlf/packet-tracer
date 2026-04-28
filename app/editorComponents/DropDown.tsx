@@ -14,8 +14,8 @@ export function DropDown({
   panels: string[];
 }) {
   return (
-    <>
-      <Button className="bg-zinc-800 flex-row" onClick={() => setOpen(!open)}>
+    <div className="flex flex-col">
+      <Button className="bg-onsidebar flex-row w-full" onClick={() => setOpen(!open)}>
         <div className="flex items-center justify-center w-full gap-2">
           {selected}
           <svg
@@ -36,8 +36,8 @@ export function DropDown({
       </Button>
       <div
         className={
-          "transition-all p-1 flex rounded-md overflow-y-auto flex-col gap-1 bg-zinc-800 " +
-          (open ? "h-30" : "h-0 scale-y-0")
+          "transition-all p-1 flex rounded-md overflow-y-auto flex-col gap-1 bg-onsidebar " +
+          (open ? "h-30 mt-1" : "h-0 scale-y-0")
         }
       >
         {panels.map((panel) => (
@@ -46,13 +46,13 @@ export function DropDown({
             onClick={panel == selected ? undefined : () => setSelected(panel)}
             className={
               "w-full " +
-              (panel == selected ? "bg-zinc-800 brightness-90" : "bg-zinc-900")
+              (panel == selected ? "bg-onsidebar brightness-90" : "bg-sidebar")
             }
           >
             {panel}
           </Button>
         ))}
       </div>
-    </>
+    </div>
   );
 }

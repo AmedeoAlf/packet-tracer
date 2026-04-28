@@ -103,7 +103,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
                 className={
                   typeof ctx.state.ifIpInput_t == "undefined"
                     ? ""
-                    : "text-amber-400"
+                    : "text-temp"
                 }
                 placeholder="0.0.0.0"
               />
@@ -124,14 +124,14 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
                 className={
                   typeof ctx.state.ifSubnetInput_t == "undefined"
                     ? ""
-                    : "text-amber-400"
+                    : "text-temp"
                 }
                 placeholder="255.255.255.0"
               />
             </p>
             <Button
               type="submit"
-              className="bg-zinc-800 disabled:opacity-70"
+              className="bg-primary disabled:opacity-70"
               disabled={
                 typeof ctx.state.ifSubnetInput_t == "undefined" &&
                 typeof ctx.state.ifIpInput_t == "undefined"
@@ -141,7 +141,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
             </Button>{" "}
             <Button
               type="button"
-              className="bg-zinc-800"
+              className="bg-onsidebar"
               onClick={() => {
                 ctx.state.l3Ifs[selectedIntfIdx] = null;
                 ctx.updateState();
@@ -179,8 +179,9 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
                 ctx.updateState();
               }}
             />
+            <br />
             <Button
-              className="bg-slate-500"
+              className="bg-primary"
               onClick={() => {
                 ctx.args = [
                   "routing",

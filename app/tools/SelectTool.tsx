@@ -158,7 +158,7 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
                   <p className="flex-1">1 dispositivo selezionato</p>
                 </SelectionActions>
                 <input
-                  className="text-xl font-bold flex-1 bg-zinc-800 w-full px-2 py-1 rounded-md border-b"
+                  className="text-xl font-bold flex-1 bg-onsidebar w-full px-2 py-1 rounded-md border-b"
                   type="text"
                   size={2}
                   value={device.name}
@@ -438,7 +438,7 @@ function TerminalEmulator<State extends InternalState<State>>(
           ref={(area) => {
             if (area) area.scrollTop = area.scrollHeight;
           }}
-          className="w-full"
+          className="w-full bg-onsidebar p-2"
           value={content}
           rows={8}
           readOnly
@@ -459,7 +459,7 @@ function TerminalEmulator<State extends InternalState<State>>(
             type="text"
             value={inputBar}
             placeholder=">"
-            className="w-full bg-zinc-700 p-1"
+            className="w-full bg-ontopbar p-1"
             onKeyDown={(ev) => {
               switch (ev.key) {
                 case "Tab":
@@ -553,8 +553,6 @@ function Square(props: { size: number; x: number; y: number }) {
       height={size}
       rx={1}
       ry={1}
-      stroke="white"
-      fill="none"
       {...other}
     />
   );
@@ -563,8 +561,6 @@ function Square(props: { size: number; x: number; y: number }) {
 function Path(props: { d: string }) {
   return (
     <path
-      stroke="white"
-      fill="none"
       strokeLinejoin="round"
       strokeLinecap="round"
       {...props}
@@ -579,7 +575,6 @@ function VLine({ x, from, to }: { x: number; from: number; to: number }) {
       x2={x}
       y1={from}
       y2={to}
-      stroke="white"
       strokeLinecap="round"
     />
   );
@@ -596,9 +591,9 @@ function SelectionActions({
   className?: string;
   children: ReactNode;
 }) {
-  const CLASSNAME = "bg-zinc-700 flex-1";
+  const CLASSNAME = "bg-onsidebar flex-1";
   return (
-    <div className={"flex w-full items-center " + (className ?? "")}>
+    <div className={"flex w-full items-center stroke-foreground fill-none " + (className ?? "")}>
       {children}
       <BtnArray>
         <BtnArrEl className={CLASSNAME} onClick={duplicate}>

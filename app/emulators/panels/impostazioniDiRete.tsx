@@ -38,8 +38,8 @@ function NetworkField({
           ctx.updateState();
         }}
         className={
-          "flex-1 bg-zinc-800 w-full px-2 py-1 rounded-md border-b " +
-          (typeof ctx.state[prop] == "undefined" ? "" : "text-yellow-400")
+          "flex-1 bg-onsidebar w-full px-2 py-1 rounded-md border-b " +
+          (typeof ctx.state[prop] == "undefined" ? "" : "text-temp")
         }
       />
     </>
@@ -162,7 +162,8 @@ export function impostazioniDiRete(
           prop="fieldDns_t"
           ifUnset={typeof dns == "undefined" ? "" : ipv4ToString(dns)}
         />
-        <Button className="bg-zinc-800 hover:brightness-110 active:brightness-130">
+        <div className="h-2"></div>
+        <Button className="bg-onsidebar hover:brightness-110 active:brightness-130">
           Imposta
         </Button>
       </form>
