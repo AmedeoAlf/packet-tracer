@@ -20,10 +20,20 @@
     var(--color-slate-600)
   );
   --color-ontopbar: light-dark(var(--color-sky-300), var(--color-slate-700));
+
   --color-selected: light-dark(var(--color-sky-200), var(--color-sky-900));
   --color-selected-border: light-dark(
     var(--color-sky-300),
     var(--color-sky-800)
+  );
+
+  --color-selectable: light-dark(
+    var(--color-slate-300),
+    var(--color-slate-800)
+  );
+  --color-selectable-border: light-dark(
+    var(--color-slate-400),
+    var(--color-slate-700)
   );
 
   --color-sidebar: light-dark(var(--color-zinc-100), var(--color-zinc-900));

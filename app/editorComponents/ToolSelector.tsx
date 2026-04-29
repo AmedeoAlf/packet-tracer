@@ -27,12 +27,13 @@ export const ToolSelector = memo(
                 setToolTo(it);
               }}
               isSelected={it == toolname}
+              unselectedStyle="bg-topbar"
               className={
                 "h-min p-2 rounded-xl" +
                 (it == toolname
                   ? ""
                   : it == anchor
-                    ? " border-sky-800"
+                    ? " border-selected-border"
                     : " border-transparent")
               }
             >

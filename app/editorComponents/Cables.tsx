@@ -116,7 +116,7 @@ const Label = memo(
         width={35}
         height={20}
       >
-        <div className="w-full text-sm text-center text-foregound bg-topbar/70 rounded-sm truncate">
+        <div className="w-full text-sm text-center text-foregound bg-primary/70 rounded-sm truncate">
           {text}
         </div>
       </foreignObject>
