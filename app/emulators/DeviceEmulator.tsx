@@ -182,11 +182,13 @@ export interface DeviceEmulator<State extends InternalState<State>> {
   ) => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyEmulatorContext = EmulatorContext<InternalState<any>>;
+
 export function buildEmulatorContext(
   device: Device,
   toolCtx: ToolCtx<AnyTool>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): EmulatorContext<any> {
+): AnyEmulatorContext {
   const emulator = device.emulator;
   const tool = toolCtx.toolRef.current;
   return {

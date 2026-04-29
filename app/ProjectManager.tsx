@@ -4,20 +4,20 @@ import {
   cloneWithProto,
   Coords,
   deepCopy,
-  PrimitiveType,
   arraySwap,
   trustMeBroCast,
   filterObject,
+  SimpleRecord,
 } from "./common";
 import { Device, makeDevice } from "./devices/Device";
 import { DeviceType, deviceTypesDB } from "./devices/deviceTypesDB";
 import {
+  AnyEmulatorContext,
   buildEmulatorContext,
-  EmulatorContext,
   NetworkInterface,
 } from "./emulators/DeviceEmulator";
 import { Decal, DecalData, emptyProject, Project } from "./Project";
-import { ToolCtx } from "./tools/Tool";
+import { AnyTool, ToolCtx } from "./tools/Tool";
 
 export type InterfaceId = number;
 
@@ -39,7 +39,7 @@ export const MIN_ZOOM_FACTOR = 0.2;
 
 type Callback = {
   onTick: number;
-  fn: (t: ToolCtx<any>) => void;
+  fn: (t: ToolCtx<AnyTool>) => void;
 };
 
 /*
@@ -205,7 +205,7 @@ export class ProjectManager {
       .toArray();
   }
   setTimeout(
-    fn: (t: EmulatorContext<any>) => void,
+    fn: (t: AnyEmulatorContext) => void,
     device: Device,
     delay: number,
   ) {
@@ -223,7 +223,7 @@ export class ProjectManager {
     const ifIdx = idxOfIntf(target);
     console.assert(dev.internalState.netInterfaces.length > ifIdx);
     this.callbacks.push({
-      fn: (toolCtx: ToolCtx<any>) =>
+      fn: (toolCtx: ToolCtx<AnyTool>) =>
         dev.emulator.packetHandler(
           buildEmulatorContext(dev, toolCtx),
           data,
@@ -236,11 +236,11 @@ export class ProjectManager {
   areTicksPending() {
     return this.callbacks.length != 0;
   }
-  advanceTick(toolCtx: ToolCtx<any>) {
+  advanceTick(toolCtx: ToolCtx<AnyTool>) {
     this.project.currTick++;
     this.processCurrTick(toolCtx);
   }
-  advanceTickToCallback(toolCtx: ToolCtx<any>) {
+  advanceTickToCallback(toolCtx: ToolCtx<AnyTool>) {
     if (this.callbacks.length == 0) return;
 
     const newTick = this.callbacks.reduce(
@@ -252,7 +252,7 @@ export class ProjectManager {
     this.project.currTick = newTick;
     this.processCurrTick(toolCtx);
   }
-  private processCurrTick(toolCtx: ToolCtx<any>) {
+  private processCurrTick(toolCtx: ToolCtx<AnyTool>) {
     const toClear: number[] = [];
     for (const [i, { onTick, fn }] of this.callbacks.entries()) {
       if (onTick != this.project.currTick) continue;
@@ -308,26 +308,25 @@ export class ProjectManager {
     return target;
   }
   exportProject(): object {
-    const proj = {
+    return {
       ...this.project,
-      devices: {} as Record<number, any>,
+      devices: this.project.devices
+        .values()
+        .map((dev) => ({
+          ...dev,
+          type: dev.deviceType,
+          internalState:
+            dev.serializeState?.() ?? removeTempFields(dev.internalState),
+        }))
+        .toArray(),
       connections: Object.fromEntries(this.project.connections.entries()),
     };
-    this.project.devices.entries().forEach(([id, dev]) => {
-      proj.devices[id] = {
-        ...dev,
-        type: dev.deviceType,
-        internalState:
-          dev.serializeState?.() ?? removeTempFields(dev.internalState),
-      };
-    });
-    return proj;
   }
-  static fromSerialized(serialized: Record<string, any>) {
+  static fromSerialized(serialized: Record<string, object>) {
     const pm = new ProjectManager();
     function setIfPresent<P extends keyof typeof pm.project>(
       prop: P,
-      transform: (t: Required<unknown>) => (typeof pm.project)[P] | undefined,
+      transform: (t: unknown) => (typeof pm.project)[P] | undefined,
     ) {
       if (prop in serialized)
         pm.project[prop] = transform(serialized[prop]) ?? pm.project[prop];
@@ -337,60 +336,61 @@ export class ProjectManager {
       ...serialized,
     };
     setIfPresent("devices", (d) => {
-      if (typeof d != "object") return;
-      const mustHaveProps: [string, PrimitiveType][] = [
+      if (typeof d != "object" || d == null) return;
+      // Convert old objects
+      if (!Array.isArray(d)) {
+        d = Object.values(d) as unknown[];
+        console.log("Loaded old savefile");
+      }
+      trustMeBroCast<unknown[]>(d);
+
+      type Validated = {
+        type: DeviceType;
+        id: number;
+        internalState: SimpleRecord;
+      };
+      const mustHaveProps = [
         ["type", "string"],
+        ["id", "number"],
         ["internalState", "object"],
-      ];
+      ] as const satisfies [keyof Validated, string][];
       return new Map(
-        Object.entries(d)
+        d
           .filter(
-            ([, dev]) =>
+            (dev) =>
               typeof dev == "object" &&
               dev !== null &&
               mustHaveProps.every(
                 ([prop, type]) =>
-                  prop in dev && typeof (dev as any)[prop] == type,
+                  prop in dev && typeof (dev as SimpleRecord)[prop] == type,
               ) &&
-              Object.keys(deviceTypesDB).includes((dev as any).type),
+              (dev as Validated).type in deviceTypesDB,
           )
-          .map(([id, dev]) => {
-            trustMeBroCast<{
-              type: DeviceType;
-              internalState: Record<string, any>;
-            }>(dev);
-            trustMeBroCast<string>(id);
-            const { type, ...props } = dev;
-            const factory = deviceTypesDB[type as DeviceType];
+          .map((parsed) => {
+            trustMeBroCast<Validated>(parsed);
+            const { type, id, ...props } = parsed;
+            const factory = deviceTypesDB[type];
+            const dev: Device = Object.create(factory.proto, {
+              id: { value: +id, enumerable: true, writable: false },
+            });
+            dev.name = "invalid name";
+            dev.pos = [0, 0];
+            Object.assign(dev, props);
+            dev.internalState = factory.proto.deserializeState?.(
+              props.internalState,
+            ) ?? {
+              ...factory.defaultState(),
+              ...props.internalState,
+            };
 
-            return [
-              +id,
-              Object.setPrototypeOf(
-                {
-                  name: "invalid name",
-                  pos: { x: 0, y: 0 },
-                  ...props,
-                  internalState: factory.proto.deserializeState?.(
-                    props.internalState,
-                  ) ?? {
-                    ...factory.defaultState(),
-                    ...("internalState" in props &&
-                    typeof props.internalState == "object"
-                      ? props.internalState
-                      : {}),
-                  },
-                  id: +id,
-                },
-                factory.proto,
-              ),
-            ];
+            return [dev.id, dev];
           }),
       );
     });
     setIfPresent("connections", (d) => {
-      if (typeof d !== "object") return;
+      if (typeof d !== "object" || d == null) return;
       return new Map(
-        Object.entries(d).map(([from, to]) => [+from, +(to as string)]),
+        Object.entries(d).map(([from, to]) => [+from, to as number]),
       );
     });
     return pm;

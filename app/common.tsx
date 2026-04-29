@@ -182,3 +182,5 @@ export function cssPaletteColor(color: number): string {
 }
 
 export const PALETTE_LEN = 5;
+
+export type SimpleRecord = Record<string, any>;
