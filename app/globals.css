@@ -1,25 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: var(--color-gray-50);
-  --foreground: #171717;
+  color-scheme: light dark;
+  --background: light-dark(var(--color-gray-50), var(--color-gray-700));
+  --foreground: light-dark(#171717, #ededed);
   --h-spec-cont: calc(100vh - 50px);
   --h-spec-cont-opt: calc(100vh - 200px - 20px);
-
-  --topbar: var(--color-sky-500);
-  --topbar-border: var(--color-sky-600);
-  --ontopbar: var(--color-sky-300);
-  --selected: var(--color-sky-200);
-  --selected-border: var(--color-sky-300);
-
-  --sidebar: var(--color-zinc-100);
-  --onsidebar: var(--color-zinc-300);
-
-  --primary: var(--color-sky-400);
-  --temp: var(--color-yellow-600);
-  --cardfg: var(--color-gray-700);
-
-  --bad: var(--color-red-400);
 }
 
 @theme inline {
@@ -28,40 +14,26 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  --color-topbar: var(--topbar);
-  --color-topbar-border: var(--topbar-border);
-  --color-ontopbar: var(--ontopbar);
-  --color-selected: var(--selected);
-  --color-selected-border: var(--selected-border);
+  --color-topbar: light-dark(var(--color-sky-500), var(--color-slate-800));
+  --color-topbar-border: light-dark(
+    var(--color-sky-600),
+    var(--color-slate-600)
+  );
+  --color-ontopbar: light-dark(var(--color-sky-300), var(--color-slate-700));
+  --color-selected: light-dark(var(--color-sky-200), var(--color-sky-900));
+  --color-selected-border: light-dark(
+    var(--color-sky-300),
+    var(--color-sky-800)
+  );
 
-  --color-sidebar: var(--sidebar);
-  --color-onsidebar: var(--onsidebar);
+  --color-sidebar: light-dark(var(--color-zinc-100), var(--color-zinc-900));
+  --color-onsidebar: light-dark(var(--color-zinc-300), var(--color-zinc-700));
 
-  --color-primary: var(--primary);
-  --color-temp: var(--temp);
+  --color-primary: light-dark(var(--color-sky-400), var(--color-sky-700));
+  --color-temp: light-dark(var(--color-yellow-600), var(--color-amber-300));
 
-  --color-cardfg: var(--cardfg);
-  --color-bad: var(--bad);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: var(--color-gray-700);
-    --foreground: #ededed;
-
-    --topbar: var(--color-slate-800);
-    --topbar-border: var(--color-slate-600);
-    --ontopbar: var(--color-slate-700);
-    --selected: var(--color-sky-900);
-    --selected-border: var(--color-sky-800);
-    --sidebar: var(--color-zinc-900);
-    --onsidebar: var(--color-zinc-700);
-
-    --primary: var(--color-sky-700);
-    --temp: var(--color-amber-300);
-    --cardfg: var(--color-gray-300);
-    --bad: var(--color-red-600);
-  }
+  --color-cardfg: light-dark(var(--color-gray-700), var(--color-gray-300));
+  --color-bad: light-dark(var(--color-red-400), var(--color-red-600));
 }
 
 body {
