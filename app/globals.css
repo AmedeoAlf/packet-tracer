@@ -10,7 +10,7 @@
   --palette-0: var(--foreground);
   --palette-1: light-dark(red, red);
   --palette-2: light-dark(blue, dodgerblue);
-  --palette-3: light-dark(green, green);
+  --palette-3: light-dark(green, springgreen);
   --palette-4: light-dark(darkorange, yellow);
 }
 
