@@ -2,6 +2,7 @@ import { memo, ReactNode } from "react";
 import { Decal } from "../Project";
 import { AnyTool } from "../tools/Tool";
 import { isDecalHighlighted, isSelectTool } from "../tools/SelectTool";
+import { cssColor } from "../common";
 
 export const Decals = memo(
   function Decals({
@@ -25,7 +26,7 @@ export const Decals = memo(
               x={d.pos[0]}
               y={d.pos[1]}
               {...data}
-              fill={d.fg}
+              fill={cssColor(d.fg)}
               className={highlighted && highlighted(d) ? "opacity-50" : ""}
             >
               {d.text}
@@ -38,8 +39,9 @@ export const Decals = memo(
               x={d.pos[0]}
               y={d.pos[1]}
               {...d.size}
-              stroke={d.stroke ?? "none"}
-              fill={d.fill ?? "none"}
+              stroke={cssColor(d.stroke) ?? "none"}
+              strokeWidth={2}
+              fill={cssColor(d.fill) ?? "none"}
               {...data}
             />
           );

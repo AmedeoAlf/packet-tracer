@@ -163,3 +163,22 @@ export const bufferOfU32BE: (...els: number[]) => Buffer = bufferOf.bind(
 export type KeysOfType<T, V> = {
   [K in keyof T]: T[K] extends V ? K : never;
 }[keyof T];
+
+export function cssColor(
+  color: number | undefined | string,
+): string | undefined {
+  switch (typeof color) {
+    case "undefined":
+      return;
+    case "string":
+      return color;
+    case "number":
+      return cssPaletteColor(color);
+  }
+}
+
+export function cssPaletteColor(color: number): string {
+  return `var(--palette-${color})`;
+}
+
+export const PALETTE_LEN = 5;

@@ -1,4 +1,5 @@
-import { Coords } from "../common";
+import { Coords, cssPaletteColor } from "../common";
+import { PalettePicker } from "../editorComponents/PalettePicker";
 import { ProjectManager } from "../ProjectManager";
 import { isSelectTool, SelectTool } from "./SelectTool";
 import { Tool, ToolConstructor, ToolCtx } from "./Tool";
@@ -6,7 +7,7 @@ import { Tool, ToolConstructor, ToolCtx } from "./Tool";
 export type LabelTool = Tool<LabelTool> & {
   currInput?: {
     text: string;
-    fg: string;
+    fg: number;
     pos: Coords;
   };
 };
@@ -44,10 +45,10 @@ export const makeLabelTool: ToolConstructor<LabelTool> = (
       if (!ctx.tool.currInput) return;
       return (
         <>
-          <div className="rounded-md font-bold px-2 p-2 bg-gray-700 text-gray-400 text-center w-full">
+          <div className="rounded-md font-bold px-2 p-2 text-center w-full">
             Contenuto: <br />
             <textarea
-              className="w-full"
+              className="w-full bg-background"
               value={ctx.tool.currInput.text}
               onChange={(ev) => {
                 ctx.tool.currInput!.text = ev.target.value;
@@ -60,11 +61,10 @@ export const makeLabelTool: ToolConstructor<LabelTool> = (
             />
             <div className="flex items-center">
               <p>Colore:</p>
-              <input
-                type="color"
-                value={ctx.tool.currInput.fg ?? "#000000"}
-                onChange={(ev) => {
-                  ctx.toolRef.current.currInput!.fg = ev.target.value;
+              <PalettePicker
+                value={ctx.tool.currInput.fg}
+                setValue={(fg) => {
+                  ctx.toolRef.current.currInput!.fg = fg;
                   ctx.updateTool();
                 }}
               />
@@ -88,7 +88,7 @@ export const makeLabelTool: ToolConstructor<LabelTool> = (
             ctx.toolRef.current.currInput = {
               text: "",
               pos: ev.pos,
-              fg: "#ffffff",
+              fg: 0,
             };
           }
           ctx.updateTool();
@@ -101,7 +101,7 @@ export const makeLabelTool: ToolConstructor<LabelTool> = (
           <text
             x={tool.currInput.pos[0]}
             y={tool.currInput.pos[1]}
-            fill={tool.currInput.fg ?? "#fff"}
+            fill={cssPaletteColor(tool.currInput.fg)}
             textDecoration="underline"
           >
             {tool.currInput.text || "|"}

@@ -10,13 +10,13 @@ export type DecalData = {
   | {
       type: "text";
       text: string;
-      fg: string;
+      fg: number;
     }
   | {
       type: "rect";
       size: { width: number; height: number };
-      fill?: string;
-      stroke?: string;
+      fill?: number;
+      stroke?: number;
     }
 );
 

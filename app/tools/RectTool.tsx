@@ -1,4 +1,5 @@
-import { Coords } from "../common";
+import { Coords, cssColor } from "../common";
+import { PalettePicker } from "../editorComponents/PalettePicker";
 import { ProjectManager } from "../ProjectManager";
 import { isSelectTool, SelectTool } from "./SelectTool";
 import { Tool, ToolConstructor } from "./Tool";
@@ -6,8 +7,8 @@ import { Tool, ToolConstructor } from "./Tool";
 export type RectTool = Tool<RectTool> & {
   startPos?: Coords;
   currPos?: Coords;
-  fill?: string;
-  stroke?: string;
+  fill?: number;
+  stroke?: number;
   editing?: number;
 };
 
@@ -37,8 +38,8 @@ export const makeRectTool: ToolConstructor<RectTool> = (
       ? selectedDecal
       : undefined;
   return {
-    fill: "#39774b",
-    stroke: "#ffffff",
+    fill: undefined,
+    stroke: 0,
     ...prev,
     editing,
     toolname: "rect",
@@ -58,17 +59,23 @@ export const makeRectTool: ToolConstructor<RectTool> = (
                   color={decal.fill}
                   setColor={(color) => {
                     const d = ctx.projectRef.current.mutDecal(decal.id)!;
-                    if (d.type == "rect") d.fill = color;
+                    if (d.type != "rect") return;
+                    d.fill = color;
+                    if (typeof color == "undefined") d.stroke ??= 0;
                     ctx.updateProject();
+                    ctx.updateTool();
                   }}
                 />
                 <ColorSelectorRow
                   name="Contorno"
-                  color={ctx.tool.stroke}
+                  color={decal.stroke}
                   setColor={(color) => {
                     const d = ctx.projectRef.current.mutDecal(decal.id)!;
-                    if (d.type == "rect") d.stroke = color;
+                    if (d.type != "rect") return;
+                    d.stroke = color;
+                    if (typeof color == "undefined") d.fill ??= 0;
                     ctx.updateProject();
+                    ctx.updateTool();
                   }}
                 />
               </tbody>
@@ -79,15 +86,15 @@ export const makeRectTool: ToolConstructor<RectTool> = (
       return (
         <div className="w-full text-center font-bold flex gap-2 flex-col">
           Trascina per disegnare un rettangolo
-          <div className="rounded-md px-2 p-1 bg-gray-800 text-gray-500">
+          <div className="rounded-md px-2 p-1">
             <table className="border-spacing-10">
               <tbody>
                 <ColorSelectorRow
                   name="Riempimento"
                   color={ctx.tool.fill}
                   setColor={(color) => {
-                    if (!color && !ctx.tool.stroke)
-                      ctx.toolRef.current.stroke = "#ffffff";
+                    if (typeof color == "undefined")
+                      ctx.toolRef.current.stroke ??= 0;
                     ctx.toolRef.current.fill = color;
                     ctx.updateTool();
                   }}
@@ -96,8 +103,8 @@ export const makeRectTool: ToolConstructor<RectTool> = (
                   name="Contorno"
                   color={ctx.tool.stroke}
                   setColor={(color) => {
-                    if (!color && !ctx.tool.fill)
-                      ctx.toolRef.current.fill = "#ffffff";
+                    if (typeof color == "undefined")
+                      ctx.toolRef.current.fill ??= 0;
                     ctx.toolRef.current.stroke = color;
                     ctx.updateTool();
                   }}
@@ -210,8 +217,8 @@ export const makeRectTool: ToolConstructor<RectTool> = (
         return (
           <rect
             {...rectProps(ctx.tool.startPos, ctx.tool.currPos)}
-            fill={ctx.tool.fill}
-            stroke={ctx.tool.stroke}
+            fill={cssColor(ctx.tool.fill) ?? "none"}
+            stroke={cssColor(ctx.tool.stroke) ?? "none"}
           />
         );
       }
@@ -225,26 +232,21 @@ function ColorSelectorRow({
   setColor,
 }: {
   name: string;
-  color?: string;
-  setColor: (col?: string) => void;
+  color?: number;
+  setColor: (col?: number) => void;
 }) {
   return (
     <tr>
       <td>
         <input
           type="checkbox"
-          checked={typeof color == "string"}
-          onChange={(ev) => setColor(ev.target.checked ? "#ffffff" : undefined)}
+          checked={typeof color == "number"}
+          onChange={(ev) => setColor(ev.target.checked ? 0 : undefined)}
         />
       </td>
       <td>{name}</td>
       <td>
-        <input
-          className="align-middle"
-          type="color"
-          value={color ?? "#999999"}
-          onChange={(ev) => setColor(ev.target.value)}
-        />
+        <PalettePicker value={color} setValue={setColor} />
       </td>
     </tr>
   );

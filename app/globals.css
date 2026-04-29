@@ -6,6 +6,12 @@
   --foreground: light-dark(#171717, #ededed);
   --h-spec-cont: calc(100vh - 50px);
   --h-spec-cont-opt: calc(100vh - 200px - 20px);
+
+  --palette-0: var(--foreground);
+  --palette-1: light-dark(red, red);
+  --palette-2: light-dark(blue, dodgerblue);
+  --palette-3: light-dark(green, green);
+  --palette-4: light-dark(darkorange, yellow);
 }
 
 @theme inline {
