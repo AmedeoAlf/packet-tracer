@@ -8,13 +8,46 @@ const Editor = dynamic(() => import("./Editor").then((m) => m.Editor), {
   ssr: false,
 });
 
+export default function Home() {
+  const proj = useMemo(() => loadSavedProject() ?? defaultProject(), []);
+
+  const [isSaved, setIsSaved] = useState(true);
+  return (
+    <Editor
+      initialProject={proj}
+      isSaved={isSaved}
+      save={(proj) => {
+        setIsSaved(false);
+        const exported = proj.exportProject();
+        localStorage.setItem("project", JSON.stringify(exported));
+        setIsSaved(true);
+        // navigator
+        //   .clipboard
+        //   .writeText(JSON.stringify(proj.exportProject()))
+        //   .then(() => setIsSaved(true));
+      }}
+    />
+  );
+}
+
+function loadSavedProject(): ProjectManager | undefined {
+  try {
+    const saved = localStorage.getItem("project");
+    if (saved == null) return;
+    const json = JSON.parse(saved);
+    if (typeof json !== "object") return;
+    return ProjectManager.fromSerialized(json);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_) {}
+}
+
 function defaultProject(): ProjectManager {
   const p = new ProjectManager();
   p.addDecal({
     type: "text",
     text: "This is an example project",
     pos: [-300, -250],
-    fg: "#ffffff",
+    fg: 0,
   });
   p.createDevice("switch", [-300, -100], "Rete A");
   p.createDevice("router", [-150, -100], "Router A");
@@ -48,37 +81,4 @@ function defaultProject(): ProjectManager {
   console.assert(p.connect(5, 3, 6, 2) == undefined); // "Internet C" -> "Router B"
   console.assert(p.connect(6, 0, 7, 0) == undefined); // "Router B" -> "Rete B"
   return new ProjectManager(p);
-}
-
-function loadSavedProject(): ProjectManager | undefined {
-  try {
-    const saved = localStorage.getItem("project");
-    if (saved == null) return;
-    const json = JSON.parse(saved);
-    if (typeof json !== "object") return;
-    return ProjectManager.fromSerialized(json);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_) {}
-}
-
-export default function Home() {
-  const proj = useMemo(() => loadSavedProject() ?? defaultProject(), []);
-
-  const [isSaved, setIsSaved] = useState(true);
-  return (
-    <Editor
-      initialProject={proj}
-      isSaved={isSaved}
-      save={(proj) => {
-        setIsSaved(false);
-        const exported = proj.exportProject();
-        localStorage.setItem("project", JSON.stringify(exported));
-        setIsSaved(true);
-        // navigator
-        //   .clipboard
-        //   .writeText(JSON.stringify(proj.exportProject()))
-        //   .then(() => setIsSaved(true));
-      }}
-    />
-  );
 }
