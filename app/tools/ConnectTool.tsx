@@ -244,7 +244,7 @@ const InterfaceSelector = memo(
     const isConnected = (i: number) =>
       ctx.project.getConnectedTo(toInterfaceId(device.id, i)) !== undefined;
     return (
-      <div className="p-[10px] w-[50%]">
+      <div className="p-2 w-1/2">
         <div className="rounded-md font-bold p-1 text-center w-full mb-1">
           {device.name}
         </div>
@@ -253,7 +253,7 @@ const InterfaceSelector = memo(
           <div key={i} className="flex items-center justify-between m-1">
             <div className="w-17 rounded-md">{intf.name}</div>
             {i === intfIdx ? (
-              <Button className="bg-ontopbar">Selezionata</Button>
+              <Button className="bg-selected">Selezionata</Button>
             ) : isConnected(i) ? (
               <Button
                 onClick={() => {
@@ -261,7 +261,7 @@ const InterfaceSelector = memo(
                   ctx.updateProject();
                   selectIntf(i);
                 }}
-                className="text-foreground bg-bad hover:brightness-130 active:bg-red-300 active:brightness-100"
+                className="bg-bad hover:brightness-130 active:brightness-100"
               >
                 Scollega
               </Button>
@@ -270,7 +270,7 @@ const InterfaceSelector = memo(
                 onClick={() => {
                   selectIntf(i);
                 }}
-                className="text-background bg-cardfg hover:brightness-110 active:brightness-120"
+                className="bg-selectable hover:brightness-110 active:brightness-120"
               >
                 Seleziona
               </Button>
