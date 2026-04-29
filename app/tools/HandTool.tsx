@@ -11,10 +11,10 @@ export const makeHandTool: ToolConstructor<HandTool> = (
     toolname: "hand",
     panel: (ctx) => {
       return (
-        <div className="h-8 rounded-md font-bold m-2 px-2 p-1 bg-onsidebar text-cardfg">
+        <div className="h-8 rounded-md font-bold m-2 px-2 p-1">
           Zoom level:&nbsp;
           <input
-            className="text-center w-15 rounded-md bg-ontopbar"
+            className="text-center w-15 rounded-md bg-primary"
             type="number"
             min={0}
             max={500}
