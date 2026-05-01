@@ -259,18 +259,18 @@ export class ProjectManager {
     this.processCurrTick(toolCtx);
   }
   private processCurrTick(toolCtx: ToolCtx<AnyTool>) {
-    const toClear: number[] = [];
-    for (const [i, { onTick, fn }] of this.callbacks.entries()) {
-      if (onTick != this.project.currTick) continue;
+    const toClear: Callback[] = [];
+    for (const cb of this.callbacks.values()) {
+      if (cb.onTick != this.project.currTick) continue;
       try {
-        fn(toolCtx);
+        cb.fn(toolCtx);
       } catch (e) {
         console.log("A callback shouldn't throw errors, but it threw", e);
       }
-      toClear.push(i);
+      toClear.push(cb);
     }
     if (toClear.length == 0) return;
-    this.callbacks = this.callbacks.filter((_, i) => !toClear.includes(i));
+    this.callbacks = this.callbacks.filter((cb) => !toClear.includes(cb));
     toolCtx.updateProject();
   }
   addDecal(d: DecalData): number {
