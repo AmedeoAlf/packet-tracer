@@ -50,7 +50,11 @@ export type EmulatorContext<State extends InternalState<State>> = {
   interpreter: Interpreter<State>;
   currTick: number;
   sendOnIf: (ifIdx: number, data: Buffer) => void;
-  schedule: (after: number, fn: (ctx: EmulatorContext<State>) => void) => void;
+  schedule: (
+    after: number,
+    fn: (ctx: EmulatorContext<State>) => void,
+  ) => object;
+  cancelSchedule: (schedule: object) => void;
   state: State;
   updateState: () => void;
   args?: string[];
@@ -202,8 +206,11 @@ export function buildEmulatorContext(
     sendOnIf(ifIdx, data) {
       toolCtx.projectRef.current.sendOn(toInterfaceId(device.id, ifIdx), data);
     },
-    schedule(after, fn) {
-      toolCtx.projectRef.current.setTimeout(fn, device, after);
+    schedule(after, fn): object {
+      return toolCtx.projectRef.current.setTimeout(fn, device, after);
+    },
+    cancelSchedule(schedule: object) {
+      return toolCtx.projectRef.current.removeTimeout(schedule);
     },
     state: device.internalState,
     // NOTE: il print avviene anche con il terminale connesso ad un dispositivo diverso

@@ -208,12 +208,18 @@ export class ProjectManager {
     fn: (t: AnyEmulatorContext) => void,
     device: Device,
     delay: number,
-  ) {
+  ): object {
     if (delay < 1) throw `setTimeout delay must be >0 (was ${delay})`;
     this.callbacks.push({
       onTick: this.currTick + delay,
       fn: (toolCtx) => fn(buildEmulatorContext(device, toolCtx)),
     });
+    return this.callbacks.at(-1)!;
+  }
+  removeTimeout(timeout: object) {
+    const idx = this.callbacks.indexOf(timeout as Callback);
+    if (idx == -1) return;
+    this.callbacks.splice(idx, 1);
   }
   sendOn(intf: InterfaceId, data: Buffer) {
     const target = this.getConnectedTo(intf);
