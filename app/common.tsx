@@ -48,9 +48,7 @@ export function deepCopy<T>(t: T): T {
 }
 
 export function capitalize(s: string) {
-  const arr = [...s];
-  arr[0] = arr[0].toUpperCase();
-  return arr.join("");
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 export function arraySwap<T>(arr: T[], a: number, b: number) {

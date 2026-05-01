@@ -8,6 +8,7 @@ import {
   trustMeBroCast,
   filterObject,
   SimpleRecord,
+  capitalize,
 } from "./common";
 import { Device, makeDevice } from "./devices/Device";
 import { DeviceType, deviceTypesDB } from "./devices/deviceTypesDB";
@@ -89,10 +90,6 @@ export class ProjectManager {
     }
   }
   createDevice(type: DeviceType, pos: Coords, name?: string) {
-    function capitalize(s: string) {
-      return s.charAt(0).toUpperCase() + s.slice(1);
-    }
-
     this.mutatedDevices ??= [];
 
     ++this.project.lastId;
