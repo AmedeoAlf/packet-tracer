@@ -1,8 +1,12 @@
 import { OSInternalState } from "../devices/list/Computer";
 import { EmulatorContext, SubCommand } from "../emulators/DeviceEmulator";
-import { getDns, resolveAddressSimple } from "../emulators/utils/dnsUtils";
+import {
+  getDns,
+  parseURL,
+  resolveAddressSimple,
+} from "../emulators/utils/dnsUtils";
 import { send, recv, tcpClose, dialTCP } from "../emulators/utils/sockets";
-import { HttpRequest, HttpResponse, parseURL } from "../protocols/http";
+import { HttpRequest, HttpResponse } from "../protocols/http";
 import { IPv4Address, parseIpv4 } from "../protocols/rfc_760";
 
 export const curl = <

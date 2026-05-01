@@ -1,28 +1,4 @@
 import { findInBuffer } from "../common";
-import { isResolvableToIP } from "../emulators/utils/dnsUtils";
-
-export function parseURL(
-  str: string,
-):
-  | [
-      protocol: string | undefined,
-      hostname: string,
-      port: number | undefined,
-      resource: string | undefined,
-    ]
-  | undefined {
-  const reg = str.match(/(\w*:\/\/)*([a-zA-Z0-9\.\-]+)(:\d+)*(\/.*)*/);
-  if (reg == null) return;
-  const protocol = reg.at(1)?.replace("://", "");
-
-  const hostname = reg[2];
-  if (!isResolvableToIP(hostname)) return;
-
-  const portStr = reg.at(3)?.substring(1);
-  const port = portStr ? +portStr : undefined;
-
-  return [protocol, hostname, port, reg.at(3)];
-}
 
 export const HTTP_METHODS = [
   "GET",
