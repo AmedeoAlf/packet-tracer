@@ -24,6 +24,7 @@ export const ping = <
     run(ctx) {
       const addr = parseIpv4(ctx.args![1])!;
       const start = ctx.currTick;
+      console.log("pinging on:", start);
 
       const timeout = ctx.schedule(1000, (ctx) => {
         ctx.state.rawSocketFd_t = undefined;

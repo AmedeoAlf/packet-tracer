@@ -1,21 +1,37 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RouterInternalState } from "./devices/list/Router";
 import { parseIpv4 } from "./protocols/rfc_760";
 import { ProjectManager } from "./ProjectManager";
 import dynamic from "next/dynamic";
+import { isRecord } from "./common";
 const Editor = dynamic(() => import("./Editor").then((m) => m.Editor), {
   ssr: false,
 });
 
 export default function Home() {
-  const proj = useMemo(() => loadSavedProject() ?? defaultProject(), []);
+  const tickRef = useRef(0);
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const startTime = Date.now();
+    setInterval(() => {
+      tickRef.current = Date.now() - startTime;
+      setTick(tickRef.current);
+    }, 100);
+  }, []);
+  const proj = useMemo(
+    // eslint-disable-next-line react-hooks/refs
+    () => loadSavedProject(tickRef) ?? defaultProject(tickRef),
+    [tickRef],
+  );
 
   const [isSaved, setIsSaved] = useState(true);
   return (
     <Editor
       initialProject={proj}
       isSaved={isSaved}
+      tickRef={tickRef}
+      tick={tick}
       save={(proj) => {
         setIsSaved(false);
         const exported = proj.exportProject();
@@ -30,19 +46,21 @@ export default function Home() {
   );
 }
 
-function loadSavedProject(): ProjectManager | undefined {
+function loadSavedProject(
+  tickRef: ProjectManager["tickRef"],
+): ProjectManager | undefined {
   try {
     const saved = localStorage.getItem("project");
     if (saved == null) return;
     const json = JSON.parse(saved);
-    if (typeof json !== "object") return;
-    return ProjectManager.fromSerialized(json);
+    if (!isRecord(json)) return;
+    return ProjectManager.fromSerialized(json, tickRef);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_) {}
 }
 
-function defaultProject(): ProjectManager {
-  const p = new ProjectManager();
+function defaultProject(tickRef: ProjectManager["tickRef"]): ProjectManager {
+  const p = ProjectManager.make(tickRef);
   p.addDecal({
     type: "text",
     text: "This is an example project",
@@ -80,5 +98,5 @@ function defaultProject(): ProjectManager {
   console.assert(p.connect(4, 4, 5, 2) == undefined); // "Internet B" -> "Internet C"
   console.assert(p.connect(5, 3, 6, 2) == undefined); // "Internet C" -> "Router B"
   console.assert(p.connect(6, 0, 7, 0) == undefined); // "Router B" -> "Rete B"
-  return new ProjectManager(p);
+  return p.newInstance();
 }

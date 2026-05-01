@@ -1,4 +1,5 @@
 "use client";
+import { RefObject } from "react";
 import {
   clamp,
   cloneWithProto,
@@ -57,7 +58,13 @@ export class ProjectManager {
   mutatedDecals?: number[];
   lastCables?: ReturnType<ProjectManager["getCables"]>;
 
-  callbacks: Callback[] = [];
+  private callbacks: Callback[] = [];
+  // FIXME: figure out what to do with currTick
+
+  // Il tick processato in questo momento
+  tick: number = -1;
+  // Il tick corrente (per programmarne di nuovi)
+  private tickRef: RefObject<number>;
 
   deviceFromTag(tag: HTMLOrSVGElement): Device | undefined {
     if (tag.dataset.id) {
@@ -207,16 +214,22 @@ export class ProjectManager {
     delay: number,
   ): object {
     if (delay < 1) throw `setTimeout delay must be >0 (was ${delay})`;
-    this.callbacks.push({
-      onTick: this.currTick + delay,
-      fn: (toolCtx) => fn(buildEmulatorContext(device, toolCtx)),
-    });
-    return this.callbacks.at(-1)!;
+    return this.delay(
+      (toolCtx) => fn(buildEmulatorContext(device, toolCtx)),
+      delay,
+    );
   }
   removeTimeout(timeout: object) {
     const idx = this.callbacks.indexOf(timeout as Callback);
     if (idx == -1) return;
     this.callbacks.splice(idx, 1);
+  }
+  private delay(fn: (ctx: ToolCtx<AnyTool>) => void, delay: number): object {
+    this.callbacks.push({
+      fn,
+      onTick: this.currTick + delay,
+    });
+    return this.callbacks.at(-1)!;
   }
   sendOn(intf: InterfaceId, data: Buffer) {
     const target = this.getConnectedTo(intf);
@@ -225,40 +238,36 @@ export class ProjectManager {
     if (!dev) return;
     const ifIdx = idxOfIntf(target);
     console.assert(dev.internalState.netInterfaces.length > ifIdx);
-    this.callbacks.push({
-      fn: (toolCtx: ToolCtx<AnyTool>) =>
+    this.delay(
+      (toolCtx: ToolCtx<AnyTool>) =>
         dev.emulator.packetHandler(
           buildEmulatorContext(dev, toolCtx),
           data,
           ifIdx,
         ),
-      onTick: this.project.currTick + 1,
-    });
-    // dev.emulator.packetHandler(buildEmulatorContext(dev, toolCtx), data, ifIdx);
+      1,
+    );
   }
   areTicksPending() {
     return this.callbacks.length != 0;
   }
-  advanceTick(toolCtx: ToolCtx<AnyTool>) {
-    this.project.currTick++;
-    this.processCurrTick(toolCtx);
-  }
-  advanceTickToCallback(toolCtx: ToolCtx<AnyTool>) {
+  nextCallback() {
     if (this.callbacks.length == 0) return;
 
-    const newTick = this.callbacks.reduce(
+    const nextCallback = this.callbacks.reduce(
       (acc, val) => Math.min(acc, val.onTick),
       Infinity,
     );
-    if (newTick <= this.project.currTick)
+    // FIXME: decide what to do with this code
+    if (false && nextCallback <= this.currTick)
       throw `There are callbacks in the past, currTick=${this.currTick}, callbacks=${this.callbacks.map((it) => it.onTick).join()}`;
-    this.project.currTick = newTick;
-    this.processCurrTick(toolCtx);
+
+    return nextCallback;
   }
-  private processCurrTick(toolCtx: ToolCtx<AnyTool>) {
+  processTick(toolCtx: ToolCtx<AnyTool>) {
     const toClear: Callback[] = [];
     for (const cb of this.callbacks.values()) {
-      if (cb.onTick != this.project.currTick) continue;
+      if (cb.onTick != this.currTick) continue;
       try {
         cb.fn(toolCtx);
       } catch (e) {
@@ -325,8 +334,11 @@ export class ProjectManager {
       connections: Object.fromEntries(this.project.connections.entries()),
     };
   }
-  static fromSerialized(serialized: Record<string, object>) {
-    const pm = new ProjectManager();
+  static fromSerialized(
+    serialized: Record<string, unknown>,
+    tickRef: ProjectManager["tickRef"],
+  ) {
+    const pm = ProjectManager.make(tickRef);
     function setIfPresent<P extends keyof typeof pm.project>(
       prop: P,
       transform: (t: unknown) => (typeof pm.project)[P] | undefined,
@@ -452,21 +464,30 @@ export class ProjectManager {
   }
 
   get currTick() {
-    return this.project.currTick;
+    if (this.tick == -1) console.log("getting real tick", this.tickRef.current);
+    return this.tick != -1 ? this.tick : this.tickRef.current;
   }
 
-  // Il costruttore serve a creare copie identiche del progetto
-  // per scatenare un rerender
-  constructor(old?: ProjectManager) {
-    if (!old) {
-      this.project = emptyProject();
-      return;
-    }
+  private constructor(project: Project, tickRef: ProjectManager["tickRef"]) {
+    this.project = project;
+    this.tickRef = tickRef;
+    return;
+  }
 
-    old.applyMutations();
-    if (old.mutatedDevices === undefined) this.lastCables = old.lastCables;
-    this.callbacks = old.callbacks;
-    this.project = { ...old.project };
+  static make(tickRef: ProjectManager["tickRef"]) {
+    return new ProjectManager(emptyProject(), tickRef);
+  }
+
+  // Costruttore che serve a creare copie identiche del progetto
+  // per scatenare un rerender
+  newInstance() {
+    this.applyMutations();
+    const next = new ProjectManager({ ...this.project }, this.tickRef);
+    next.tick = this.tick;
+    if (typeof this.mutatedDevices == "undefined")
+      next.lastCables = this.lastCables;
+    next.callbacks = this.callbacks;
+    return next;
   }
 }
 

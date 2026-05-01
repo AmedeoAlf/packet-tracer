@@ -46,7 +46,7 @@ export interface Tool<TSelf extends Tool<TSelf>> {
   svgElements: (ctx: ToolCtx<TSelf>) => ReactNode;
 }
 
-export type ToolCtx<T extends Tool<T>> = {
+export type ToolCtx<T extends Tool<T> = AnyTool> = {
   project: ProjectManager;
   projectRef: RefObject<ProjectManager>;
 

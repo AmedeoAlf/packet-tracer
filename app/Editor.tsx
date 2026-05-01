@@ -7,6 +7,7 @@ import {
   useMemo,
   KeyboardEvent,
   WheelEventHandler,
+  RefObject,
 } from "react";
 import { AnyTool, CanvasEvent, ToolCtx, TOOLS } from "./tools/Tool";
 import { makeSelectTool } from "./tools/SelectTool";
@@ -29,10 +30,14 @@ export function Editor({
   initialProject,
   isSaved,
   save,
+  tickRef,
+  tick,
 }: {
   initialProject: ProjectManager;
   isSaved: boolean;
   save: (p: ProjectManager) => void;
+  tickRef: RefObject<number>;
+  tick: number;
 }): ReactNode {
   const [shouldSave, setShouldSave] = useState(false);
   const [project, setProject] = useState(initialProject);
@@ -55,7 +60,7 @@ export function Editor({
       // projectRef.current = new ProjectManager(projectRef.current);
       // projectRef.current.applyMutations();
       setShouldSave(true);
-      setProject(new ProjectManager(projectRef.current));
+      setProject(projectRef.current.newInstance());
     },
     updateTool() {
       setTool({ ...toolCtx.toolRef.current });
@@ -114,14 +119,16 @@ export function Editor({
     return vb;
   }, [canvasSize, project.viewBoxZoom, project.viewBoxX, project.viewBoxY]);
 
-  // useEffect(() => {
-  //   const int = setInterval(() => {
-  //     if (proj.areTicksPending()) { proj.advanceTick() };
-  //   }, 10)
-  //   return clearInterval.bind(0, int);
-  // }, [])
   useEffect(() => {
-    projectRef.current.advanceTickToCallback(toolCtx);
+    while (true) {
+      const newTick = projectRef.current.nextCallback();
+      if (typeof newTick == "undefined") break;
+      if (newTick > tickRef.current) break;
+      console.log("simulation tick:", newTick);
+      projectRef.current.tick = newTick;
+      projectRef.current.processTick(toolCtx);
+    }
+    projectRef.current.tick = -1;
   });
 
   return (
@@ -136,7 +143,7 @@ export function Editor({
         <p className="inline ml-3">
           {!shouldSave && isSaved ? "Salvato" : "Salvataggio in corso"}
         </p>
-        <p className="inline ml-3">Tick corrente: {project.currTick}</p>
+        <p className="inline ml-3">Tick corrente: {tick}</p>
       </div>
 
       <SideBar toolCtx={toolCtx} />
