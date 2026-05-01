@@ -1,5 +1,5 @@
 import { memo, ReactNode, useEffect, useState } from "react";
-import { AnyTool, Tool, ToolCtx } from "../tools/Tool";
+import { AnyTool, ToolCtx } from "../tools/Tool";
 
 // La barra laterale dell'interfaccia: il suo contenuto è intermente deciso dal
 // tool in uso.
@@ -9,40 +9,35 @@ export const SideBar = memo(
     const [resizing, setResizing] = useState(false);
     const [width, setWidth] = useState(420);
     const panel = toolCtx.tool.panel(toolCtx);
-    useEffect(() => {
-      const events = {
-        mousedown: (ev) => {
-          if (!(ev.target instanceof HTMLDivElement)) return;
-          if (ev.target.id != "sidebarResizeHandle") return;
-          setResizing(true);
-        },
-        ...(resizing
-          ? {
-              mousemove: (ev) =>
-                setWidth((width) =>
-                  Math.min(
-                    window.innerWidth - 100,
-                    Math.max(300, width - ev.movementX),
-                  ),
-                ),
-              mouseup: () => setResizing(false),
-            }
-          : {}),
-      } as const satisfies Partial<{
-        [K in keyof DocumentEventMap]: (
-          this: Document,
-          ev: DocumentEventMap[K],
-        ) => void;
-      }>;
-      Object.entries(events).forEach(([k, v]) =>
-        document.addEventListener(k as keyof DocumentEventMap, v as any),
-      );
 
-      return () =>
-        Object.entries(events).forEach(([k, v]) =>
-          document.removeEventListener(k as keyof DocumentEventMap, v as any),
+    useEffect(() => {
+      if (!resizing) return;
+      const mousemove = (ev: MouseEvent) =>
+        setWidth((width) =>
+          Math.min(
+            window.innerWidth - 100,
+            Math.max(300, width - ev.movementX),
+          ),
         );
-    }, [setWidth, resizing, setResizing]);
+      const mouseup = () => setResizing(false);
+      document.addEventListener("mousemove", mousemove);
+      document.addEventListener("mouseup", mouseup);
+      return () => {
+        document.removeEventListener("mousemove", mousemove);
+        document.removeEventListener("mouseup", mouseup);
+      };
+    }, [resizing, setResizing, setWidth]);
+
+    useEffect(() => {
+      const mousedown = (ev: MouseEvent) => {
+        if (!(ev.target instanceof HTMLDivElement)) return;
+        if (ev.target.id != "sidebarResizeHandle") return;
+        setResizing(true);
+      };
+      document.addEventListener("mousedown", mousedown);
+      return () => document.removeEventListener("mousedown", mousedown);
+    }, [setResizing]);
+
     return (
       <>
         <div

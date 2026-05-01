@@ -184,3 +184,7 @@ export function cssPaletteColor(color: number): string {
 export const PALETTE_LEN = 5;
 
 export type SimpleRecord = Record<string, any>;
+
+export function isRecord(obj: any): obj is Record<string, unknown> {
+  return typeof obj == "object" && obj != null;
+}

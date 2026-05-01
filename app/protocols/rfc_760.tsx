@@ -73,7 +73,9 @@ export interface L3InternalState<
   packetsWaitingForARP_t: Record<IPv4Address, IPv4Packet[]>;
 }
 
-export function defaultL3InternalState(): L3InternalState<any> {
+export function defaultL3InternalState<
+  TSelf extends L3InternalState<TSelf>,
+>(): L3InternalState<TSelf> {
   return {
     ipPackets_t: new Map(),
     packetsWaitingForARP_t: [],

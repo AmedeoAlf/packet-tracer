@@ -1,3 +1,5 @@
+import { isRecord } from "@/app/common";
+
 export enum OSError {
   NoErr,
   FileNotFound,
@@ -40,11 +42,12 @@ export function readFile(filesystem: OSDir, file: string): string | OSError {
 export function readSettingsFile(
   filesystem: OSDir,
   file: string,
-  // FIXME: should return any
-): Record<string, any> | undefined {
+): Record<string, unknown> | undefined {
   const f = readFile(filesystem, file);
   if (isError(f)) return;
-  return JSON.parse(f);
+  const settings = JSON.parse(f);
+  if (!isRecord(settings)) return;
+  return settings;
 }
 
 export function writeFile(

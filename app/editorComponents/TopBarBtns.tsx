@@ -1,12 +1,12 @@
 import { memo } from "react";
-import { ToolCtx } from "../tools/Tool";
+import { AnyTool, ToolCtx } from "../tools/Tool";
 import { ProjectManager } from "../ProjectManager";
 import { BtnArray, BtnArrEl } from "./BtnArray";
 
 export const TopBarBtns = memo(function TopBarBtns({
   ctx,
 }: {
-  ctx: ToolCtx<any>;
+  ctx: ToolCtx<AnyTool>;
 }) {
   const CLASSNAME = "bg-ontopbar";
   return (

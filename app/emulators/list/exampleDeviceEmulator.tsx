@@ -120,7 +120,7 @@ export const exampleDeviceEmulator: DeviceEmulator<ExampleDeviceInternalState> =
                 run(ctx) {
                   const prop = ctx.args![1];
                   const val = JSON.parse(ctx.args![2]);
-                  (ctx.state as any)[prop] = val;
+                  (ctx.state as unknown as Record<string, unknown>)[prop] = val;
                   ctx.updateState();
                 },
               },

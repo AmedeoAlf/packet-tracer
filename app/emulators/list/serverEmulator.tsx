@@ -37,6 +37,7 @@ import { curl } from "@/app/virtualPrograms/curl";
 import { gatewayCmd } from "@/app/virtualPrograms/gateway";
 import { impostazioniDiRete } from "../panels/impostazioniDiRete";
 import { ServerInternalState } from "@/app/devices/list/Server";
+import { isRecord } from "@/app/common";
 
 export const defaultServerFS: OSDir = {
   etc: {
@@ -131,7 +132,8 @@ function dnsPacketHandler(
 ) {
   const config = readSettingsFile(ctx.state.filesystem, "/etc/dnsserver");
   if (!config?.on) return;
-  if (typeof config.domains !== "object") {
+  const domains = config.domains;
+  if (!isRecord(domains)) {
     ctx.write("dns config should contain a domains property");
     return;
   }
@@ -142,13 +144,14 @@ function dnsPacketHandler(
   let code = DnsResponseCode.NoError;
   const answers = dnsPacket.questions
     .map((q) => {
-      if (!Array.isArray(config.domains[q.name])) {
-        code = DnsResponseCode.NXDomain;
-        return;
-      }
-      return q.answerTypeA(
-        config.domains[q.name].map((ip: string) => parseIpv4(ip)),
-      );
+      const ips = domains[q.name];
+      if (Array.isArray(ips))
+        return q.answerTypeA(
+          ips
+            .map((ip: string) => parseIpv4(ip))
+            .filter((it) => typeof it == "number"),
+        );
+      code = DnsResponseCode.NXDomain;
     })
     .filter((it) => it) as ResourceRecord[];
 
