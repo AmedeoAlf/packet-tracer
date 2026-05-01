@@ -34,28 +34,17 @@ export function trustMeBroCast<T>(t: any): asserts t is T {
 export type PrimitiveType = ReturnType<(n: any) => typeof n>;
 
 export function deepCopy<T>(t: T): T {
-  switch (typeof t) {
-    case "object":
-      switch (true) {
-        case t === null:
-          return null as T;
-        case t instanceof Map:
-          return new Map(t.entries().map(([k, v]) => [k, deepCopy(v)])) as T;
-        case Array.isArray(t):
-          return t.map((it) => deepCopy(it)) as T;
-        case t instanceof Set:
-          return new Set(t.values().map((it) => deepCopy(it))) as T;
-        default:
-          return Object.setPrototypeOf(
-            Object.fromEntries(
-              Object.entries(t).map(([k, v]) => [k, deepCopy(v)]),
-            ),
-            Object.getPrototypeOf(t),
-          ) as T;
-      }
-    default:
-      return t;
-  }
+  if (typeof t != "object") return t;
+  if (t === null) return null as T;
+  if (t instanceof Map)
+    return new Map(t.entries().map(([k, v]) => [k, deepCopy(v)])) as T;
+  if (Array.isArray(t)) return t.map((it) => deepCopy(it)) as T;
+  if (t instanceof Set)
+    return new Set(t.values().map((it) => deepCopy(it))) as T;
+  return Object.setPrototypeOf(
+    Object.fromEntries(Object.entries(t).map(([k, v]) => [k, deepCopy(v)])),
+    Object.getPrototypeOf(t),
+  ) as T;
 }
 
 export function capitalize(s: string) {
