@@ -123,3 +123,8 @@ export async function resolveAddressSimple<
     },
   );
 }
+
+export function isResolvableToIP(str: string): boolean {
+  if (typeof parseIpv4(str) == "number") return true;
+  return str.match(/[^a-zA-Z\d\.]/) == null;
+}
