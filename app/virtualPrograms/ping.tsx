@@ -24,27 +24,27 @@ export const ping = <
     run(ctx) {
       const addr = parseIpv4(ctx.args![1])!;
       const start = ctx.currTick;
-      let done = false;
+
+      const timeout = ctx.schedule(1000, (ctx) => {
+        ctx.state.rawSocketFd_t = undefined;
+        ctx.write("Request timeout");
+      });
+
+      const req = ICMPPacketSerializer.toBuffer(
+        echoRequest(0, 0, Buffer.alloc(0)),
+      );
+
+      sendIPv4Packet(ctx, addr, ProtocolCode.icmp, req);
       ctx.state.rawSocketFd_t = (ctx, packet) => {
-        done = true;
+        ctx.cancelSchedule(timeout);
         const seq = echoResponseHeader(
           ICMPPacketSerializer.fromBytes(packet.payload),
         ).seq;
         ctx.write(
           `From ${ipv4ToString(packet.source)}: icmp_seq=${seq} ttl=${packet.ttl} time=${ctx.currTick - start} ms`,
         );
-        ctx.state.rawSocketFd_t = undefined;
+        delete ctx.state.rawSocketFd_t;
       };
-      const req = ICMPPacketSerializer.toBuffer(
-        echoRequest(0, 0, Buffer.alloc(0)),
-      );
-      sendIPv4Packet(ctx, addr, ProtocolCode.icmp, req);
-      ctx.schedule(100, (ctx) => {
-        if (!done) {
-          ctx.state.rawSocketFd_t = undefined;
-          ctx.write("Request timeout");
-        }
-      });
     },
   },
 });
