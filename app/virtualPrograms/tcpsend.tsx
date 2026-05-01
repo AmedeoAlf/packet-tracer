@@ -1,6 +1,6 @@
 import { OSInternalState } from "../devices/list/Computer";
 import { SubCommand } from "../emulators/DeviceEmulator";
-import { send, close, dialTCP } from "../emulators/utils/sockets";
+import { send, tcpClose, dialTCP } from "../emulators/utils/sockets";
 import { parseIpv4 } from "../protocols/rfc_760";
 
 export const tcphello = <
@@ -24,12 +24,12 @@ export const tcphello = <
         const port = +ctx.args![2];
         const socket = dialTCP(ctx, ip, port, (ctx, socket) => {
           send(ctx, socket, Buffer.from("Hello!"));
-          close(ctx, socket);
+          tcpClose(ctx, socket);
         });
         ctx.schedule(50, (ctx) => {
           if (!ctx.state.tcpSockets_t.has(socket)) return;
           ctx.write("Could not establish/terminate connection");
-          close(ctx, socket);
+          tcpClose(ctx, socket);
         });
       },
       done: true,

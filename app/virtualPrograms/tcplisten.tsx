@@ -1,6 +1,6 @@
 import { OSInternalState } from "../devices/list/Computer";
 import { SubCommand } from "../emulators/DeviceEmulator";
-import { listenAndAcceptTCP, recv, close } from "../emulators/utils/sockets";
+import { listenAndAcceptTCP, recv, tcpClose } from "../emulators/utils/sockets";
 
 export const tcplisten = <
   State extends OSInternalState<State>,
@@ -22,7 +22,7 @@ export const tcplisten = <
           listenAndAcceptTCP(ctx.state, port, (ctx, socket) => {
             recv(ctx.state, socket, (ctx, data) => {
               ctx.write(data.toString());
-              close(ctx, socket);
+              tcpClose(ctx, socket);
             });
           });
         },
@@ -31,7 +31,7 @@ export const tcplisten = <
       stop: {
         desc: "Stops listening on port",
         run(ctx) {
-          close(ctx, +ctx.args![1]);
+          tcpClose(ctx, +ctx.args![1]);
         },
         done: true,
       },

@@ -2,7 +2,7 @@ import { OSInternalState } from "@/app/devices/list/Computer";
 import { EmulatorContext } from "../DeviceEmulator";
 import { OSDir, readFile } from "./osFiles";
 import { IPv4Address, parseIpv4, ProtocolCode } from "@/app/protocols/rfc_760";
-import { readUDP } from "./sockets";
+import { readUDP, udpClose } from "./sockets";
 import {
   DNSPacket,
   DNSQueryPacket,
@@ -40,7 +40,15 @@ export async function resolveAddresses<State extends OSInternalState<State>>(
   dnsQuestions: DNSQuestion[],
   callback: ResolvedAddressesCallback<State>,
 ) {
+  // Set up timeout
+  const timeout = ctx.schedule(1000, (ctx) => {
+    ctx.write("No answer from DNS server");
+    udpClose(ctx, port);
+  });
+
+  // Set up UDP callback
   const port = readUDP(ctx.state, ([ctx, packet]) => {
+    ctx.cancelSchedule(timeout);
     if (packet.from != dns) {
       return false;
     }
@@ -69,6 +77,7 @@ export async function resolveAddresses<State extends OSInternalState<State>>(
     callback(ctx, answers);
     return true;
   });
+  // Actually send the query
   const query = new DNSQueryPacket(0, dnsQuestions);
   sendIPv4Packet(
     ctx,

@@ -90,7 +90,14 @@ export function send<State extends OSInternalState<State>>(
   );
 }
 
-export function close<State extends OSInternalState<State>>(
+export function udpClose<State extends OSInternalState<State>>(
+  ctx: EmulatorContext<State>,
+  socket: number,
+) {
+  ctx.state.udpSockets_t.delete(socket);
+}
+
+export function tcpClose<State extends OSInternalState<State>>(
   ctx: EmulatorContext<State>,
   socket: number,
 ) {

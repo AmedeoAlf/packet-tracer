@@ -1,7 +1,7 @@
 import { OSInternalState } from "../devices/list/Computer";
 import { EmulatorContext, SubCommand } from "../emulators/DeviceEmulator";
 import { getDns, resolveAddressSimple } from "../emulators/utils/dnsUtils";
-import { send, recv, close, dialTCP } from "../emulators/utils/sockets";
+import { send, recv, tcpClose, dialTCP } from "../emulators/utils/sockets";
 import { HttpRequest, HttpResponse } from "../protocols/http";
 import { IPv4Address, parseIpv4 } from "../protocols/rfc_760";
 
@@ -63,8 +63,8 @@ function curlRequest<State extends OSInternalState<State>>(
       console.log("server answered", response);
       if (!(response instanceof HttpResponse)) return;
       ctx.write(response.body.toString());
-      close(ctx, socket);
+      tcpClose(ctx, socket);
     });
   });
-  ctx.schedule(50, (ctx) => close(ctx, socket));
+  ctx.schedule(50, (ctx) => tcpClose(ctx, socket));
 }
