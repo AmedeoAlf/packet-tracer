@@ -35,7 +35,7 @@ export function parseURL(
   const portStr = reg.at(3)?.substring(1);
   const port = portStr ? +portStr : undefined;
 
-  return [protocol, hostname, port, reg.at(3)];
+  return [protocol, hostname, port, reg.at(4)];
 }
 
 export function getDns(filesystem: OSDir): IPv4Address | string {

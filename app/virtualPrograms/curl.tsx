@@ -63,7 +63,7 @@ function curlRequest<State extends OSInternalState<State>>(
     send(
       ctx,
       socket,
-      new HttpRequest("/" + resource, {
+      new HttpRequest(resource, {
         "user-agent": "curl",
         host: domain,
       }).toBytes(),
