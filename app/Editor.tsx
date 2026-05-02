@@ -133,7 +133,7 @@ export function Editor({
       tabIndex={0}
     >
       <div className="bg-topbar fixed top-0 w-full h-12 indent-1.5em flex items-center px-1 border-b-2 border-topbar-border">
-        <TopBarBtns ctx={toolCtx} />
+        <TopBarBtns ctx={toolCtx} tickRef={tickRef} />
 
         <p className="inline ml-3">
           {!shouldSave && isSaved ? "Salvato" : "Salvataggio in corso"}
