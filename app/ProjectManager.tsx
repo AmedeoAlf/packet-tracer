@@ -59,11 +59,10 @@ export class ProjectManager {
   lastCables?: ReturnType<ProjectManager["getCables"]>;
 
   private callbacks: Callback[] = [];
-  // FIXME: figure out what to do with currTick
 
   // Il tick processato in questo momento
   private emulatorTick: number = -1;
-  // Il tick corrente (per programmarne di nuovi)
+  // Il tick mostrato sul cronometro (per programmarne di nuovi)
   private tickRef: RefObject<number>;
 
   deviceFromTag(tag: HTMLOrSVGElement): Device | undefined {
@@ -261,9 +260,11 @@ export class ProjectManager {
     }
     this.endSimulation();
   }
+  // Can be called multiple times without problems
   beginSimulation() {
     this.emulatorTick = this.currTick;
   }
+  // A bit more dangerous
   endSimulation() {
     this.emulatorTick = -1;
   }

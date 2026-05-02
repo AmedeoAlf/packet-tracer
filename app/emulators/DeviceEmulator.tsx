@@ -195,7 +195,6 @@ export function buildEmulatorContext(
 ): AnyEmulatorContext {
   const emulator = device.emulator;
   const tool = toolCtx.toolRef.current;
-  toolCtx.projectRef.current.beginSimulation();
   return {
     interpreter: emulator.cmdInterpreter,
     updateState: () => {
@@ -205,9 +204,11 @@ export function buildEmulatorContext(
       toolCtx.updateTool();
     },
     sendOnIf(ifIdx, data) {
+      toolCtx.projectRef.current.beginSimulation();
       toolCtx.projectRef.current.sendOn(toInterfaceId(device.id, ifIdx), data);
     },
     schedule(after, fn): object {
+      toolCtx.projectRef.current.beginSimulation();
       return toolCtx.projectRef.current.setTimeout(fn, device, after);
     },
     cancelSchedule(schedule: object) {
@@ -223,6 +224,9 @@ export function buildEmulatorContext(
       : (msg) => {
           console.log("Impossibile scrivere sul terminale", msg);
         },
-    currTick: () => toolCtx.projectRef.current.currTick,
+    currTick: () => {
+      toolCtx.projectRef.current.beginSimulation();
+      return toolCtx.projectRef.current.currTick;
+    },
   };
 }
