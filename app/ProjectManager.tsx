@@ -225,7 +225,6 @@ export class ProjectManager {
     this.callbacks.splice(idx, 1);
   }
   private delay(fn: (ctx: ToolCtx<AnyTool>) => void, delay: number): object {
-    console.log(`Adding delay ${delay} from ${this.currTick}`);
     this.callbacks.push({
       fn,
       onTick: this.currTick + delay,
