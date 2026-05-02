@@ -259,6 +259,12 @@ export class ProjectManager {
       this.emulatorTick = newTick;
       this.processTick(toolCtx);
     }
+    this.endSimulation();
+  }
+  beginSimulation() {
+    this.emulatorTick = this.currTick;
+  }
+  endSimulation() {
     this.emulatorTick = -1;
   }
   nextCallback() {

@@ -195,6 +195,7 @@ export function buildEmulatorContext(
 ): AnyEmulatorContext {
   const emulator = device.emulator;
   const tool = toolCtx.toolRef.current;
+  toolCtx.projectRef.current.beginSimulation();
   return {
     interpreter: emulator.cmdInterpreter,
     updateState: () => {
