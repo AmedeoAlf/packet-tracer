@@ -225,6 +225,7 @@ export class ProjectManager {
     this.callbacks.splice(idx, 1);
   }
   private delay(fn: (ctx: ToolCtx<AnyTool>) => void, delay: number): object {
+    console.log(`Adding delay ${delay} from ${this.currTick}`);
     this.callbacks.push({
       fn,
       onTick: this.currTick + delay,
@@ -464,7 +465,9 @@ export class ProjectManager {
   }
 
   get currTick() {
-    if (this.tick == -1) console.log("getting real tick", this.tickRef.current);
+    try {
+      if (this.tick == -1) throw "getting real tick " + this.tickRef.current;
+    } catch (e) {}
     return this.tick != -1 ? this.tick : this.tickRef.current;
   }
 

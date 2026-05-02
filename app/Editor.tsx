@@ -124,7 +124,6 @@ export function Editor({
       const newTick = projectRef.current.nextCallback();
       if (typeof newTick == "undefined") break;
       if (newTick > tickRef.current) break;
-      console.log("simulation tick:", newTick);
       projectRef.current.tick = newTick;
       projectRef.current.processTick(toolCtx);
     }

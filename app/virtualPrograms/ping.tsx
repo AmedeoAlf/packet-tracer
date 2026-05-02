@@ -23,7 +23,7 @@ export const ping = <
     done: true,
     run(ctx) {
       const addr = parseIpv4(ctx.args![1])!;
-      const start = ctx.currTick;
+      const start = ctx.currTick();
       console.log("pinging on:", start);
 
       const timeout = ctx.schedule(1000, (ctx) => {
@@ -42,7 +42,7 @@ export const ping = <
           ICMPPacketSerializer.fromBytes(packet.payload),
         ).seq;
         ctx.write(
-          `From ${ipv4ToString(packet.source)}: icmp_seq=${seq} ttl=${packet.ttl} time=${ctx.currTick - start} ms`,
+          `From ${ipv4ToString(packet.source)}: icmp_seq=${seq} ttl=${packet.ttl} time=${ctx.currTick() - start} ms`,
         );
         delete ctx.state.rawSocketFd_t;
       };
