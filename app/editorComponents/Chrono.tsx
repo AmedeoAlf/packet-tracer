@@ -1,6 +1,10 @@
-import { RefObject, useEffect, useState } from "react";
+import { memo, RefObject, useEffect, useState } from "react";
 
-export function Chrono({ tickRef }: { tickRef: RefObject<number> }) {
+export const Chrono = memo(function Chrono({
+  tickRef,
+}: {
+  tickRef: RefObject<number>;
+}) {
   const [lastUpdate, setLastUpdate] = useState(0);
   useEffect(() => {
     const handle = setInterval(() => setLastUpdate(tickRef.current), 1000);
@@ -13,4 +17,4 @@ export function Chrono({ tickRef }: { tickRef: RefObject<number> }) {
       {Math.trunc(sec / 60)}:{(sec % 60).toString().padStart(2, "0")}
     </p>
   );
-}
+});
