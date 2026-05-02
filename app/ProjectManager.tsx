@@ -62,7 +62,7 @@ export class ProjectManager {
   // FIXME: figure out what to do with currTick
 
   // Il tick processato in questo momento
-  tick: number = -1;
+  private emulatorTick: number = -1;
   // Il tick corrente (per programmarne di nuovi)
   private tickRef: RefObject<number>;
 
@@ -251,6 +251,16 @@ export class ProjectManager {
   areTicksPending() {
     return this.callbacks.length != 0;
   }
+  runSimulation(toolCtx: ToolCtx) {
+    const now = this.tickRef.current;
+    while (true) {
+      const newTick = this.nextCallback();
+      if (typeof newTick == "undefined" || newTick > now) break;
+      this.emulatorTick = newTick;
+      this.processTick(toolCtx);
+    }
+    this.emulatorTick = -1;
+  }
   nextCallback() {
     if (this.callbacks.length == 0) return;
 
@@ -258,10 +268,9 @@ export class ProjectManager {
       (acc, val) => Math.min(acc, val.onTick),
       Infinity,
     );
-    // FIXME: decide what to do with this code
-    if (false && nextCallback <= this.currTick)
-      throw `There are callbacks in the past, currTick=${this.currTick}, callbacks=${this.callbacks.map((it) => it.onTick).join()}`;
-
+    // // could implement checks to prevent ticks from the past...
+    // if (nextCallback <= this.currTick)
+    //   throw `There are callbacks in the past, currTick=${this.currTick}, callbacks=${this.callbacks.map((it) => it.onTick).join()}`;
     return nextCallback;
   }
   processTick(toolCtx: ToolCtx<AnyTool>) {
@@ -464,7 +473,7 @@ export class ProjectManager {
   }
 
   get currTick() {
-    return this.tick != -1 ? this.tick : this.tickRef.current;
+    return this.emulatorTick != -1 ? this.emulatorTick : this.tickRef.current;
   }
 
   private constructor(project: Project, tickRef: ProjectManager["tickRef"]) {
@@ -482,7 +491,7 @@ export class ProjectManager {
   newInstance() {
     this.applyMutations();
     const next = new ProjectManager({ ...this.project }, this.tickRef);
-    next.tick = this.tick;
+    next.emulatorTick = this.emulatorTick;
     if (typeof this.mutatedDevices == "undefined")
       next.lastCables = this.lastCables;
     next.callbacks = this.callbacks;

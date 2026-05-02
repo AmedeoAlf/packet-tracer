@@ -50,26 +50,27 @@ export function Editor({
   const svgCanvas = useRef<SVGSVGElement>(null);
   let svgPt = svgCanvas.current?.createSVGPoint();
 
-  const toolCtx: ToolCtx<AnyTool> = {
-    tool,
-    project,
-    toolRef,
-    projectRef,
-    updateProject() {
-      // projectRef.current = new ProjectManager(projectRef.current);
-      // projectRef.current.applyMutations();
-      setShouldSave(true);
-      setProject(projectRef.current.newInstance());
-    },
-    updateTool() {
-      setTool({ ...toolCtx.toolRef.current });
-    },
-    revertTool() {
-      if (lastTool == toolCtx.tool.toolname) return;
-      toolRef.current = TOOLS[lastTool](toolRef.current, projectRef.current);
-      this.updateTool();
-    },
-  };
+  const toolCtx: ToolCtx<AnyTool> = useMemo(
+    () => ({
+      tool,
+      project,
+      toolRef,
+      projectRef,
+      updateProject() {
+        setShouldSave(true);
+        setProject(projectRef.current.newInstance());
+      },
+      updateTool() {
+        setTool({ ...toolCtx.toolRef.current });
+      },
+      revertTool() {
+        if (lastTool == toolCtx.tool.toolname) return;
+        toolRef.current = TOOLS[lastTool](toolRef.current, projectRef.current);
+        this.updateTool();
+      },
+    }),
+    [lastTool, project, tool],
+  );
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -119,15 +120,11 @@ export function Editor({
   }, [canvasSize, project.viewBoxZoom, project.viewBoxX, project.viewBoxY]);
 
   useEffect(() => {
-    while (true) {
-      const newTick = projectRef.current.nextCallback();
-      if (typeof newTick == "undefined") break;
-      if (newTick > tickRef.current) break;
-      projectRef.current.tick = newTick;
-      projectRef.current.processTick(toolCtx);
-    }
-    projectRef.current.tick = -1;
-  });
+    const timeout = setInterval(() => {
+      projectRef.current.runSimulation(toolCtx);
+    }, 50);
+    return clearInterval.bind(null, timeout);
+  }, [toolCtx]);
 
   return (
     <div
@@ -197,6 +194,7 @@ export function Editor({
 }
 
 // buildEventHandler per eventi "keydown" e "keyup"
+// TODO: change all those ToolCtx<AnyTool> to ToolCtx
 function buildKeyboardEventHandler(
   ctx: ToolCtx<AnyTool>,
   type: Extract<CanvasEvent["type"], "keydown" | "keyup">,
