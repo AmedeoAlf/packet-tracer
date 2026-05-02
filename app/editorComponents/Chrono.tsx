@@ -3,17 +3,14 @@ import { RefObject, useEffect, useState } from "react";
 export function Chrono({ tickRef }: { tickRef: RefObject<number> }) {
   const [lastUpdate, setLastUpdate] = useState(0);
   useEffect(() => {
-    const cb = () => {
-      setLastUpdate(tickRef.current);
-      requestAnimationFrame(cb);
-    };
-    const handle = requestAnimationFrame(cb);
-    return cancelAnimationFrame.bind(null, handle);
+    const handle = setInterval(() => setLastUpdate(tickRef.current), 1000);
+    return () => clearTimeout(handle);
   }, [tickRef]);
+
+  const sec = Math.trunc(lastUpdate / 1000);
   return (
     <p className="inline ml-3">
-      {Math.trunc(lastUpdate / 1000)}:
-      {(lastUpdate % 1000).toString().padStart(3, "0")}
+      {Math.trunc(sec / 60)}:{(sec % 60).toString().padStart(2, "0")}
     </p>
   );
 }
