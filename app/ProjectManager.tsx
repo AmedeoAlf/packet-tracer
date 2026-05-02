@@ -465,9 +465,6 @@ export class ProjectManager {
   }
 
   get currTick() {
-    try {
-      if (this.tick == -1) throw "getting real tick " + this.tickRef.current;
-    } catch (e) {}
     return this.tick != -1 ? this.tick : this.tickRef.current;
   }
 
