@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { RefObject, useMemo, useState } from "react";
 import { RouterInternalState } from "./devices/list/Router";
 import { parseIpv4 } from "./protocols/rfc_760";
 import { ProjectManager } from "./ProjectManager";
@@ -10,17 +10,21 @@ const Editor = dynamic(() => import("./Editor").then((m) => m.Editor), {
 });
 
 export default function Home() {
-  const tickRef = useRef(0);
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    const startTime = Date.now();
-    setInterval(() => {
-      tickRef.current = Date.now() - startTime;
-      setTick(tickRef.current);
-    }, 100);
-  }, []);
+  // eslint-disable-next-line react-hooks/purity
+  const [startTime] = useState(Date.now());
+  const tickRef: RefObject<number> = useMemo(
+    () =>
+      Object.create(null, {
+        current: {
+          get() {
+            // eslint-disable-next-line react-hooks/purity
+            return Date.now() - startTime;
+          },
+        },
+      }),
+    [startTime],
+  );
   const proj = useMemo(
-    // eslint-disable-next-line react-hooks/refs
     () => loadSavedProject(tickRef) ?? defaultProject(tickRef),
     [tickRef],
   );
@@ -31,7 +35,6 @@ export default function Home() {
       initialProject={proj}
       isSaved={isSaved}
       tickRef={tickRef}
-      tick={tick}
       save={(proj) => {
         setIsSaved(false);
         const exported = proj.exportProject();

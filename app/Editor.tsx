@@ -20,6 +20,7 @@ import { ProjectManager } from "./ProjectManager";
 import { TopBarBtns } from "./editorComponents/TopBarBtns";
 import { Coords } from "./common";
 import { Decals } from "./editorComponents/Decals";
+import { Chrono } from "./editorComponents/Chrono";
 
 /*
  * Questo componente è tutta l'interfaccia del sito. Crea gli hook sia per il
@@ -31,13 +32,11 @@ export function Editor({
   isSaved,
   save,
   tickRef,
-  tick,
 }: {
   initialProject: ProjectManager;
   isSaved: boolean;
   save: (p: ProjectManager) => void;
   tickRef: RefObject<number>;
-  tick: number;
 }): ReactNode {
   const [shouldSave, setShouldSave] = useState(false);
   const [project, setProject] = useState(initialProject);
@@ -142,7 +141,7 @@ export function Editor({
         <p className="inline ml-3">
           {!shouldSave && isSaved ? "Salvato" : "Salvataggio in corso"}
         </p>
-        <p className="inline ml-3">Tick corrente: {tick}</p>
+        <Chrono tickRef={tickRef} />
       </div>
 
       <SideBar toolCtx={toolCtx} />
