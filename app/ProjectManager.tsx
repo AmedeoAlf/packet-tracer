@@ -204,13 +204,8 @@ export class ProjectManager {
   getConnectedTo(intf: InterfaceId): InterfaceId | undefined {
     return this.project.connections.get(intf);
   }
-  getAllConnectedTo(device: number): [InterfaceId, InterfaceId][] {
-    return this.project.connections
-      .entries()
-      .filter(
-        ([a, b]) => deviceOfIntf(a) == device || deviceOfIntf(b) == device,
-      )
-      .toArray();
+  getAllConnections(): IteratorObject<[InterfaceId, InterfaceId]> {
+    return this.project.connections.entries();
   }
   setTimeout(
     fn: (t: AnyEmulatorContext) => void,
