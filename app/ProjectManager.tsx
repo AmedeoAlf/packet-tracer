@@ -113,11 +113,11 @@ export class ProjectManager {
     );
     return this.project.lastId;
   }
-  duplicateDevice(id: number, newName?: string): number | undefined {
+  duplicateDevice(id: number): number | undefined {
     const old = this.project.devices.get(id);
     if (old === undefined) return;
 
-    const newId = this.createDevice(old.deviceType, { ...old.pos }, newName);
+    const newId = this.createDevice(old.deviceType, { ...old.pos }, old.name);
     if (newId === undefined) return;
 
     const dup = this.project.devices.get(newId)!;
