@@ -23,6 +23,7 @@ import { AnyTool, ToolCtx } from "./tools/Tool";
 
 export type InterfaceId = number;
 
+// TODO: increase device bits, maybe reduce interface bits
 export function toInterfaceId(device: number, intfIdx: number): InterfaceId {
   console.assert(intfIdx < 1 << 8);
   return (device << 8) | intfIdx;
