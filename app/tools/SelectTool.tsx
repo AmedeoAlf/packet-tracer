@@ -502,33 +502,28 @@ function TerminalEmulator<State extends InternalState<State>>(
 
 // Must update tool and project after call
 function duplicateSelection(self: SelectTool, project: ProjectManager) {
-  const newSelected = new Array<number>();
   const oldSelected = [...self.selected];
-  for (const s of oldSelected) {
-    const newId = project.duplicateDevice(s)!;
-    newSelected.push(newId);
+  const newSelected = oldSelected.map((dev) => {
+    const newId = project.duplicateDevice(dev)!;
     project.mutDevice(newId)!.pos[0] += 10;
     project.mutDevice(newId)!.pos[1] += 10;
-  }
+    return newId;
+  });
 
+  const devIdToIdx = new Map(oldSelected.map((dev, idx) => [dev, idx]));
   // Copy device connections
-  // NOTE: Set iteration is guaranteed to be in insertion ordedr
-  // https://tc39.es/ecma262/multipage/keyed-collections.html#sec-set.prototype.foreach
-  for (const [idx, dev] of [...self.selected].entries()) {
+  for (const [idx, dev] of oldSelected.entries()) {
     const connections = project.getAllConnectedTo(dev);
     for (const pair of connections) {
       if (deviceOfIntf(pair[1]) == dev) pair.reverse();
 
-      const otherDev = deviceOfIntf(pair[1]);
-      if (!self.selected.has(otherDev)) continue;
-
-      const otherIdx = oldSelected.findIndex((oldIdx) => oldIdx == otherDev);
-      if (otherIdx == -1) continue;
+      const connectedIdx = devIdToIdx.get(deviceOfIntf(pair[1]));
+      if (connectedIdx == null) continue;
 
       project.connect(
         newSelected[idx],
         idxOfIntf(pair[0]),
-        newSelected[otherIdx],
+        newSelected[connectedIdx],
         idxOfIntf(pair[1]),
       );
     }
