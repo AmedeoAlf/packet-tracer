@@ -305,12 +305,12 @@ const ConnectBtn = memo(
     );
   },
   (p, n) => {
-    console.log(
-      p.connectTool.tool.idxA,
-      n.connectTool.tool.idxA,
-      p.connectTool.tool.idxB,
-      n.connectTool.tool.idxB,
-    );
+    // console.log(
+    //   p.connectTool.tool.idxA,
+    //   n.connectTool.tool.idxA,
+    //   p.connectTool.tool.idxB,
+    //   n.connectTool.tool.idxB,
+    // );
     return (
       p.connectTool.tool.idxA === n.connectTool.tool.idxA &&
       p.connectTool.tool.idxB === n.connectTool.tool.idxB &&
