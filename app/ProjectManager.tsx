@@ -56,7 +56,10 @@ export class ProjectManager {
   cantRecycle: boolean = false;
   mutatedDevices?: number[];
   mutatedDecals?: number[];
-  lastCables?: ReturnType<ProjectManager["getCables"]>;
+  cableCache?: Map<
+    number,
+    (Pick<NetworkInterface, "maxMbps" | "type"> & { intf: [number, number] })[]
+  >;
 
   private callbacks: Callback[] = [];
 
@@ -152,7 +155,7 @@ export class ProjectManager {
     this.project.connections.delete(this.project.connections.get(intfB) || -1);
     this.project.connections.set(intfA, intfB);
     this.project.connections.set(intfB, intfA);
-    this.lastCables = undefined;
+    delete this.cableCache;
     return;
   }
   disconnect(devId: number, ifId: number) {
@@ -160,17 +163,21 @@ export class ProjectManager {
     if (!this.project.connections.has(intf)) return;
     this.project.connections.delete(this.project.connections.get(intf)!);
     this.project.connections.delete(intf);
-    this.lastCables = undefined;
+    delete this.cableCache;
+  }
+  getCables(): NonNullable<typeof this.cableCache> {
+    if (!this.cableCache) {
+      this.computeCables();
+      console.log(
+        "cables were not computed properly, computeCables() should've been called in newInstance()",
+      );
+    }
+    return this.cableCache!;
   }
   // Maps two deviceIds to the amount of connections between them
-  getCables(): Map<
-    number,
-    (Pick<NetworkInterface, "maxMbps" | "type"> & { intf: [number, number] })[]
-  > {
-    if (this.lastCables) return this.lastCables;
+  computeCables() {
     const cabled = new Set<number>();
-    const cableToOccurencies: ReturnType<ProjectManager["getCables"]> =
-      new Map();
+    this.cableCache = new Map();
     for (const conn of this.project.connections) {
       if (cabled.has(conn[0])) continue;
       cabled.add(conn[1]);
@@ -180,11 +187,11 @@ export class ProjectManager {
       const key = [deviceOfIntf(conn[0]), deviceOfIntf(conn[1])].reduce(
         (acc, val) => (acc << 16) | val,
       );
-      if (!cableToOccurencies.has(key)) cableToOccurencies.set(key, []);
+      if (!this.cableCache.has(key)) this.cableCache.set(key, []);
 
       const ifA = this.getInterfaceFromId(conn[0])!;
       const ifB = this.getInterfaceFromId(conn[1])!;
-      cableToOccurencies.get(key)!.push({
+      this.cableCache.get(key)!.push({
         type: ifA.type,
         maxMbps: Math.min(
           ifA.maxMbps,
@@ -193,8 +200,6 @@ export class ProjectManager {
         intf: conn.map((it) => idxOfIntf(it)) as [number, number],
       });
     }
-    this.lastCables = cableToOccurencies;
-    return cableToOccurencies;
   }
   getConnectedTo(intf: InterfaceId): InterfaceId | undefined {
     return this.project.connections.get(intf);
@@ -499,8 +504,8 @@ export class ProjectManager {
     this.applyMutations();
     const next = new ProjectManager({ ...this.project }, this.tickRef);
     next.emulatorTick = this.emulatorTick;
-    if (typeof this.mutatedDevices == "undefined")
-      next.lastCables = this.lastCables;
+    if (this.mutatedDevices || !this.cableCache) this.computeCables();
+    next.cableCache = this.cableCache;
     next.callbacks = this.callbacks;
     return next;
   }
