@@ -38,7 +38,7 @@ export default function Home() {
       save={(proj) => {
         setIsSaved(false);
         const exported = proj.exportProject();
-        localStorage.setItem("project", JSON.stringify(exported));
+        localStorage.setItem("project:v0", JSON.stringify(exported));
         setIsSaved(true);
         // navigator
         //   .clipboard
@@ -53,7 +53,14 @@ function loadSavedProject(
   tickRef: ProjectManager["tickRef"],
 ): ProjectManager | undefined {
   try {
-    const saved = localStorage.getItem("project");
+    {
+      const oldLocalStorage = localStorage.getItem("project");
+      if (oldLocalStorage != null) {
+        localStorage.setItem("project:v0", oldLocalStorage);
+        localStorage.removeItem("project");
+      }
+    }
+    const saved = localStorage.getItem("project:v0");
     if (saved == null) return;
     const json = JSON.parse(saved);
     if (!isRecord(json)) return;
