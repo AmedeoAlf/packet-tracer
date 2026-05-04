@@ -10,8 +10,7 @@ const Editor = dynamic(() => import("./Editor").then((m) => m.Editor), {
 });
 
 export default function Home() {
-  // eslint-disable-next-line react-hooks/purity
-  const [startTime] = useState(Date.now());
+  const [startTime] = useState(() => Date.now());
   const tickRef: RefObject<number> = useMemo(
     () =>
       Object.create(null, {
