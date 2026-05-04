@@ -22,7 +22,6 @@ import { isError, OSDir, readFile, readSettingsFile } from "../utils/osFiles";
 import {
   DNSPacket,
   DNSResponsePacket,
-  ResourceRecord,
   ResponseCode as DnsResponseCode,
 } from "@/app/protocols/dns_emu";
 import { sendIPv4Packet } from "../utils/sendIPv4Packet";
@@ -142,18 +141,20 @@ function dnsPacketHandler(
   if (dnsPacket instanceof DNSResponsePacket) return;
 
   let code = DnsResponseCode.NoError;
-  const answers = dnsPacket.questions
-    .map((q) => {
-      const ips = domains[q.name];
-      if (Array.isArray(ips))
-        return q.answerTypeA(
-          ips
-            .map((ip: string) => parseIpv4(ip))
-            .filter((it) => typeof it == "number"),
-        );
+  const answers = dnsPacket.questions.flatMap((q) => {
+    const ips = domains[q.name];
+    if (!Array.isArray(ips)) {
       code = DnsResponseCode.NXDomain;
-    })
-    .filter((it) => it) as ResourceRecord[];
+      return [];
+    }
+    return [
+      q.answerTypeA(
+        ips
+          .map((ip: string) => parseIpv4(ip))
+          .filter((it) => typeof it == "number"),
+      ),
+    ];
+  });
 
   const response = new DNSResponsePacket(
     dnsPacket.id,
