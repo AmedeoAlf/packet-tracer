@@ -1,9 +1,9 @@
 import { memo, ReactNode } from "react";
 import { Project } from "../Project";
-import { NetworkInterface } from "../emulators/DeviceEmulator";
 import { ProjectManager } from "../ProjectManager";
 import { Device } from "../devices/Device";
 import { MapRecord } from "../common";
+import { PhysicalInterfaceType } from "../emulators/DeviceEmulator";
 
 export const Cables = memo(function Cables({
   cables,
@@ -88,7 +88,7 @@ export const intfColor = {
   copper: "black",
   serial: "orange",
   fiber: "red",
-} satisfies Record<NetworkInterface["type"], string>;
+} satisfies Record<PhysicalInterfaceType, string>;
 
 const Label = memo(
   function Label({

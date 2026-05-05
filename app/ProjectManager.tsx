@@ -17,6 +17,7 @@ import {
   AnyEmulatorContext,
   buildEmulatorContext,
   NetworkInterface,
+  PhysicalInterfaceType,
 } from "./emulators/DeviceEmulator";
 import { Decal, DecalData, emptyProject, Project } from "./Project";
 import { ToolCtx } from "./tools/Tool";
@@ -59,7 +60,10 @@ export class ProjectManager {
   mutatedDecals?: number[];
   cableCache?: Map<
     number,
-    (Pick<NetworkInterface, "maxMbps" | "type"> & { intf: [number, number] })[]
+    (Pick<NetworkInterface, "maxMbps"> & {
+      intf: [number, number];
+      type: PhysicalInterfaceType;
+    })[]
   >;
 
   private callbacks: Callback[] = [];
@@ -148,6 +152,8 @@ export class ProjectManager {
       const a = this.getInterface(devIdA, ifIdA);
       const b = this.getInterface(devIdB, ifIdB);
       if (!a || !b) return "Interfacce non trovate";
+      if (a.type == "localhost")
+        return "Impossibile collegare interfacce virtuali (type: 'localhost')";
       if (a.type != b.type) return "Interfacce non compatibili";
     }
     const intfA = toInterfaceId(devIdA, ifIdA);
@@ -193,7 +199,7 @@ export class ProjectManager {
       const ifA = this.getInterfaceFromId(conn[0])!;
       const ifB = this.getInterfaceFromId(conn[1])!;
       this.cableCache.get(key)!.push({
-        type: ifA.type,
+        type: ifA.type as PhysicalInterfaceType,
         maxMbps: Math.min(
           ifA.maxMbps,
           ifB.maxMbps,
@@ -203,6 +209,7 @@ export class ProjectManager {
     }
   }
   getConnectedTo(intf: InterfaceId): InterfaceId | undefined {
+    if (this.getInterfaceFromId(intf)?.type == "localhost") return intf;
     return this.project.connections.get(intf);
   }
   getAllConnections(): IteratorObject<[InterfaceId, InterfaceId]> {

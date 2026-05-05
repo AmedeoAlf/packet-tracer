@@ -8,6 +8,8 @@ import { Button } from "../editorComponents/RoundBtn";
 import { memo } from "react";
 import { isSelectTool, SelectTool } from "./SelectTool";
 
+type PhysicalInterfaceType = Exclude<NetworkInterface["type"], "localhost">;
+
 export type ConnectTool = Tool<ConnectTool> & {
   deviceA?: Device;
   idxA?: number;
@@ -126,26 +128,6 @@ export const makeConnectTool: ToolConstructor<ConnectTool> = (
       );
     },
     onEvent: (ctx, ev) => {
-      const firstEmptyInterface = (
-        device: Device,
-        type?: NetworkInterface["type"],
-      ): number => {
-        let firstIf: number | undefined = undefined;
-        const res = device.internalState.netInterfaces.findIndex((_, idx) => {
-          if (
-            ctx.project.getConnectedTo(toInterfaceId(device.id, idx)) ==
-            undefined
-          ) {
-            firstIf ??= idx;
-            return (
-              type === undefined ||
-              device.internalState.netInterfaces[idx].type === type
-            );
-          }
-          return false;
-        });
-        return res == -1 ? (firstIf ?? 0) : res;
-      };
       switch (ev.type) {
         case "click":
           switch (true) {
@@ -155,6 +137,7 @@ export const makeConnectTool: ToolConstructor<ConnectTool> = (
             case !ctx.toolRef.current.deviceA:
               ctx.toolRef.current.deviceA = ev.device;
               ctx.toolRef.current.idxA = firstEmptyInterface(
+                ctx.project,
                 ctx.toolRef.current.deviceA,
               );
               ctx.toolRef.current.cursorPos = ev.pos;
@@ -163,6 +146,7 @@ export const makeConnectTool: ToolConstructor<ConnectTool> = (
             case !ctx.toolRef.current.deviceB:
               ctx.toolRef.current.deviceB = ev.device;
               ctx.toolRef.current.idxB = firstEmptyInterface(
+                ctx.project,
                 ctx.toolRef.current.deviceB,
               );
               ctx.updateTool();
@@ -189,7 +173,9 @@ export const makeConnectTool: ToolConstructor<ConnectTool> = (
 
           const lineColor =
             intfType(tool.deviceB!, tool.idxB) === typeA
-              ? intfColor[intfType(tool.deviceA, tool.idxA)]
+              ? intfColor[
+                  intfType(tool.deviceA, tool.idxA) as PhysicalInterfaceType
+                ]
               : "red";
           return (
             <line
@@ -216,7 +202,11 @@ export const makeConnectTool: ToolConstructor<ConnectTool> = (
               y1={tool.deviceA.pos[1]}
               x2={tool.cursorPos[0]}
               y2={tool.cursorPos[1]}
-              stroke={intfColor[intfType(tool.deviceA, tool.idxA)]}
+              stroke={
+                intfColor[
+                  intfType(tool.deviceA, tool.idxA) as PhysicalInterfaceType
+                ]
+              }
             />
           );
         }
@@ -225,6 +215,20 @@ export const makeConnectTool: ToolConstructor<ConnectTool> = (
     },
   };
 };
+
+type PhysicalNetworkIntf = Omit<NetworkInterface, "type"> & {
+  type: PhysicalInterfaceType;
+};
+
+function physicalInterfaces(
+  device: Device,
+): IteratorObject<[number, PhysicalNetworkIntf]> {
+  return device.internalState.netInterfaces
+    .entries()
+    .filter(([, it]) => it.type != "localhost") as IteratorObject<
+    [number, PhysicalNetworkIntf]
+  >;
+}
 
 const InterfaceSelector = memo(
   function InterfaceSelector({
@@ -249,7 +253,7 @@ const InterfaceSelector = memo(
           {device.name}
         </div>
 
-        {device.internalState.netInterfaces.map((intf, i) => (
+        {[...physicalInterfaces(device)].map(([i, intf]) => (
           <div key={i} className="flex items-center justify-between m-1">
             <div className="w-17 rounded-md">{intf.name}</div>
             {i === intfIdx ? (
@@ -326,7 +330,7 @@ const firstEmptyInterface = (
   type?: NetworkInterface["type"],
 ): number => {
   let firstIf: number | undefined = undefined;
-  const res = device.internalState.netInterfaces.findIndex((_, idx) => {
+  const res = physicalInterfaces(device).find(([idx]) => {
     if (project.getConnectedTo(toInterfaceId(device.id, idx)) == undefined) {
       firstIf ??= idx;
       return (
@@ -336,5 +340,7 @@ const firstEmptyInterface = (
     }
     return false;
   });
-  return res == -1 ? (firstIf ?? 0) : res;
+  return res
+    ? res[0]
+    : (firstIf ?? (physicalInterfaces(device).next().value as [number])[0]);
 };

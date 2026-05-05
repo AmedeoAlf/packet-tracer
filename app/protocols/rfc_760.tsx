@@ -34,6 +34,7 @@ import { MacAddress } from "./802_3";
 export type IPv4Address = number;
 export const IPV4_BROADCAST: IPv4Address = 0xffffffff;
 export const IPV4_MAX_PAYLOAD = 65535 - 20;
+export const IPV4_LOCALHOST = parseIpv4("127.0.0.0")!;
 
 export function ipv4ToString(ip: IPv4Address): string {
   return [

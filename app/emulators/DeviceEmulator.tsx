@@ -6,11 +6,16 @@ import { toInterfaceId } from "../ProjectManager";
 import { isSelectTool } from "../tools/SelectTool";
 
 export interface NetworkInterface {
-  type: "serial" | "copper" | "fiber";
+  type: "serial" | "copper" | "fiber" | "localhost";
   maxMbps: 10 | 100 | 1000 | 10000;
   name: string;
   mac: MacAddress;
 }
+
+export type PhysicalInterfaceType = Exclude<
+  NetworkInterface["type"],
+  "localhost"
+>;
 
 export interface InternalState<TSelf extends InternalState<TSelf>> {
   netInterfaces: Array<NetworkInterface>;

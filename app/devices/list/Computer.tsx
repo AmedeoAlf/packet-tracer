@@ -1,5 +1,6 @@
 import {
   defaultL3InternalState,
+  IPV4_LOCALHOST,
   IPv4Address,
   L3InternalState,
 } from "@/app/protocols/rfc_760";
@@ -65,8 +66,10 @@ export const Computer: DeviceFactory<ComputerInternalState> = {
     return {
       ...defaultL3InternalState(),
       netInterfaces: [
+        { name: "lo", maxMbps: 10000, type: "localhost", mac: 0 },
         { name: "if0", maxMbps: 100, type: "copper", mac: randomMAC() },
       ],
+      l3Ifs: [{ ip: IPV4_LOCALHOST, mask: 0xff000000 }],
       filesystem: {},
       udpSockets_t: new Map(),
       tcpSockets_t: new Map(),
