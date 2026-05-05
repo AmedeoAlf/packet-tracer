@@ -2,7 +2,6 @@ import {
   useState,
   useRef,
   MouseEvent,
-  useEffect,
   ReactNode,
   useMemo,
   KeyboardEvent,
@@ -21,6 +20,12 @@ import { TopBarBtns } from "./editorComponents/TopBarBtns";
 import { Coords } from "./common";
 import { Decals } from "./editorComponents/Decals";
 import { Chrono } from "./editorComponents/Chrono";
+import {
+  useAutoSave,
+  useCanvasSize,
+  useNoPinchToZoom,
+  useSimulation,
+} from "./editorComponents/hooks";
 
 /*
  * Questo componente è tutta l'interfaccia del sito. Crea gli hook sia per il
@@ -38,17 +43,15 @@ export function Editor({
   save: (p: ProjectManager) => void;
   tickRef: RefObject<number>;
 }): ReactNode {
-  const [shouldSave, setShouldSave] = useState(false);
   const [project, setProject] = useState(initialProject);
   const [tool, setTool] = useState<AnyTool>(() => makeSelectTool({}, project));
   const [lastTool, setLastTool] = useState<keyof typeof TOOLS>("select");
   const toolRef = useRef(tool);
   const projectRef = useRef(project);
-  const [canvasSize, setCanvasSize] = useState<[number, number] | undefined>(
-    undefined,
-  );
   const svgCanvas = useRef<SVGSVGElement>(null);
-  let svgPt = svgCanvas.current?.createSVGPoint();
+  const canvasSize = useCanvasSize(svgCanvas);
+  const svgPt = svgCanvas.current?.createSVGPoint();
+  const [shouldSave, setShouldSave] = useAutoSave(project, save);
 
   const toolCtx: ToolCtx = useMemo(
     () => ({
@@ -69,44 +72,10 @@ export function Editor({
         this.updateTool();
       },
     }),
-    [lastTool, project, tool],
+    [lastTool, project, tool, setShouldSave],
   );
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (shouldSave) save(project);
-      setShouldSave(false);
-    }, 500);
-    window.onbeforeunload = shouldSave ? () => save(project) : null;
-    return () => clearTimeout(timeout);
-  }, [project, save, shouldSave]);
-
-  const svgToDOMPoint = svgPt
-    ? (x: number, y: number): DOMPoint => {
-        svgPt!.x = x;
-        svgPt!.y = y;
-        return svgPt!.matrixTransform(
-          svgCanvas.current!.getScreenCTM()!.inverse(),
-        );
-      }
-    : undefined;
-
-  const mouseHandler = buildMouseEventHandler.bind(
-    null,
-    svgToDOMPoint,
-    toolCtx,
-  );
-
-  useEffect(() => {
-    window.onresize = () => setCanvasSize(undefined);
-    window.addEventListener(
-      "wheel",
-      (e) => {
-        if (e.ctrlKey) e.preventDefault();
-      },
-      { passive: false },
-    );
-  }, []);
+  useNoPinchToZoom();
 
   const svgViewBox = useMemo(() => {
     const vb = [project.viewBoxX, project.viewBoxY, 10000, 10000];
@@ -119,12 +88,23 @@ export function Editor({
     return vb;
   }, [canvasSize, project.viewBoxZoom, project.viewBoxX, project.viewBoxY]);
 
-  useEffect(() => {
-    const timeout = setInterval(() => {
-      projectRef.current.runSimulation(toolCtx);
-    }, 50);
-    return clearInterval.bind(null, timeout);
-  }, [toolCtx]);
+  useSimulation(toolCtx, 50);
+
+  const svgToDOMPoint = svgPt
+    ? (x: number, y: number): DOMPoint => {
+        svgPt.x = x;
+        svgPt.y = y;
+        return svgPt.matrixTransform(
+          svgCanvas.current!.getScreenCTM()!.inverse(),
+        );
+      }
+    : undefined;
+
+  const mouseHandler = buildMouseEventHandler.bind(
+    null,
+    svgToDOMPoint,
+    toolCtx,
+  );
 
   return (
     <div
@@ -164,21 +144,7 @@ export function Editor({
         onWheel={canvasWheelEventHandler(toolCtx, svgToDOMPoint, canvasSize)}
         className={`bg-${svgCanvas.current ? "bg-background" : "gray-100"} -z-1 w-full h-screen transition-colors select-none`}
         viewBox={svgViewBox.join(" ")}
-        ref={(svg) => {
-          svgCanvas.current = svg;
-
-          if (canvasSize) return;
-          svgPt = svgCanvas.current?.createSVGPoint();
-          if (svgCanvas.current) {
-            const rect = svgCanvas.current.getBoundingClientRect();
-            if (
-              !canvasSize ||
-              rect.width != canvasSize[0] ||
-              rect.height != canvasSize[1]
-            )
-              setCanvasSize([rect.width, rect.height]);
-          }
-        }}
+        ref={svgCanvas}
       >
         <defs> {Object.values(ICONS)} </defs>
         <Decals decals={toolCtx.project.immutableDecals} tool={tool} />
