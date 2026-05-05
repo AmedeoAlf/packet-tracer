@@ -142,7 +142,7 @@ export function Editor({
         onMouseEnter={mouseHandler("mouseenter")}
         onMouseLeave={mouseHandler("mouseleave")}
         onWheel={canvasWheelEventHandler(toolCtx, svgToDOMPoint, canvasSize)}
-        className={`bg-${svgCanvas.current ? "bg-background" : "gray-100"} -z-1 w-full h-screen transition-colors select-none`}
+        className={`${svgCanvas.current ? "bg-background" : "bg-selectable-border"} -z-1 w-full h-screen transition-colors select-none`}
         viewBox={svgViewBox.join(" ")}
         ref={svgCanvas}
       >
