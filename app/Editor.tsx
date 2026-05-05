@@ -50,7 +50,7 @@ export function Editor({
   const svgCanvas = useRef<SVGSVGElement>(null);
   let svgPt = svgCanvas.current?.createSVGPoint();
 
-  const toolCtx: ToolCtx<AnyTool> = useMemo(
+  const toolCtx: ToolCtx = useMemo(
     () => ({
       tool,
       project,
@@ -194,9 +194,8 @@ export function Editor({
 }
 
 // buildEventHandler per eventi "keydown" e "keyup"
-// TODO: change all those ToolCtx<AnyTool> to ToolCtx
 function buildKeyboardEventHandler(
-  ctx: ToolCtx<AnyTool>,
+  ctx: ToolCtx,
   type: Extract<CanvasEvent["type"], "keydown" | "keyup">,
 ) {
   return (ev: KeyboardEvent<HTMLDivElement>) => {
@@ -221,7 +220,7 @@ function buildKeyboardEventHandler(
 // `CanvasEvent`, costruito a partire dal tipo di evento DOM specificato
 function buildMouseEventHandler(
   toDOMPoint: ((x: number, y: number) => DOMPoint) | undefined,
-  ctx: ToolCtx<AnyTool>,
+  ctx: ToolCtx,
   type: Exclude<CanvasEvent["type"], "keydown" | "keyup">,
 ): (ev: MouseEvent) => void {
   const getPos = (ev: MouseEvent): Coords => {
@@ -271,7 +270,7 @@ function buildMouseEventHandler(
 }
 
 function canvasWheelEventHandler(
-  ctx: ToolCtx<AnyTool>,
+  ctx: ToolCtx,
   toDOMPoint: ((x: number, y: number) => DOMPoint) | undefined,
   canvasSize: Coords | undefined,
 ): WheelEventHandler {

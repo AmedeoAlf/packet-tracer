@@ -19,7 +19,7 @@ import {
   NetworkInterface,
 } from "./emulators/DeviceEmulator";
 import { Decal, DecalData, emptyProject, Project } from "./Project";
-import { AnyTool, ToolCtx } from "./tools/Tool";
+import { ToolCtx } from "./tools/Tool";
 
 export type InterfaceId = number;
 
@@ -42,7 +42,7 @@ export const MIN_ZOOM_FACTOR = 0.2;
 
 type Callback = {
   onTick: number;
-  fn: (t: ToolCtx<AnyTool>) => void;
+  fn: (t: ToolCtx) => void;
 };
 
 /*
@@ -224,7 +224,7 @@ export class ProjectManager {
     if (idx == -1) return;
     this.callbacks.splice(idx, 1);
   }
-  private delay(fn: (ctx: ToolCtx<AnyTool>) => void, delay: number): object {
+  private delay(fn: (ctx: ToolCtx) => void, delay: number): object {
     this.callbacks.push({
       fn,
       onTick: this.currTick + delay,
@@ -239,7 +239,7 @@ export class ProjectManager {
     const ifIdx = idxOfIntf(target);
     console.assert(dev.internalState.netInterfaces.length > ifIdx);
     this.delay(
-      (toolCtx: ToolCtx<AnyTool>) =>
+      (toolCtx: ToolCtx) =>
         dev.emulator.packetHandler(
           buildEmulatorContext(dev, toolCtx),
           data,
@@ -281,7 +281,7 @@ export class ProjectManager {
     //   throw `There are callbacks in the past, currTick=${this.currTick}, callbacks=${this.callbacks.map((it) => it.onTick).join()}`;
     return nextCallback;
   }
-  processTick(toolCtx: ToolCtx<AnyTool>) {
+  processTick(toolCtx: ToolCtx) {
     const toClear: Callback[] = [];
     for (const cb of this.callbacks.values()) {
       if (cb.onTick != this.currTick) continue;

@@ -1,10 +1,10 @@
 import { memo, ReactNode, useEffect, useState } from "react";
-import { AnyTool, ToolCtx } from "../tools/Tool";
+import { ToolCtx } from "../tools/Tool";
 
 // La barra laterale dell'interfaccia: il suo contenuto è intermente deciso dal
 // tool in uso.
 export const SideBar = memo(
-  function SideBar({ toolCtx }: { toolCtx: ToolCtx<AnyTool> }): ReactNode {
+  function SideBar({ toolCtx }: { toolCtx: ToolCtx }): ReactNode {
     const [open, setOpen] = useState(true);
     const [resizing, setResizing] = useState(false);
     const [width, setWidth] = useState(420);
