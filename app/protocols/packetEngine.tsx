@@ -118,7 +118,7 @@ export class FillingBufferField extends Field<Buffer> {
   }
 }
 
-export type DHCPTLVOption = readonly [tag: number, value: Buffer];
+export type DHCPTLVOption = [tag: number, value: Buffer];
 export class DHCPTLVField extends Field<DHCPTLVOption[]> {
   constructor(
     public name: string,

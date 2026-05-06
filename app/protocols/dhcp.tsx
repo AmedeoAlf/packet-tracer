@@ -62,19 +62,37 @@ export enum MessageType {
   acknowledgement = 4,
 }
 
-const OP_subnet = (subnet: IPv4Address) =>
-  [0x01, bufferOfU32BE(subnet)] as const;
-const OP_router = (router: IPv4Address) =>
-  [0x03, bufferOfU32BE(router)] as const;
-const OP_domainServer = (...servers: IPv4Address[]) =>
-  [0x06, bufferOfU32BE(...servers)] as const;
-const OP_requestIp = (ip: IPv4Address) => [0x32, bufferOfU8(ip)] as const;
-const OP_leaseTime = (time: number) => [0x33, bufferOfU32BE(time)] as const;
-const OP_dhcpServer = (server: IPv4Address) =>
-  [0x36, bufferOfU32BE(server)] as const;
-const OP_parameterReqList = (...list: number[]) =>
-  [0x37, bufferOfU8(...list)] as const;
-const OP_messageType = (type: MessageType) => [0x53, bufferOfU8(type)] as const;
+export enum TLVCode {
+  subnet = 0x01,
+  router = 0x03,
+  domainServer = 0x06,
+  requestIp = 0x32,
+  leaseTime = 0x33,
+  dhcpServer = 0x36,
+  parameterReqList = 0x37,
+  messageType = 0x53,
+}
+
+const TLVEntry = {
+  subnet: (subnet: IPv4Address) => [TLVCode.subnet, bufferOfU32BE(subnet)],
+  router: (router: IPv4Address) => [TLVCode.router, bufferOfU32BE(router)],
+  domainServer: (...servers: IPv4Address[]) => [
+    TLVCode.domainServer,
+    bufferOfU32BE(...servers),
+  ],
+  requestIp: (ip: IPv4Address) => [TLVCode.requestIp, bufferOfU8(ip)],
+  leaseTime: (time: number) => [TLVCode.leaseTime, bufferOfU32BE(time)],
+  dhcpServer: (server: IPv4Address) => [
+    TLVCode.dhcpServer,
+    bufferOfU32BE(server),
+  ],
+  parameterReqList: (...list: number[]) => [
+    TLVCode.parameterReqList,
+    bufferOfU8(...list),
+  ],
+  messageType: (type: MessageType) => [TLVCode.messageType, bufferOfU8(type)],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} satisfies Record<keyof typeof TLVCode, (a: any) => DHCPTLVOption>;
 
 export const DHCPSerializer = new PacketSerializer<DHCPPacket>([
   new U8Field("op"),
@@ -94,7 +112,7 @@ export const DHCPSerializer = new PacketSerializer<DHCPPacket>([
   new DHCPTLVField("options"),
 ]);
 
-type DHCPPacket = {
+export type DHCPPacket = {
   op: DHCPOp;
   hType?: HType;
   hLen?: number;
@@ -123,10 +141,10 @@ export function makeDHCPDiscover(
     xId: randomU32(),
     cHAddr,
     options: [
-      OP_messageType(MessageType.discover),
-      OP_requestIp(requestedIp),
+      TLVEntry.messageType(MessageType.discover),
+      TLVEntry.requestIp(requestedIp),
       // from wikipedia, should be subnet mask, router, domain name and idk
-      OP_parameterReqList(0x01, 0x03, 0x0f, 0x06),
+      TLVEntry.parameterReqList(0x01, 0x03, 0x0f, 0x06),
     ],
   };
 }
@@ -161,11 +179,11 @@ function _dhcpOffer(
     yIAddr: offered,
     sIAddr: serverAddr,
     options: [
-      OP_messageType(messageType),
-      OP_subnet(subnet),
-      OP_router(router ?? serverAddr),
-      OP_leaseTime(leaseTime ?? 86400),
-      OP_domainServer(...dnsServers),
+      TLVEntry.messageType(messageType),
+      TLVEntry.subnet(subnet),
+      TLVEntry.router(router ?? serverAddr),
+      TLVEntry.leaseTime(leaseTime ?? 86400),
+      TLVEntry.domainServer(...dnsServers),
     ],
   };
 }
@@ -186,9 +204,9 @@ export function makeDHCPRequest(dhcpOffer: DHCPPacket): DHCPPacket {
     op: DHCPOp.request,
     yIAddr: 0,
     options: [
-      OP_messageType(MessageType.request),
-      OP_requestIp(dhcpOffer.yIAddr!),
-      OP_dhcpServer(dhcpOffer.sIAddr!),
+      TLVEntry.messageType(MessageType.request),
+      TLVEntry.requestIp(dhcpOffer.yIAddr!),
+      TLVEntry.dhcpServer(dhcpOffer.sIAddr!),
     ],
   };
 }
@@ -205,7 +223,7 @@ export function makeDHCPAck(data: DHCPOfferData): DHCPPacket {
 
 export function tlvField(
   packet: DHCPPacket,
-  field: number,
+  field: TLVCode,
 ): Buffer | undefined {
   return packet.options?.find((opt) => opt[0] == field)?.at(1) as
     | Buffer
