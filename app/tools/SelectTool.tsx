@@ -324,15 +324,17 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
                 self.selectionRectangle[1],
                 self.lastCursorPos[1],
               ].toSorted((a, b) => a - b);
-
+              self.lastCursorPos = undefined;
+              self.selectionRectangle = undefined;
+              if (x[0] == x[1] || y[0] == y[1]) return;
               ctx.projectRef.current.immutableDevices
                 .values()
                 .filter(
                   (it) =>
-                    x[0] <= it.pos[0] &&
-                    it.pos[0] <= x[1] &&
-                    y[0] <= it.pos[1] &&
-                    it.pos[1] <= y[1],
+                    x[0] < it.pos[0] &&
+                    it.pos[0] < x[1] &&
+                    y[0] < it.pos[1] &&
+                    it.pos[1] < y[1],
                 )
                 .forEach((it) => self.selected.add(it.id));
 
@@ -340,15 +342,14 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
                 .filter(
                   (it) =>
                     it &&
-                    x[0] <= it.pos[0] &&
-                    it.pos[0] <= x[1] &&
-                    y[0] <= it.pos[1] &&
-                    it.pos[1] <= y[1],
+                    x[0] < it.pos[0] &&
+                    it.pos[0] < x[1] &&
+                    y[0] < it.pos[1] &&
+                    it.pos[1] < y[1],
                 )
                 .forEach((it) => self.selectedDecals.add(it!.id));
-              self.lastCursorPos = undefined;
-              self.selectionRectangle = undefined;
               ctx.updateTool();
+              return;
             } else {
               const diffX = ev.pos[0] - self.lastCursorPos[0];
               const diffY = ev.pos[1] - self.lastCursorPos[1];
