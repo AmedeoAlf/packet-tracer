@@ -28,11 +28,7 @@ export const Devices = memo(
                     <DeviceComponent
                       device={d}
                       key={d.id}
-                      extraClass={
-                        highlighted && highlighted(d)
-                          ? " brightness-50"
-                          : undefined
-                      }
+                      extraClass={highlighted(d) ? " brightness-50" : undefined}
                     />
                   )
                 : (d) => <DeviceComponent device={d} key={d.id} />,

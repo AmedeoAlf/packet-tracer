@@ -311,7 +311,7 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
             self.lastCursorPos = ev.pos;
             ctx.updateTool();
           }
-          break;
+          return;
         case "mouseleave":
         case "mouseup":
           if (self.lastCursorPos) {
