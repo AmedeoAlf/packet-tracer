@@ -175,3 +175,14 @@ export type SimpleRecord = Record<string, any>;
 export function isRecord(obj: any): obj is Record<string, unknown> {
   return typeof obj == "object" && obj != null;
 }
+
+export function runCatching<T>(
+  fn: () => T,
+  catchFn?: (e: unknown) => void,
+): T | undefined {
+  try {
+    return fn();
+  } catch (e) {
+    if (catchFn) catchFn(e);
+  }
+}

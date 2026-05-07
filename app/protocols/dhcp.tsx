@@ -131,7 +131,7 @@ export type DHCPPacket = {
 
 export function makeDHCPDiscover(
   mac: MacAddress,
-  requestedIp: IPv4Address,
+  requestedIp?: IPv4Address,
 ): DHCPPacket {
   const cHAddr = Buffer.alloc(16);
   cHAddr.writeBigUInt64BE(BigInt(mac) << BigInt(16));
@@ -142,7 +142,9 @@ export function makeDHCPDiscover(
     cHAddr,
     options: [
       TLVEntry.messageType(MessageType.discover),
-      TLVEntry.requestIp(requestedIp),
+      ...(typeof requestedIp != "undefined"
+        ? [TLVEntry.requestIp(requestedIp)]
+        : []),
       // from wikipedia, should be subnet mask, router, domain name and idk
       TLVEntry.parameterReqList(0x01, 0x03, 0x0f, 0x06),
     ],

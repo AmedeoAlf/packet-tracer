@@ -10,12 +10,17 @@ import {
 } from "@/app/protocols/dhcp";
 import {
   IPv4Address,
+  IPv4Packet,
   L3InternalState,
   ProtocolCode,
 } from "@/app/protocols/rfc_760";
 import { EmulatorContext } from "../DeviceEmulator";
-import { sendIPv4Packet } from "./sendIPv4Packet";
-import { EthernetFrame, MacAddress } from "@/app/protocols/802_3";
+import {
+  EthernetFrame,
+  EthernetFrameSerializer,
+  EtherType,
+  MacAddress,
+} from "@/app/protocols/802_3";
 import { UDPSerializer } from "@/app/protocols/udp";
 
 // NOTE: dhcp xId is not checked...
@@ -91,6 +96,7 @@ export function handleDHCPPacket<State extends L3InternalState<State>>(
   ctx: EmulatorContext<State>,
   settings: DHCPSettings,
   myIp: IPv4Address,
+  fromIntf: number,
   ethFrame: EthernetFrame,
   dhcpData: Buffer,
 ) {
@@ -100,18 +106,7 @@ export function handleDHCPPacket<State extends L3InternalState<State>>(
     throwString("No messageType header")
   ).readUInt8();
 
-  const sendDHCP = (ipOffer: IPv4Address, packet: DHCPPacket) =>
-    sendIPv4Packet(
-      ctx,
-      ipOffer,
-      ProtocolCode.udp,
-      UDPSerializer.toBuffer({
-        payload: DHCPSerializer.toBuffer(packet),
-        destination: 68,
-        source: 67,
-      }),
-    );
-
+  const sendDHCP = (packet: DHCPPacket) => dhcpAnswer(ctx, packet, fromIntf);
   switch (messageType) {
     case MessageType.discover:
       const requestIp = tlvField(dhcpPkt, TLVCode.requestIp)?.readUint32BE();
@@ -124,7 +119,6 @@ export function handleDHCPPacket<State extends L3InternalState<State>>(
       if (typeof offered != "number") throw "No IP could have been allocated";
 
       sendDHCP(
-        offered,
         makeDHCPOffer({
           router: settings.gateway,
           dnsServers: [settings.dns],
@@ -153,7 +147,6 @@ export function handleDHCPPacket<State extends L3InternalState<State>>(
 
       dhcpFinalize(settings, requestedIp);
       sendDHCP(
-        requestedIp,
         makeDHCPAck({
           router: settings.gateway,
           dnsServers: [settings.dns],
@@ -164,5 +157,36 @@ export function handleDHCPPacket<State extends L3InternalState<State>>(
         }),
       );
       break;
+  }
+}
+
+function dhcpAnswer<State extends L3InternalState<State>>(
+  ctx: EmulatorContext<State>,
+  packet: DHCPPacket,
+  fromIntf: number,
+) {
+  const ipPkt = new IPv4Packet(
+    ProtocolCode.udp,
+    UDPSerializer.toBuffer({
+      payload: DHCPSerializer.toBuffer(packet),
+      destination: 68,
+      source: 67,
+    }),
+    ctx.state.l3Ifs[fromIntf]!.ip,
+    packet.yIAddr!,
+  );
+  const payloads = ipPkt.toFragmentedBytes();
+  for (const payload of payloads) {
+    ctx.sendOnIf(
+      fromIntf,
+      EthernetFrameSerializer.toBuffer({
+        lenOrEtherType: EtherType.dhcp,
+        dst:
+          ctx.state.macTable_t.get(packet.yIAddr!) ??
+          throwString("There was no YIADDR in dhcpAnswer"),
+        src: ctx.state.netInterfaces[fromIntf].mac,
+        payload,
+      }),
+    );
   }
 }
