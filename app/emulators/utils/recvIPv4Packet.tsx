@@ -7,6 +7,7 @@ import {
   ProtocolCode,
 } from "@/app/protocols/rfc_760";
 import {
+  EthernetFrame,
   EthernetFrameSerializer,
   EtherType,
   MAC_BROADCAST,
@@ -22,10 +23,9 @@ import { sendIPv4Packet } from "./sendIPv4Packet";
 
 export function recvIPv4Packet<State extends L3InternalState<State>>(
   ctx: EmulatorContext<State>,
-  data: Buffer,
+  l2Packet: EthernetFrame,
   intf: number,
 ): IPv4Packet | undefined {
-  const l2Packet = EthernetFrameSerializer.fromBytes(data);
   if (l2Packet.lenOrEtherType == EtherType.arp) {
     handleArpPacket(ctx, ARPPacket.fromL2(l2Packet), intf);
     return;

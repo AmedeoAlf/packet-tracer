@@ -41,6 +41,7 @@ export type TCPConnectionState<State extends OSInternalState<State>> =
 export interface OSInternalState<
   TSelf extends OSInternalState<TSelf>,
 > extends L3InternalState<TSelf> {
+  dhcpEnabled: boolean[];
   filesystem: OSDir;
   udpSockets_t: Map<number, (params: UDPCallbackParams<TSelf>) => boolean>;
   tcpSockets_t: Map<number, TCPConnectionState<TSelf>>;
@@ -69,6 +70,7 @@ export const Computer: DeviceFactory<ComputerInternalState> = {
         { name: "lo", maxMbps: 10000, type: "localhost", mac: 0 },
         { name: "if0", maxMbps: 100, type: "copper", mac: randomMAC() },
       ],
+      dhcpEnabled: [false, true],
       l3Ifs: [{ ip: IPV4_LOCALHOST, mask: 0xff000000 }],
       filesystem: {},
       udpSockets_t: new Map(),

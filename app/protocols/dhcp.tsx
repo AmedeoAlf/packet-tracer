@@ -86,6 +86,7 @@ const TLVEntry = {
     TLVCode.dhcpServer,
     bufferOfU32BE(server),
   ],
+  // TODO: use TLVCodes
   parameterReqList: (...list: number[]) => [
     TLVCode.parameterReqList,
     bufferOfU8(...list),
@@ -134,7 +135,8 @@ export function makeDHCPDiscover(
   requestedIp?: IPv4Address,
 ): DHCPPacket {
   const cHAddr = Buffer.alloc(16);
-  cHAddr.writeBigUInt64BE(BigInt(mac) << BigInt(16));
+  cHAddr.writeUInt32BE(mac / 2 ** 16);
+  cHAddr.writeUInt16BE(mac & 0xffff, 4);
   return {
     op: DHCPOp.request,
     hType: HType.ethernet,

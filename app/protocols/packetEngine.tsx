@@ -93,8 +93,8 @@ export class FixedBufferField extends Field<Buffer> {
   deserialize(bytes: Buffer): Buffer {
     return bytes.subarray(0, this.length);
   }
-  getSizeFor(value?: Buffer): number {
-    return value ? value.byteLength : 0;
+  getSizeFor(): number {
+    return this.length;
   }
 }
 
@@ -136,14 +136,14 @@ export class DHCPTLVField extends Field<DHCPTLVOption[]> {
       into.set(value, cursor + 2);
       cursor += 2 + value.byteLength;
     }
-    into.writeUInt8(this.stopTag);
+    into.writeUInt8(this.stopTag, cursor);
   }
   deserialize(bytes: Buffer): DHCPTLVOption[] {
     const options: DHCPTLVOption[] = [];
     let cursor = 0;
     while (
-      cursor < bytes.byteLength ||
-      bytes.readUInt8(cursor) == this.stopTag
+      cursor < bytes.byteLength &&
+      bytes.readUInt8(cursor) != this.stopTag
     ) {
       const len = bytes.readUInt8(cursor + 1);
       options.push([

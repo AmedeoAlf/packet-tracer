@@ -29,6 +29,7 @@ export const Server: DeviceFactory<ServerInternalState> = {
   defaultState() {
     return {
       ...defaultL3InternalState(),
+      dhcpEnabled: [true],
       netInterfaces: [
         { name: "if0", maxMbps: 100, type: "copper", mac: randomMAC() },
       ],

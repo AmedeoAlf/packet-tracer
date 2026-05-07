@@ -37,6 +37,7 @@ import { gatewayCmd } from "@/app/virtualPrograms/gateway";
 import { impostazioniDiRete } from "../panels/impostazioniDiRete";
 import { ServerInternalState } from "@/app/devices/list/Server";
 import { isRecord } from "@/app/common";
+import { EthernetFrameSerializer } from "@/app/protocols/802_3";
 
 export const defaultServerFS: OSDir = {
   etc: {
@@ -70,7 +71,8 @@ export const serverEmulator: DeviceEmulator<ServerInternalState> = {
   },
   packetHandler(ctx, data, intf) {
     try {
-      const packet = recvIPv4Packet(ctx, data, intf);
+      const l2Pkt = EthernetFrameSerializer.fromBytes(data);
+      const packet = recvIPv4Packet(ctx, l2Pkt, intf);
       if (packet) serverPacketHandler(ctx, packet);
     } catch (e) {
       console.log(e);

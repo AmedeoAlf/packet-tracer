@@ -1,4 +1,10 @@
-import { IPv4Address, IPv4Packet, ProtocolCode } from "../../protocols/rfc_760";
+import {
+  IPv4Address,
+  IPv4Packet,
+  ipv4ToString,
+  PartialIPv4Packet,
+  ProtocolCode,
+} from "../../protocols/rfc_760";
 import { hello } from "../../virtualPrograms/hello";
 import { interfacesL3 } from "../../virtualPrograms/interfacesl3";
 import { l2send } from "../../virtualPrograms/l2send";
@@ -23,6 +29,9 @@ import { tcplisten } from "@/app/virtualPrograms/tcplisten";
 import { curl } from "@/app/virtualPrograms/curl";
 import { gatewayCmd } from "@/app/virtualPrograms/gateway";
 import { impostazioniDiRete } from "../panels/impostazioniDiRete";
+import { EthernetFrameSerializer, EtherType } from "@/app/protocols/802_3";
+import { handleDHCPPacket, sendDHCPDiscover } from "../utils/dhcpClient";
+import { writeFileInLocation } from "../utils/osFiles";
 
 export type OSUDPPacket = {
   from: IPv4Address;
@@ -36,7 +45,29 @@ export const computerEmulator: DeviceEmulator<ComputerInternalState> = {
     "Impostazioni di rete": impostazioniDiRete,
   },
   packetHandler(ctx, data, intf) {
-    const packet = recvIPv4Packet(ctx, data, intf);
+    const l2Pkt = EthernetFrameSerializer.fromBytes(data);
+    if (l2Pkt.lenOrEtherType == EtherType.dhcp) {
+      const ipPkt = new PartialIPv4Packet(l2Pkt.payload);
+      if (ipPkt.protocol != ProtocolCode.udp)
+        throw "Why did I get a non-udp dhcp packet?";
+      if (!ipPkt.isPayloadFinished())
+        throw "DHCP packets defragmentation is not implemented :-(";
+      if (!ctx.state.dhcpEnabled[intf]) return;
+      handleDHCPPacket(
+        ctx,
+        intf,
+        UDPSerializer.fromBytes(ipPkt.payload).payload,
+        (dns) => {
+          writeFileInLocation(
+            ctx.state.filesystem,
+            "/etc/dns",
+            ipv4ToString(dns),
+          );
+        },
+      );
+      return;
+    }
+    const packet = recvIPv4Packet(ctx, l2Pkt, intf);
     if (packet) computerPacketHandler(ctx, packet);
   },
   cmdInterpreter: {
@@ -56,6 +87,17 @@ export const computerEmulator: DeviceEmulator<ComputerInternalState> = {
         tcplisten: tcplisten(),
         curl: curl(),
         gateway: gatewayCmd(),
+        "temp-dhcp": {
+          desc: "REMOVE",
+          done: true,
+          run(ctx) {
+            ctx.state.dhcpEnabled
+              .flatMap((on, intf) => (on ? [intf] : []))
+              .forEach((intf) => {
+                sendDHCPDiscover(ctx, intf);
+              });
+          },
+        },
       },
     },
   },

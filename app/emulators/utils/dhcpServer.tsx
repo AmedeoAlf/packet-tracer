@@ -56,7 +56,7 @@ function dhcpAllocRequested<State extends L3InternalState<State>>(
   ip: IPv4Address,
 ): boolean {
   if (
-    (ip & settings.mask) != settings.network ||
+    (ip & settings.mask) != (settings.network & settings.mask) ||
     !isIpFree(settings, state, ip)
   )
     return false;
@@ -115,7 +115,7 @@ export function handleDHCPPacket<State extends L3InternalState<State>>(
   {
     if (!ctx.state.l3Ifs[fromIntf]) return;
     const { ip, mask } = ctx.state.l3Ifs[fromIntf];
-    if ((ip & mask) != settings.network) return;
+    if ((ip & mask) != (settings.network & settings.mask)) return;
   }
   const serverAddr = ctx.state.l3Ifs[fromIntf].ip;
 
