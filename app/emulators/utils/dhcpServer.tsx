@@ -16,7 +16,6 @@ import {
 } from "@/app/protocols/rfc_760";
 import { EmulatorContext } from "../DeviceEmulator";
 import {
-  EthernetFrame,
   EthernetFrameSerializer,
   EtherType,
   MacAddress,
@@ -32,26 +31,36 @@ export type DHCPSettings = {
   excluded: [IPv4Address, IPv4Address][];
   gateway: IPv4Address;
   dns: IPv4Address;
+};
 
-  assigned_t: Set<IPv4Address>;
-  pending_t: Set<IPv4Address>;
+export type DHCPState = {
+  assigned: Set<IPv4Address>;
+  pending: Set<IPv4Address>;
 };
 
 // assumes ip to come from right network
-export const isIpFree = (settings: DHCPSettings, ip: IPv4Address): boolean =>
-  !settings.assigned_t.has(ip) &&
-  !settings.pending_t.has(ip) &&
-  !settings.excluded.some(([min, max]) => min <= ip && ip <= max);
+export const isIpFree = (
+  { excluded }: DHCPSettings,
+  { assigned: assigned_t, pending: pending_t }: DHCPState,
+  ip: IPv4Address,
+): boolean =>
+  !assigned_t.has(ip) &&
+  !pending_t.has(ip) &&
+  !excluded.some(([min, max]) => min <= ip && ip <= max);
 
 function dhcpAllocRequested<State extends L3InternalState<State>>(
   ctx: EmulatorContext<State>,
   settings: DHCPSettings,
+  state: DHCPState,
   forMac: MacAddress,
   ip: IPv4Address,
 ): boolean {
-  if ((ip & settings.mask) != settings.network || !isIpFree(settings, ip))
+  if (
+    (ip & settings.mask) != settings.network ||
+    !isIpFree(settings, state, ip)
+  )
     return false;
-  settings.pending_t.add(ip);
+  state.pending.add(ip);
   ctx.state.macTable_t.set(ip, forMac);
   return true;
 }
@@ -59,35 +68,39 @@ function dhcpAllocRequested<State extends L3InternalState<State>>(
 function dhcpAlloc<State extends L3InternalState<State>>(
   ctx: EmulatorContext<State>,
   settings: DHCPSettings,
+  state: DHCPState,
   forMac: MacAddress,
 ): IPv4Address | undefined {
   const maxIp = settings.network + ~settings.mask;
   for (let ip = settings.network; ip <= maxIp; ip++) {
-    if (dhcpAllocRequested(ctx, settings, forMac, ip)) return ip;
+    if (dhcpAllocRequested(ctx, settings, state, forMac, ip)) return ip;
   }
 }
 
-function dhcpFinalize(settings: DHCPSettings, ip: IPv4Address) {
-  if (!settings.pending_t.delete(ip)) throw "Finalizing a non pending ip";
-  settings.assigned_t.add(ip);
+function dhcpFinalize(
+  { assigned: assigned_t, pending: pending_t }: DHCPState,
+  ip: IPv4Address,
+) {
+  if (!pending_t.delete(ip)) throw "Finalizing a non pending ip";
+  assigned_t.add(ip);
 }
 
 function dhcpCancel<State extends L3InternalState<State>>(
   ctx: EmulatorContext<State>,
-  settings: DHCPSettings,
+  { pending: pending_t }: DHCPState,
   ip: IPv4Address,
 ) {
-  if (settings.pending_t.delete(ip)) {
+  if (pending_t.delete(ip)) {
     ctx.state.macTable_t.delete(ip);
   }
 }
 
 export function dhcpFree<State extends L3InternalState<State>>(
   ctx: EmulatorContext<State>,
-  settings: DHCPSettings,
+  { assigned: assigned_t }: DHCPState,
   ip: IPv4Address,
 ) {
-  if (settings.assigned_t.delete(ip)) {
+  if (assigned_t.delete(ip)) {
     ctx.state.macTable_t.delete(ip);
   }
 }
@@ -95,16 +108,25 @@ export function dhcpFree<State extends L3InternalState<State>>(
 export function handleDHCPPacket<State extends L3InternalState<State>>(
   ctx: EmulatorContext<State>,
   settings: DHCPSettings,
-  myIp: IPv4Address,
+  state: DHCPState,
   fromIntf: number,
-  ethFrame: EthernetFrame,
   dhcpData: Buffer,
 ) {
+  {
+    if (!ctx.state.l3Ifs[fromIntf]) return;
+    const { ip, mask } = ctx.state.l3Ifs[fromIntf];
+    if ((ip & mask) != settings.network) return;
+  }
+  const serverAddr = ctx.state.l3Ifs[fromIntf].ip;
+
   const dhcpPkt = DHCPSerializer.fromBytes(dhcpData);
   const messageType: MessageType = (
     tlvField(dhcpPkt, TLVCode.messageType) ??
     throwString("No messageType header")
   ).readUInt8();
+
+  const sourceMac =
+    dhcpPkt.cHAddr!.readUInt32BE() * 2 ** 16 + dhcpPkt.cHAddr!.readUInt16BE(4);
 
   const sendDHCP = (packet: DHCPPacket) => dhcpAnswer(ctx, packet, fromIntf);
   switch (messageType) {
@@ -112,8 +134,8 @@ export function handleDHCPPacket<State extends L3InternalState<State>>(
       const requestIp = tlvField(dhcpPkt, TLVCode.requestIp)?.readUint32BE();
       const offered =
         typeof requestIp == "undefined"
-          ? dhcpAlloc(ctx, settings, ethFrame.src)
-          : dhcpAllocRequested(ctx, settings, ethFrame.src, requestIp)
+          ? dhcpAlloc(ctx, settings, state, sourceMac)
+          : dhcpAllocRequested(ctx, settings, state, sourceMac, requestIp)
             ? requestIp
             : undefined;
       if (typeof offered != "number") throw "No IP could have been allocated";
@@ -125,27 +147,28 @@ export function handleDHCPPacket<State extends L3InternalState<State>>(
           subnet: settings.mask,
           from: dhcpPkt,
           offered,
-          serverAddr: myIp,
+          serverAddr,
         }),
       );
 
       ctx.schedule(1000, (ctx) => {
-        dhcpCancel(ctx, settings, offered);
+        dhcpCancel(ctx, state, offered);
       });
 
       break;
     case MessageType.request:
-      if (dhcpPkt.sIAddr != myIp) return;
-      const serverAddress = tlvField(
+      if (dhcpPkt.sIAddr != serverAddr) return;
+      const pktServerAddr = tlvField(
         dhcpPkt,
         TLVCode.dhcpServer,
       )?.readUInt32BE();
-      if (typeof serverAddress == "number" && serverAddress != myIp) return;
+      if (typeof pktServerAddr == "number" && pktServerAddr != serverAddr)
+        return;
       const requestedIp = tlvField(dhcpPkt, TLVCode.dhcpServer)?.readUInt32BE();
       if (typeof requestedIp == "undefined") return;
-      if (!settings.pending_t.has(requestedIp)) return;
+      if (!state.pending.has(requestedIp)) return;
 
-      dhcpFinalize(settings, requestedIp);
+      dhcpFinalize(state, requestedIp);
       sendDHCP(
         makeDHCPAck({
           router: settings.gateway,
@@ -153,7 +176,7 @@ export function handleDHCPPacket<State extends L3InternalState<State>>(
           subnet: settings.mask,
           from: dhcpPkt,
           offered: requestedIp,
-          serverAddr: myIp,
+          serverAddr,
         }),
       );
       break;
