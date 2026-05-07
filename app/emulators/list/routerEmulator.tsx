@@ -28,6 +28,8 @@ import { Button } from "@/app/editorComponents/RoundBtn";
 import { routing } from "@/app/virtualPrograms/routing";
 import { gatewayCmd } from "@/app/virtualPrograms/gateway";
 import { DropDown } from "@/app/editorComponents/DropDown";
+import { handleDHCPPacket } from "../utils/dhcpServer";
+import { dhcpCmd } from "@/app/virtualPrograms/dhcpServer";
 
 export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   configPanel: {
@@ -252,9 +254,28 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   },
   packetHandler(ctx, data, intf) {
     const l2Packet = EthernetFrameSerializer.fromBytes(data);
-    if (l2Packet.lenOrEtherType == EtherType.arp) {
-      handleArpPacket(ctx, ARPPacket.fromL2(l2Packet), intf);
-      return;
+    switch (l2Packet.lenOrEtherType) {
+      case EtherType.arp:
+        handleArpPacket(ctx, ARPPacket.fromL2(l2Packet), intf);
+        return;
+      case EtherType.dhcp:
+        if (!ctx.state.dhcpSettings) return;
+
+        const ipPkt = new PartialIPv4Packet(l2Packet.payload);
+        if (ipPkt.protocol != ProtocolCode.udp)
+          throw "Why did I get a non-udp dhcp packet?";
+        if (!ipPkt.isPayloadFinished())
+          throw "DHCP packets defragmentation is not implemented :-(";
+
+        ctx.state.dhcpState_t ??= { assigned: new Set(), pending: new Set() };
+        handleDHCPPacket(
+          ctx,
+          ctx.state.dhcpSettings,
+          ctx.state.dhcpState_t,
+          intf,
+          UDPSerializer.fromBytes(ipPkt.payload).payload,
+        );
+        return;
     }
     try {
       const destination = PartialIPv4Packet.getDestination(l2Packet.payload);
@@ -338,6 +359,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         "udp-send": udpSend(),
         gateway: gatewayCmd(),
         routing,
+        dhcp: dhcpCmd(),
       },
     },
   },

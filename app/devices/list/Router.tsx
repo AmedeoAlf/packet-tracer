@@ -8,6 +8,7 @@ import {
   L3InternalState,
 } from "../../protocols/rfc_760";
 import { DeviceFactory } from "../Device";
+import { DHCPSettings, DHCPState } from "@/app/emulators/utils/dhcpServer";
 
 export type RoutingTableEntry = {
   netAddr: IPv4Address;
@@ -18,6 +19,10 @@ export type RoutingTableEntry = {
 export type RouterInternalState = L3InternalState<RouterInternalState> & {
   routingTables: RoutingTableEntry[];
   udpSocket_t?: (packet: UDPPacket, from: IPv4Address) => void;
+
+  // when undefined service is disabled
+  dhcpSettings?: DHCPSettings;
+  dhcpState_t?: DHCPState;
 
   // UI for adding new routing tables
   rtNetworkInput_t?: string;
