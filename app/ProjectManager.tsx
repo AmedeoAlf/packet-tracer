@@ -218,14 +218,14 @@ export class ProjectManager {
   }
   setTimeout(
     fn: (t: AnyEmulatorContext) => void,
-    device: Device,
+    device: number,
     delay: number,
   ): object {
     if (delay < 1) throw `setTimeout delay must be >0 (was ${delay})`;
-    return this.delay(
-      (toolCtx) => fn(buildEmulatorContext(device, toolCtx)),
-      delay,
-    );
+    return this.delay((toolCtx) => {
+      if (this.immutableDevices.has(device))
+        fn(buildEmulatorContext(this.immutableDevices.get(device)!, toolCtx));
+    }, delay);
   }
   removeTimeout(timeout: object) {
     const idx = this.callbacks.indexOf(timeout as Callback);

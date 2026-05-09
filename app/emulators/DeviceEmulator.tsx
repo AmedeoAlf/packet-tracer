@@ -184,6 +184,7 @@ export type DevicePanel<State extends InternalState<State>> = (
 export interface DeviceEmulator<State extends InternalState<State>> {
   configPanel: { [k: string]: DevicePanel<State> };
   cmdInterpreter: Interpreter<State>;
+  init?: (ctx: EmulatorContext<State>) => void;
   packetHandler: (
     ctx: EmulatorContext<State>,
     data: Buffer,
@@ -214,7 +215,7 @@ export function buildEmulatorContext(
     },
     schedule(after, fn): object {
       toolCtx.projectRef.current.beginSimulation();
-      return toolCtx.projectRef.current.setTimeout(fn, device, after);
+      return toolCtx.projectRef.current.setTimeout(fn, device.id, after);
     },
     cancelSchedule(schedule: object) {
       return toolCtx.projectRef.current.removeTimeout(schedule);

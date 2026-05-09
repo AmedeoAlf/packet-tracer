@@ -44,6 +44,9 @@ export const computerEmulator: DeviceEmulator<ComputerInternalState> = {
   configPanel: {
     "Impostazioni di rete": impostazioniDiRete,
   },
+  init(ctx) {
+    ctx.schedule(1000, computerEmulator.init!);
+  },
   packetHandler(ctx, data, intf) {
     const l2Pkt = EthernetFrameSerializer.fromBytes(data);
     if (l2Pkt.lenOrEtherType == EtherType.dhcp) {
