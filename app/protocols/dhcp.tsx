@@ -33,7 +33,7 @@
  * https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol#Discovery
  */
 
-import { bufferOfU32BE, bufferOfU8, randomU32 } from "../common";
+import { bufferOfU32BE, bufferOfU8, randomU32, throwString } from "../common";
 import { MacAddress } from "./802_3";
 import {
   DHCPTLVField,
@@ -80,7 +80,7 @@ const TLVEntry = {
     TLVCode.domainServer,
     bufferOfU32BE(...servers),
   ],
-  requestIp: (ip: IPv4Address) => [TLVCode.requestIp, bufferOfU8(ip)],
+  requestIp: (ip: IPv4Address) => [TLVCode.requestIp, bufferOfU32BE(ip)],
   leaseTime: (time: number) => [TLVCode.leaseTime, bufferOfU32BE(time)],
   dhcpServer: (server: IPv4Address) => [
     TLVCode.dhcpServer,
@@ -193,15 +193,15 @@ function _dhcpOffer(
 }
 
 export function makeDHCPOffer(data: DHCPOfferData): DHCPPacket {
-  if (tlvField(data.from, 0x1)?.at(0) !== MessageType.discover)
-    throw "Not a request";
+  if (tlvField(data.from, TLVCode.messageType)?.at(0) !== MessageType.discover)
+    throwString("Not a request");
 
   return _dhcpOffer(MessageType.offer, data);
 }
 
 export function makeDHCPRequest(dhcpOffer: DHCPPacket): DHCPPacket {
-  if (tlvField(dhcpOffer, 0x1)?.at(0) !== MessageType.offer)
-    throw "Not an offer";
+  if (tlvField(dhcpOffer, TLVCode.messageType)?.at(0) !== MessageType.offer)
+    throwString("Not an offer");
 
   return {
     ...dhcpOffer,
@@ -216,11 +216,11 @@ export function makeDHCPRequest(dhcpOffer: DHCPPacket): DHCPPacket {
 }
 
 export function makeDHCPAck(data: DHCPOfferData): DHCPPacket {
-  if (tlvField(data.from, 0x1)?.compare(bufferOfU8(MessageType.request)) !== 0)
-    throw "Not a request";
+  if (tlvField(data.from, TLVCode.messageType)?.at(0) !== MessageType.request)
+    throwString("Not a request");
 
   if (tlvField(data.from, 0x32)?.compare(bufferOfU32BE(data.offered)) !== 0)
-    throw "Offered IP does not match request";
+    throwString("Offered IP does not match request");
 
   return _dhcpOffer(MessageType.acknowledgement, data);
 }

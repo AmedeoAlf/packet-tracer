@@ -41,11 +41,11 @@ export type DHCPState = {
 // assumes ip to come from right network
 export const isIpFree = (
   { excluded }: DHCPSettings,
-  { assigned: assigned_t, pending: pending_t }: DHCPState,
+  { assigned, pending }: DHCPState,
   ip: IPv4Address,
 ): boolean =>
-  !assigned_t.has(ip) &&
-  !pending_t.has(ip) &&
+  !assigned.has(ip) &&
+  !pending.has(ip) &&
   !excluded.some(([min, max]) => min <= ip && ip <= max);
 
 function dhcpAllocRequested<State extends L3InternalState<State>>(
@@ -164,7 +164,7 @@ export function handleDHCPPacket<State extends L3InternalState<State>>(
       )?.readUInt32BE();
       if (typeof pktServerAddr == "number" && pktServerAddr != serverAddr)
         return;
-      const requestedIp = tlvField(dhcpPkt, TLVCode.dhcpServer)?.readUInt32BE();
+      const requestedIp = tlvField(dhcpPkt, TLVCode.requestIp)?.readUInt32BE();
       if (typeof requestedIp == "undefined") return;
       if (!state.pending.has(requestedIp)) return;
 

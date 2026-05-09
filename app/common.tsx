@@ -114,7 +114,7 @@ export function throwOnUndefined<T>(value: T | undefined, msg?: string): T {
 }
 
 export function throwString(msg: string = "Assertion failed"): never {
-  throw msg;
+  throw new Error(msg);
 }
 
 export function randomU32(): number {

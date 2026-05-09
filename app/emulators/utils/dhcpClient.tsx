@@ -55,7 +55,7 @@ export function handleDHCPPacket<State extends L3InternalState<State>>(
   const field = (code: keyof typeof TLVCode) =>
     tlvField(pkt, TLVCode[code]) ?? throwString(`No ${code} in dhcp packet`);
 
-  const messageType: MessageType = field("messageType").readUInt32BE();
+  const messageType: MessageType = field("messageType").readUInt8();
   switch (messageType) {
     case MessageType.offer:
       acceptDHCPOffer(ctx, intfId, pkt);
