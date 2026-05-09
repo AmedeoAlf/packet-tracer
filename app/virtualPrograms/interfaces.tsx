@@ -1,20 +1,19 @@
 import { SubCommand, InternalState } from "../emulators/DeviceEmulator";
 import { MACToString } from "../protocols/802_3";
 
-export const interfaces = <
-  State extends InternalState<State>,
->(): SubCommand<State> => ({
+export const interfaces = <State extends InternalState<State>>(
+  stringifyIntf: (state: State, idx: number) => string = l2StringifyIntf,
+  extraSubCommands?: Record<string, SubCommand<State>>,
+): SubCommand<State> => ({
   desc: "Manages interfaces",
   run: (ctx) =>
     ctx.write(
       ctx.state.netInterfaces
-        .map(
-          (it) =>
-            `${it.name} ${it.type} ${it.maxMbps}Mbps ${MACToString(it.mac)}`,
-        )
+        .map((_, idx) => stringifyIntf(ctx.state, idx))
         .join("\n"),
     ),
   subcommands: {
+    ...extraSubCommands,
     rename: {
       autocomplete: (state) =>
         state.netInterfaces.map((it) => ({
@@ -44,3 +43,11 @@ export const interfaces = <
     },
   },
 });
+
+export function l2StringifyIntf<State extends InternalState<State>>(
+  state: State,
+  idx: number,
+): string {
+  const it = state.netInterfaces[idx];
+  return `${it.name} ${it.type} ${it.maxMbps}Mbps ${MACToString(it.mac)}`;
+}

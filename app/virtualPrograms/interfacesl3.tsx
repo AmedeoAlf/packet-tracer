@@ -5,27 +5,17 @@ import { interfaces } from "./interfaces";
 
 export const interfacesL3 = <
   State extends L3InternalState<State>,
->(): SubCommand<State> => {
-  const interfacesL2 = interfaces<State>();
-  if (!("subcommands" in interfacesL2))
-    throw "Why are there no subcommands in interfacesL2??";
-
-  return {
-    desc: "Manages interfaces",
-    run: (ctx) =>
-      ctx.write(
-        ctx.state.netInterfaces
-          .map((l2Intf, idx) => {
-            const l3Intf = ctx.state.l3Ifs.at(idx);
-            const ip = l3Intf
-              ? `${ipv4ToString(l3Intf.ip)} ${ipv4ToString(l3Intf.mask)}`
-              : "No ip";
-            return `${l2Intf.name} ${l2Intf.type} ${l2Intf.maxMbps}Mbps ${MACToString(l2Intf.mac)} ${ip}`;
-          })
-          .join("\n"),
-      ),
-    subcommands: {
-      ...interfacesL2.subcommands,
+>(): SubCommand<State> =>
+  interfaces<State>(
+    (state, idx) => {
+      const l2Intf = state.netInterfaces[idx];
+      const l3Intf = state.l3Ifs.at(idx);
+      const ip = l3Intf
+        ? `${ipv4ToString(l3Intf.ip)} ${ipv4ToString(l3Intf.mask)}`
+        : "No ip";
+      return `${l2Intf.name} ${l2Intf.type} ${l2Intf.maxMbps}Mbps ${MACToString(l2Intf.mac)} ${ip}`;
+    },
+    {
       "set-ip": {
         desc: "Sets an interface ip",
         paramDesc: "Interface",
@@ -64,5 +54,4 @@ export const interfacesL3 = <
         },
       },
     },
-  };
-};
+  );
