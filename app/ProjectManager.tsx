@@ -116,6 +116,14 @@ export class ProjectManager {
         name ?? `${capitalize(type)} ${this.project.lastId}`,
       ),
     );
+    const initFn = deviceTypesDB[type].proto.emulator.init as (
+      ctx: AnyEmulatorContext,
+    ) => void | undefined;
+    if (initFn) {
+      const id = this.project.lastId;
+      this.beginSimulation();
+      this.setTimeout(initFn, id, 1);
+    }
     return this.project.lastId;
   }
   duplicateDevice(id: number): number | undefined {
@@ -303,7 +311,10 @@ export class ProjectManager {
     }
     if (toClear.length == 0) return;
     this.callbacks = this.callbacks.filter((cb) => !toClear.includes(cb));
-    toolCtx.updateProject();
+    // NOTE: 100% not sure this is safe to comment
+    // likely have to rewrite all packetHandlers
+    //
+    // toolCtx.updateProject();
   }
   addDecal(d: DecalData): number {
     this.mutatedDecals ??= [];
@@ -434,6 +445,13 @@ export class ProjectManager {
         Object.entries(d).map(([from, to]) => [+from, to as number]),
       );
     });
+    pm.beginSimulation();
+    for (const d of pm.immutableDevices.values()) {
+      const initFn = d.emulator.init;
+      if (initFn) {
+        pm.setTimeout(initFn, d.id, 1);
+      }
+    }
     return pm;
   }
   recyclable(): boolean {

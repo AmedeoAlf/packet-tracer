@@ -42,20 +42,32 @@ export type OSUDPPacket = {
 
 export const computerEmulator: DeviceEmulator<ComputerInternalState> = {
   configPanel: {
-    "Impostazioni di rete": impostazioniDiRete,
+    "Impostazioni di rete": (ctx) => impostazioniDiRete(ctx, 1),
   },
   init(ctx) {
-    ctx.schedule(1000, computerEmulator.init!);
+    // Unset ips for dhcp interfaces
+    ctx.state.l3Ifs = ctx.state.l3Ifs.map((l3if, idx) =>
+      ctx.state.dhcpEnabled[idx] ? null : l3if,
+    );
+    const loop = (ctx: EmulatorContext<ComputerInternalState>) => {
+      ctx.state.dhcpEnabled
+        .flatMap((on, intf) => (on ? [intf] : []))
+        .filter((intf) => ctx.state.l3Ifs[intf] == null)
+        .forEach((intf) => sendDHCPDiscover(ctx, intf));
+      ctx.schedule(3000, loop);
+    };
+    loop(ctx);
   },
   packetHandler(ctx, data, intf) {
     const l2Pkt = EthernetFrameSerializer.fromBytes(data);
     if (l2Pkt.lenOrEtherType == EtherType.dhcp) {
+      if (l2Pkt.dst != ctx.state.netInterfaces[intf].mac) return;
+      if (!ctx.state.dhcpEnabled[intf]) return;
       const ipPkt = new PartialIPv4Packet(l2Pkt.payload);
       if (ipPkt.protocol != ProtocolCode.udp)
         throw "Why did I get a non-udp dhcp packet?";
       if (!ipPkt.isPayloadFinished())
         throw "DHCP packets defragmentation is not implemented :-(";
-      if (!ctx.state.dhcpEnabled[intf]) return;
       handleDHCPPacket(
         ctx,
         intf,

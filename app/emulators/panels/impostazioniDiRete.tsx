@@ -48,6 +48,7 @@ function NetworkField({
 
 export function impostazioniDiRete(
   ctx: EmulatorContext<ComputerInternalState>,
+  intf: number = 0,
 ) {
   const dnsOrErr = getDns(ctx.state.filesystem);
   const dns = typeof dnsOrErr == "string" ? undefined : dnsOrErr;
@@ -63,7 +64,7 @@ export function impostazioniDiRete(
               typeof ctx.state.fieldIp_t == "string" ||
               typeof ctx.state.fieldSubnet_t == "string"
             ) {
-              if (ctx.state.l3Ifs[0] == null) {
+              if (ctx.state.l3Ifs[intf] == null) {
                 if (typeof ctx.state.fieldIp_t == "undefined")
                   throw "Indirizzo IP non presente";
                 if (typeof ctx.state.fieldSubnet_t == "undefined")
@@ -74,18 +75,18 @@ export function impostazioniDiRete(
                 const mask =
                   parseIpv4(ctx.state.fieldSubnet_t) ??
                   throwString("Subnet mask non valida");
-                ctx.state.l3Ifs[0] = { ip, mask };
+                ctx.state.l3Ifs[intf] = { ip, mask };
               } else if (
                 ctx.state.fieldIp_t === "" &&
                 ctx.state.fieldSubnet_t === ""
               ) {
-                ctx.state.l3Ifs[0] = null;
+                ctx.state.l3Ifs[intf] = null;
               } else {
                 if (
                   typeof ctx.state.fieldIp_t != "undefined" &&
                   ctx.state.fieldIp_t !== ""
                 ) {
-                  ctx.state.l3Ifs[0].ip =
+                  ctx.state.l3Ifs[intf].ip =
                     parseIpv4(ctx.state.fieldIp_t) ??
                     throwString("Indirizzo IP non valido");
                   delete ctx.state.fieldIp_t; // early delete to handle right ip with wrong subnet
@@ -94,7 +95,7 @@ export function impostazioniDiRete(
                   typeof ctx.state.fieldSubnet_t != "undefined" &&
                   ctx.state.fieldSubnet_t !== ""
                 ) {
-                  ctx.state.l3Ifs[0].mask =
+                  ctx.state.l3Ifs[intf].mask =
                     parseIpv4(ctx.state.fieldSubnet_t) ??
                     throwString("Subnet mask non valida");
                 }
@@ -139,7 +140,7 @@ export function impostazioniDiRete(
           label="Indirizzo IP"
           prop="fieldIp_t"
           ifUnset={
-            ctx.state.l3Ifs[0] ? ipv4ToString(ctx.state.l3Ifs[0].ip) : ""
+            ctx.state.l3Ifs[intf] ? ipv4ToString(ctx.state.l3Ifs[intf].ip) : ""
           }
         />
         <NetworkField
@@ -147,7 +148,9 @@ export function impostazioniDiRete(
           label="Subnet mask"
           prop="fieldSubnet_t"
           ifUnset={
-            ctx.state.l3Ifs[0] ? ipv4ToString(ctx.state.l3Ifs[0].mask) : ""
+            ctx.state.l3Ifs[intf]
+              ? ipv4ToString(ctx.state.l3Ifs[intf].mask)
+              : ""
           }
         />
         <NetworkField

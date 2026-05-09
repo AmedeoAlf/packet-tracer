@@ -225,6 +225,8 @@ export function buildEmulatorContext(
     write: isSelectTool(tool)
       ? (msg) => {
           tool.stdout += "\n" + msg;
+          if (tool.stdout.length > 10000)
+            tool.stdout = tool.stdout.substring(tool.stdout.length - 10000);
           toolCtx.updateTool();
         }
       : (msg) => {
