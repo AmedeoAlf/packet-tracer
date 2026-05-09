@@ -127,7 +127,8 @@ export class ProjectManager {
 
     const dup = this.project.devices.get(newId)!;
     // FIXME: ho poca fiducia in una deep copy dell'internalState
-    dup.internalState = deepCopy(old.internalState);
+    // Però adesso ho anche poca fiducia nelle performance
+    dup.internalState = deepCopy(removeTempFields(old.internalState));
     return newId;
   }
   deleteDevice(id: number) {
