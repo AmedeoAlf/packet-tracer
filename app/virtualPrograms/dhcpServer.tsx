@@ -14,7 +14,7 @@ export const dhcpCmd = (): SubCommand<RouterInternalState> => ({
   desc: "Manages dhcp",
   run(ctx) {
     if (!ctx.state.dhcpSettings) {
-      ctx.write("Service must be enabled");
+      ctx.write("Service must be enabled, run 'dhcp on'");
       return;
     }
     for (const prop of ipProps) {
@@ -55,8 +55,15 @@ export const dhcpCmd = (): SubCommand<RouterInternalState> => ({
       desc: "Exclude addresses from dhcp pool",
       validate: (_, past) => typeof parseIpv4(past[2]) == "number",
       autocomplete: () => [],
-      paramDesc: "Start of range",
+      paramDesc: "Start of range (or single ip to exclude)",
       then: {
+        run(ctx) {
+          // Exclude just one ip
+          runOnInterpreter({
+            ...ctx,
+            args: ["dhcp", "exclude", ctx.args![2], ctx.args![2]],
+          });
+        },
         validate: (_, past) => typeof parseIpv4(past[3]) == "number",
         autocomplete: () => [],
         paramDesc: "End of range (inclusive)",

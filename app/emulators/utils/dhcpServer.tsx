@@ -40,10 +40,11 @@ export type DHCPState = {
 
 // assumes ip to come from right network
 export const isIpFree = (
-  { excluded }: DHCPSettings,
+  { excluded, gateway }: DHCPSettings,
   { assigned, pending }: DHCPState,
   ip: IPv4Address,
 ): boolean =>
+  ip != gateway &&
   !assigned.has(ip) &&
   !pending.has(ip) &&
   !excluded.some(([min, max]) => min <= ip && ip <= max);
