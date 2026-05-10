@@ -101,11 +101,9 @@ export function dhcpDaemonInit<State extends DhcpInternalState<State>>(
     ctx.state.dhcpEnabled[idx] ? null : l3if,
   );
   const loop = (ctx: EmulatorContext<State>) => {
-    ctx.state.dhcpEnabled
-      .flatMap((on, intf) =>
-        on && ctx.state.l3Ifs[intf] == null ? [intf] : [],
-      )
-      .forEach((intf) => sendDHCPDiscover(ctx, intf));
+    ctx.state.dhcpEnabled.forEach((on, intf) => {
+      if (on && ctx.state.l3Ifs[intf] == null) sendDHCPDiscover(ctx, intf);
+    });
     ctx.schedule(3000, loop);
   };
   loop(ctx);

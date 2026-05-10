@@ -55,6 +55,18 @@ export function impostazioniDiRete(
   return (
     <>
       {ctx.state.netSeterror_t ? <p>{ctx.state.netSeterror_t}</p> : <></>}
+      <div>
+        <input
+          type="checkbox"
+          checked={ctx.state.dhcpEnabled[intf]}
+          onChange={(ev) => {
+            ctx.state.dhcpEnabled[intf] = ev.target.checked;
+            ctx.state.l3Ifs[intf] = null;
+            ctx.updateState();
+          }}
+        />
+        &nbsp; DHCP
+      </div>
       <form
         className="flex flex-col"
         onSubmit={(ev) => {
@@ -66,9 +78,9 @@ export function impostazioniDiRete(
             ) {
               if (ctx.state.l3Ifs[intf] == null) {
                 if (typeof ctx.state.fieldIp_t == "undefined")
-                  throw "Indirizzo IP non presente";
+                  throwString("Indirizzo IP non presente");
                 if (typeof ctx.state.fieldSubnet_t == "undefined")
-                  throw "Subnet mask non presente";
+                  throwString("Subnet mask non presente");
                 const ip =
                   parseIpv4(ctx.state.fieldIp_t) ??
                   throwString("Indirizzo IP non valido");
@@ -108,7 +120,7 @@ export function impostazioniDiRete(
                 removeFile(ctx.state.filesystem, "/etc/dns");
               } else {
                 if (typeof parseIpv4(ctx.state.fieldDns_t) == "undefined")
-                  throw "Indirizzo DNS non valido";
+                  throwString("Indirizzo DNS non valido");
                 writeFileInLocation(
                   ctx.state.filesystem,
                   "/etc/dns",
@@ -130,7 +142,8 @@ export function impostazioniDiRete(
             }
             delete ctx.state.netSeterror_t;
           } catch (e) {
-            ctx.state.netSeterror_t = e as string;
+            if (e instanceof Error) ctx.state.netSeterror_t = e.message;
+            else throw e;
           }
           ctx.updateState();
         }}
