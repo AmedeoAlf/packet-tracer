@@ -130,7 +130,7 @@ export class ProjectManager {
     const old = this.project.devices.get(id);
     if (old === undefined) return;
 
-    const newId = this.createDevice(old.deviceType, { ...old.pos }, old.name);
+    const newId = this.createDevice(old.deviceType, [...old.pos], old.name);
     if (newId === undefined) return;
 
     const dup = this.project.devices.get(newId)!;
