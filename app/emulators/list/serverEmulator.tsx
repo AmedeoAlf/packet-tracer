@@ -1,5 +1,4 @@
 import { hello } from "../../virtualPrograms/hello";
-import { interfacesL3 } from "../../virtualPrograms/interfacesl3";
 import { l2send } from "../../virtualPrograms/l2send";
 import { ping } from "../../virtualPrograms/ping";
 import { DeviceEmulator, EmulatorContext } from "../DeviceEmulator";
@@ -14,11 +13,18 @@ import { recvIPv4Packet } from "../utils/recvIPv4Packet";
 import {
   IPv4Address,
   IPv4Packet,
+  ipv4ToString,
   parseIpv4,
   ProtocolCode,
 } from "@/app/protocols/rfc_760";
 import { UDPSerializer } from "@/app/protocols/udp";
-import { isError, OSDir, readFile, readSettingsFile } from "../utils/osFiles";
+import {
+  isError,
+  OSDir,
+  readFile,
+  readSettingsFile,
+  writeFileInLocation,
+} from "../utils/osFiles";
 import {
   DNSPacket,
   DNSResponsePacket,
@@ -37,7 +43,9 @@ import { gatewayCmd } from "@/app/virtualPrograms/gateway";
 import { impostazioniDiRete } from "../panels/impostazioniDiRete";
 import { ServerInternalState } from "@/app/devices/list/Server";
 import { isRecord } from "@/app/common";
-import { EthernetFrameSerializer } from "@/app/protocols/802_3";
+import { EthernetFrameSerializer, EtherType } from "@/app/protocols/802_3";
+import { interfacesDhcp } from "@/app/virtualPrograms/interfacesDhcp";
+import { dhcpDaemonInit, handleDHCPPacket } from "../utils/dhcpClient";
 
 export const defaultServerFS: OSDir = {
   etc: {
@@ -69,9 +77,18 @@ export const serverEmulator: DeviceEmulator<ServerInternalState> = {
   configPanel: {
     "Impostazioni di rete": impostazioniDiRete,
   },
+  init: dhcpDaemonInit,
   packetHandler(ctx, data, intf) {
     try {
       const l2Pkt = EthernetFrameSerializer.fromBytes(data);
+      if (l2Pkt.lenOrEtherType == EtherType.dhcp)
+        return handleDHCPPacket(ctx, intf, l2Pkt, (dns) => {
+          writeFileInLocation(
+            ctx.state.filesystem,
+            "/etc/dns",
+            ipv4ToString(dns),
+          );
+        });
       const packet = recvIPv4Packet(ctx, l2Pkt, intf);
       if (packet) serverPacketHandler(ctx, packet);
     } catch (e) {
@@ -82,7 +99,7 @@ export const serverEmulator: DeviceEmulator<ServerInternalState> = {
     shell: {
       subcommands: {
         gateway: gatewayCmd(),
-        interfaces: interfacesL3(),
+        interfaces: interfacesDhcp(),
         l2send: l2send(),
         arptable: arptable(),
         "udp-send": udpSend(),

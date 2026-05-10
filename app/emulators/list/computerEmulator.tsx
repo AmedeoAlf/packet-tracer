@@ -2,7 +2,6 @@ import {
   IPv4Address,
   IPv4Packet,
   ipv4ToString,
-  PartialIPv4Packet,
   ProtocolCode,
 } from "../../protocols/rfc_760";
 import { hello } from "../../virtualPrograms/hello";
@@ -29,7 +28,7 @@ import { curl } from "@/app/virtualPrograms/curl";
 import { gatewayCmd } from "@/app/virtualPrograms/gateway";
 import { impostazioniDiRete } from "../panels/impostazioniDiRete";
 import { EthernetFrameSerializer, EtherType } from "@/app/protocols/802_3";
-import { handleDHCPPacket, sendDHCPDiscover } from "../utils/dhcpClient";
+import { dhcpDaemonInit, handleDHCPPacket } from "../utils/dhcpClient";
 import { writeFileInLocation } from "../utils/osFiles";
 import { interfacesDhcp } from "@/app/virtualPrograms/interfacesDhcp";
 
@@ -44,44 +43,17 @@ export const computerEmulator: DeviceEmulator<ComputerInternalState> = {
   configPanel: {
     "Impostazioni di rete": (ctx) => impostazioniDiRete(ctx, 1),
   },
-  init(ctx) {
-    // Unset ips for dhcp interfaces
-    ctx.state.l3Ifs = ctx.state.l3Ifs.map((l3if, idx) =>
-      ctx.state.dhcpEnabled[idx] ? null : l3if,
-    );
-    const loop = (ctx: EmulatorContext<ComputerInternalState>) => {
-      ctx.state.dhcpEnabled
-        .flatMap((on, intf) => (on ? [intf] : []))
-        .filter((intf) => ctx.state.l3Ifs[intf] == null)
-        .forEach((intf) => sendDHCPDiscover(ctx, intf));
-      ctx.schedule(3000, loop);
-    };
-    loop(ctx);
-  },
+  init: dhcpDaemonInit,
   packetHandler(ctx, data, intf) {
     const l2Pkt = EthernetFrameSerializer.fromBytes(data);
-    if (l2Pkt.lenOrEtherType == EtherType.dhcp) {
-      if (l2Pkt.dst != ctx.state.netInterfaces[intf].mac) return;
-      if (!ctx.state.dhcpEnabled[intf]) return;
-      const ipPkt = new PartialIPv4Packet(l2Pkt.payload);
-      if (ipPkt.protocol != ProtocolCode.udp)
-        throw "Why did I get a non-udp dhcp packet?";
-      if (!ipPkt.isPayloadFinished())
-        throw "DHCP packets defragmentation is not implemented :-(";
-      handleDHCPPacket(
-        ctx,
-        intf,
-        UDPSerializer.fromBytes(ipPkt.payload).payload,
-        (dns) => {
-          writeFileInLocation(
-            ctx.state.filesystem,
-            "/etc/dns",
-            ipv4ToString(dns),
-          );
-        },
-      );
-      return;
-    }
+    if (l2Pkt.lenOrEtherType == EtherType.dhcp)
+      return handleDHCPPacket(ctx, intf, l2Pkt, (dns) => {
+        writeFileInLocation(
+          ctx.state.filesystem,
+          "/etc/dns",
+          ipv4ToString(dns),
+        );
+      });
     const packet = recvIPv4Packet(ctx, l2Pkt, intf);
     if (packet) computerPacketHandler(ctx, packet);
   },
