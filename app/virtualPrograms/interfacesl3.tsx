@@ -20,15 +20,20 @@ export const interfacesL3 = <
         desc: "Sets an interface ip",
         paramDesc: "Interface",
         autocomplete: (state) =>
-          state.netInterfaces.map((it, idx) => {
+          state.netInterfaces.flatMap((it, idx) => {
+            if (it.type == "localhost") return [];
             const ipv4 = state.l3Ifs.at(idx)?.ip;
-            return {
-              desc: `${it.type} ${it.maxMbps} Mbps ${ipv4 ? ipv4ToString(ipv4) : "No ip"}`,
-              option: it.name,
-            };
+            return [
+              {
+                desc: `${it.type} ${it.maxMbps} Mbps ${ipv4 ? ipv4ToString(ipv4) : "No ip"}`,
+                option: it.name,
+              },
+            ];
           }),
         validate(state, args) {
-          return state.netInterfaces.some((it) => it.name == args[2]);
+          return state.netInterfaces.some(
+            (it) => it.type != "localhost" && it.name == args[2],
+          );
         },
         then: {
           paramDesc: "New ip address",

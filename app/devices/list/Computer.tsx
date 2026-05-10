@@ -40,11 +40,16 @@ export type TCPConnectionState<State extends OSInternalState<State>> =
 
 export interface OSInternalState<
   TSelf extends OSInternalState<TSelf>,
-> extends L3InternalState<TSelf> {
-  dhcpEnabled: boolean[];
+> extends DhcpInternalState<TSelf> {
   filesystem: OSDir;
   udpSockets_t: Map<number, (params: UDPCallbackParams<TSelf>) => boolean>;
   tcpSockets_t: Map<number, TCPConnectionState<TSelf>>;
+}
+
+export interface DhcpInternalState<
+  TSelf extends DhcpInternalState<TSelf>,
+> extends L3InternalState<TSelf> {
+  dhcpEnabled: boolean[];
 }
 
 export type ComputerInternalState = OSInternalState<ComputerInternalState> & {

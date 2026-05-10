@@ -6,7 +6,6 @@ import {
   ProtocolCode,
 } from "../../protocols/rfc_760";
 import { hello } from "../../virtualPrograms/hello";
-import { interfacesL3 } from "../../virtualPrograms/interfacesl3";
 import { l2send } from "../../virtualPrograms/l2send";
 import { ping } from "../../virtualPrograms/ping";
 import { DeviceEmulator, EmulatorContext } from "../DeviceEmulator";
@@ -32,6 +31,7 @@ import { impostazioniDiRete } from "../panels/impostazioniDiRete";
 import { EthernetFrameSerializer, EtherType } from "@/app/protocols/802_3";
 import { handleDHCPPacket, sendDHCPDiscover } from "../utils/dhcpClient";
 import { writeFileInLocation } from "../utils/osFiles";
+import { interfacesDhcp } from "@/app/virtualPrograms/interfacesDhcp";
 
 export type OSUDPPacket = {
   from: IPv4Address;
@@ -89,7 +89,7 @@ export const computerEmulator: DeviceEmulator<ComputerInternalState> = {
     shell: {
       subcommands: {
         hello: hello(),
-        interfaces: interfacesL3(),
+        interfaces: interfacesDhcp(),
         l2send: l2send(),
         ping: ping(),
         arptable: arptable(),
@@ -102,17 +102,6 @@ export const computerEmulator: DeviceEmulator<ComputerInternalState> = {
         tcplisten: tcplisten(),
         curl: curl(),
         gateway: gatewayCmd(),
-        "temp-dhcp": {
-          desc: "REMOVE",
-          done: true,
-          run(ctx) {
-            ctx.state.dhcpEnabled
-              .flatMap((on, intf) => (on ? [intf] : []))
-              .forEach((intf) => {
-                sendDHCPDiscover(ctx, intf);
-              });
-          },
-        },
       },
     },
   },
