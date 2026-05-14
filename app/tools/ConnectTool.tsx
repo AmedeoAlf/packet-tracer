@@ -144,6 +144,7 @@ export const makeConnectTool: ToolConstructor<ConnectTool> = (
               ctx.updateTool();
               return;
             case !ctx.toolRef.current.deviceB:
+              if (ctx.toolRef.current.deviceA == ev.device) break;
               ctx.toolRef.current.deviceB = ev.device;
               ctx.toolRef.current.idxB = firstEmptyInterface(
                 ctx.project,
