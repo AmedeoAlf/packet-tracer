@@ -77,7 +77,10 @@ export const serverEmulator: DeviceEmulator<ServerInternalState> = {
   configPanel: {
     "Impostazioni di rete": impostazioniDiRete,
   },
-  init: dhcpDaemonInit,
+  init(ctx) {
+    dhcpDaemonInit(ctx);
+    serverInitServices(ctx.state);
+  },
   packetHandler(ctx, data, intf) {
     try {
       const l2Pkt = EthernetFrameSerializer.fromBytes(data);
@@ -110,6 +113,13 @@ export const serverEmulator: DeviceEmulator<ServerInternalState> = {
         cat: cat(),
         writeFile: writeFile(),
         ls: ls(),
+        reload: {
+          desc: "Reloads all services",
+          done: true,
+          run(ctx) {
+            serverInitServices(ctx.state);
+          },
+        },
       },
     },
   },

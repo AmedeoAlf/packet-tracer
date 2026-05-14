@@ -1,7 +1,6 @@
 import {
   defaultServerFS,
   serverEmulator,
-  serverInitServices,
 } from "@/app/emulators/list/serverEmulator";
 import { randomMAC } from "../../protocols/802_3";
 import { DeviceFactory } from "../Device";
@@ -21,7 +20,6 @@ export const Server: DeviceFactory<ServerInternalState> = {
         ...Server.defaultState(),
         ...o,
       };
-      serverInitServices(state);
       return state;
     },
   },
