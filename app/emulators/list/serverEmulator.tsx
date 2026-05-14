@@ -113,13 +113,6 @@ export const serverEmulator: DeviceEmulator<ServerInternalState> = {
         cat: cat(),
         writeFile: writeFile(),
         ls: ls(),
-        reload: {
-          desc: "Reloads all services",
-          done: true,
-          run(ctx) {
-            serverInitServices(ctx.state);
-          },
-        },
       },
     },
   },
