@@ -75,7 +75,7 @@ export const defaultServerFS: OSDir = {
 
 export const serverEmulator: DeviceEmulator<ServerInternalState> = {
   configPanel: {
-    "Impostazioni di rete": impostazioniDiRete,
+    "Impostazioni di rete": (ctx) => impostazioniDiRete(ctx, 1),
   },
   init(ctx) {
     dhcpDaemonInit(ctx);
