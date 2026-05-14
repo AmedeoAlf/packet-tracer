@@ -247,8 +247,8 @@ export class ProjectManager {
     });
     return this.callbacks.at(-1)!;
   }
-  sendOn(intf: InterfaceId, data: Buffer) {
-    const target = this.getConnectedTo(intf);
+  sendOn(intf: InterfaceId, data: Buffer, toSelf = false) {
+    const target = toSelf ? intf : this.getConnectedTo(intf);
     if (typeof target == "undefined") return;
     const dev = this.project.devices.get(deviceOfIntf(target));
     if (!dev) return;

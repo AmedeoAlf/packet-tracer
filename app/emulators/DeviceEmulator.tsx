@@ -54,7 +54,7 @@ export type Interpreter<State extends InternalState<State>> = {
 export type EmulatorContext<State extends InternalState<State>> = {
   interpreter: Interpreter<State>;
   currTick: () => number;
-  sendOnIf: (ifIdx: number, data: Buffer) => void;
+  sendOnIf: (ifIdx: number, data: Buffer, toSelf?: boolean) => void;
   schedule: (
     after: number,
     fn: (ctx: EmulatorContext<State>) => void,
@@ -209,9 +209,13 @@ export function buildEmulatorContext(
       toolCtx.updateProject();
       toolCtx.updateTool();
     },
-    sendOnIf(ifIdx, data) {
+    sendOnIf(ifIdx, data, toSelf) {
       toolCtx.projectRef.current.beginSimulation();
-      toolCtx.projectRef.current.sendOn(toInterfaceId(device.id, ifIdx), data);
+      toolCtx.projectRef.current.sendOn(
+        toInterfaceId(device.id, ifIdx),
+        data,
+        toSelf,
+      );
     },
     schedule(after, fn): object {
       toolCtx.projectRef.current.beginSimulation();

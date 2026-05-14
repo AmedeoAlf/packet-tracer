@@ -7,11 +7,11 @@ import {
 } from "@/app/protocols/rfc_760";
 import { EmulatorContext } from "../DeviceEmulator";
 import { ARPPacket } from "@/app/protocols/rfc_826";
-import { filterObject, throwString } from "@/app/common";
+import { filterObject } from "@/app/common";
 import { EthernetFrameSerializer } from "@/app/protocols/802_3";
 
 export function sendIPv4Packet<State extends L3InternalState<State>>(
-  ctx: Pick<EmulatorContext<State>, "state" | "sendOnIf" | "schedule">,
+  ctx: EmulatorContext<State>,
   destination: IPv4Address,
   protocol: ProtocolCode,
   data: Buffer,
@@ -30,14 +30,22 @@ export function sendIPv4Packet<State extends L3InternalState<State>>(
 }
 
 export function forwardIPv4Packet<State extends L3InternalState<State>>(
-  ctx: Pick<EmulatorContext<State>, "state" | "sendOnIf" | "schedule">,
+  ctx: EmulatorContext<State>,
   packet: IPv4Packet,
   destinationMACFrom: IPv4Address,
 ) {
   const { targetIp, intf, ok } = targetIP(ctx.state, destinationMACFrom);
   if (!ok) return false;
 
-  if (!ctx.state.macTable_t.has(targetIp)) {
+  const ownIntf = destinationMACFrom === ctx.state.l3Ifs[intf]?.ip;
+
+  const dst = ownIntf
+    ? ctx.state.netInterfaces[intf].mac
+    : ctx.state.netInterfaces[intf].type == "localhost"
+      ? 0
+      : ctx.state.macTable_t.get(targetIp);
+
+  if (typeof dst == "undefined") {
     ctx.sendOnIf(
       intf,
       EthernetFrameSerializer.toBuffer(
@@ -60,16 +68,15 @@ export function forwardIPv4Packet<State extends L3InternalState<State>>(
   }
 
   const payloads = packet.toFragmentedBytes();
-  for (const p of payloads) {
+  for (const payload of payloads) {
     ctx.sendOnIf(
       intf,
       EthernetFrameSerializer.toBuffer({
         src: ctx.state.netInterfaces[intf].mac,
-        dst:
-          ctx.state.macTable_t.get(targetIp) ??
-          throwString("How did I get here withouth an arp packet???"),
-        payload: p,
+        payload,
+        dst,
       }),
+      ownIntf,
     );
   }
   return true;
