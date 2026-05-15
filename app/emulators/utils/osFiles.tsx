@@ -20,8 +20,14 @@ export type OSDir = { [k: string]: OSFile };
 
 export function getDir(filesystem: OSDir, file: string): OSDir | OSError {
   const folders = file.split("/").filter((it) => it);
+  for (let i = 0; i < folders.length - 1; i++) {
+    if (folders[i + 1] != "..") continue;
+    folders.splice(i, 2);
+    i--;
+  }
+
   let curr = filesystem;
-  for (const f of folders.filter((it) => it)) {
+  for (const f of folders) {
     if (!isDirectory(curr[f])) return OSError.FileNotFound;
     curr = curr[f];
   }
