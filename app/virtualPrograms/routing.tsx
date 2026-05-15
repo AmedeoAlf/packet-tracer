@@ -89,3 +89,5 @@ function tableEntryAutocomplete(state: RouterInternalState) {
     })),
   ];
 }
+
+export default routing;

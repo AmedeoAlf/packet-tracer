@@ -19,3 +19,5 @@ export const arptable = <
         .join("\n"),
     ),
 });
+
+export default arptable;

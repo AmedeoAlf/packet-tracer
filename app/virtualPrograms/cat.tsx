@@ -25,3 +25,5 @@ export const cat = <
     },
   },
 });
+
+export default cat;

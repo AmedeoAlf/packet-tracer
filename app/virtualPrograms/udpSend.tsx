@@ -50,3 +50,5 @@ export const udpSend = <
     },
   },
 });
+
+export default udpSend;

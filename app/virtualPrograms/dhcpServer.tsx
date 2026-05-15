@@ -146,3 +146,5 @@ function propGetSet(
     },
   ];
 }
+
+export default dhcpCmd;

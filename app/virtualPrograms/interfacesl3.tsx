@@ -60,3 +60,5 @@ export const interfacesL3 = <
       },
     },
   );
+
+export default interfaces;

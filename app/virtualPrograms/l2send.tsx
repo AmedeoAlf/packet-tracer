@@ -69,3 +69,5 @@ export const l2send = <
     },
   },
 });
+
+export default l2send;

@@ -7,3 +7,5 @@ export const hello = <
   run: (ctx) => ctx.write("Hello, World!"),
   done: true,
 });
+
+export default hello;

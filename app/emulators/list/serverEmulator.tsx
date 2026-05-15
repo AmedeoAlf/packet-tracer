@@ -1,14 +1,4 @@
-import { hello } from "../../virtualPrograms/hello";
-import { l2send } from "../../virtualPrograms/l2send";
-import { ping } from "../../virtualPrograms/ping";
 import { DeviceEmulator, EmulatorContext } from "../DeviceEmulator";
-import { arptable } from "@/app/virtualPrograms/arptable";
-import { udpSend } from "@/app/virtualPrograms/udpSend";
-import { TCPCallback } from "@/app/devices/list/Computer";
-import { nslookup } from "@/app/virtualPrograms/nslookup";
-import { cat } from "@/app/virtualPrograms/cat";
-import { writeFile } from "@/app/virtualPrograms/writeFile";
-import { ls } from "@/app/virtualPrograms/ls";
 import { recvIPv4Packet } from "../utils/recvIPv4Packet";
 import {
   IPv4Address,
@@ -38,14 +28,24 @@ import {
   HttpResponse,
   ResponseCode as HttpResponseCode,
 } from "@/app/protocols/http";
-import { curl } from "@/app/virtualPrograms/curl";
-import { gatewayCmd } from "@/app/virtualPrograms/gateway";
 import { impostazioniDiRete } from "../panels/impostazioniDiRete";
 import { ServerInternalState } from "@/app/devices/list/Server";
 import { isRecord } from "@/app/common";
 import { EthernetFrameSerializer, EtherType } from "@/app/protocols/802_3";
-import { interfacesDhcp } from "@/app/virtualPrograms/interfacesDhcp";
 import { dhcpDaemonInit, handleDHCPPacket } from "../utils/dhcpClient";
+import gatewayCmd from "@/app/virtualPrograms/gateway";
+import interfacesDhcp from "@/app/virtualPrograms/interfacesDhcp";
+import l2send from "@/app/virtualPrograms/l2send";
+import arptable from "@/app/virtualPrograms/arptable";
+import udpSend from "@/app/virtualPrograms/udpSend";
+import nslookup from "@/app/virtualPrograms/nslookup";
+import hello from "@/app/virtualPrograms/hello";
+import curl from "@/app/virtualPrograms/curl";
+import ping from "@/app/virtualPrograms/ping";
+import cat from "@/app/virtualPrograms/cat";
+import writeFile from "@/app/virtualPrograms/writeFile";
+import ls from "@/app/virtualPrograms/ls";
+import { TCPCallback } from "@/app/devices/list/Computer";
 
 export const defaultServerFS: OSDir = {
   etc: {

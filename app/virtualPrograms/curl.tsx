@@ -78,3 +78,5 @@ function curlRequest<State extends OSInternalState<State>>(
     });
   });
 }
+
+export default curl;

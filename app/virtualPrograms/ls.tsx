@@ -12,3 +12,5 @@ export const ls = <
     ctx.write(files.join("\n"));
   },
 });
+
+export default ls;

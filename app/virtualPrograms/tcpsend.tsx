@@ -36,3 +36,5 @@ export const tcphello = <
     },
   },
 });
+
+export default tcphello;

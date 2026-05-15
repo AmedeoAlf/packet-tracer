@@ -51,3 +51,5 @@ export function l2StringifyIntf<State extends InternalState<State>>(
   const it = state.netInterfaces[idx];
   return `${it.name} ${it.type} ${it.maxMbps}Mbps ${MACToString(it.mac)}`;
 }
+
+export default interfaces;
