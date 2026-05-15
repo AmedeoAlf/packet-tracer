@@ -35,6 +35,7 @@ export default function fileManager(
             ctx.state.pathInput_t = path;
             ctx.updateState();
           }}
+          className="font-mono"
         />
         <Button className="bg-onsidebar self-center">Apri</Button>
       </form>
@@ -84,7 +85,7 @@ function DirEntry({
 }) {
   return (
     <div className="flex">
-      <a href="#" onClick={open} className="flex-1">
+      <a href="#" onClick={open} className="flex-1 underline">
         {value}
       </a>
       {del && <Button onClick={del}>🗑️</Button>}
@@ -104,7 +105,7 @@ function DirListing({
   del: (dir: string) => void;
 }) {
   return (
-    <div>
+    <div className="font-mono">
       {!isRoot && <DirEntry value=".." open={open.bind(null, "..")} />}
       {Object.keys(directory).map((it) => (
         <DirEntry
@@ -130,7 +131,7 @@ function FileEditor({
   return (
     <div className="flex flex-col gap-1 items-center">
       <textarea
-        className="w-full bg-background rounded-sm p-2 h-25"
+        className="w-full bg-background rounded-sm p-2 h-25 font-mono"
         value={value}
         onChange={(ev) => setValue(ev.target.value)}
       />
