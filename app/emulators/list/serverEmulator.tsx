@@ -28,7 +28,7 @@ import {
   HttpResponse,
   ResponseCode as HttpResponseCode,
 } from "@/app/protocols/http";
-import { impostazioniDiRete } from "../panels/impostazioniDiRete";
+import impostazioniDiRete from "../panels/impostazioniDiRete";
 import { ServerInternalState } from "@/app/devices/list/Server";
 import { isRecord } from "@/app/common";
 import { EthernetFrameSerializer, EtherType } from "@/app/protocols/802_3";

@@ -4,34 +4,34 @@ import {
   ipv4ToString,
   ProtocolCode,
 } from "../../protocols/rfc_760";
-import { hello } from "../../virtualPrograms/hello";
-import { l2send } from "../../virtualPrograms/l2send";
-import { ping } from "../../virtualPrograms/ping";
+import hello from "../../virtualPrograms/hello";
+import l2send from "../../virtualPrograms/l2send";
+import ping from "../../virtualPrograms/ping";
 import { DeviceEmulator, EmulatorContext } from "../DeviceEmulator";
-import { arptable } from "@/app/virtualPrograms/arptable";
-import { udpSend } from "@/app/virtualPrograms/udpSend";
+import arptable from "@/app/virtualPrograms/arptable";
+import udpSend from "@/app/virtualPrograms/udpSend";
 import { UDPSerializer } from "@/app/protocols/udp";
 import {
   ComputerInternalState,
   OSInternalState,
 } from "@/app/devices/list/Computer";
-import { nslookup } from "@/app/virtualPrograms/nslookup";
-import { cat } from "@/app/virtualPrograms/cat";
-import { writeFile } from "@/app/virtualPrograms/writeFile";
-import { ls } from "@/app/virtualPrograms/ls";
+import nslookup from "@/app/virtualPrograms/nslookup";
+import cat from "@/app/virtualPrograms/cat";
+import writeFile from "@/app/virtualPrograms/writeFile";
+import ls from "@/app/virtualPrograms/ls";
 import { recvIPv4Packet } from "../utils/recvIPv4Packet";
 import { TCPPacket } from "@/app/protocols/tcp";
 import { sendIPv4Packet } from "../utils/sendIPv4Packet";
-import { tcphello } from "@/app/virtualPrograms/tcpsend";
-import { tcplisten } from "@/app/virtualPrograms/tcplisten";
-import { curl } from "@/app/virtualPrograms/curl";
-import { gatewayCmd } from "@/app/virtualPrograms/gateway";
-import { impostazioniDiRete } from "../panels/impostazioniDiRete";
+import tcphello from "@/app/virtualPrograms/tcpsend";
+import tcplisten from "@/app/virtualPrograms/tcplisten";
+import curl from "@/app/virtualPrograms/curl";
+import gatewayCmd from "@/app/virtualPrograms/gateway";
+import impostazioniDiRete from "../panels/impostazioniDiRete";
 import { EthernetFrameSerializer, EtherType } from "@/app/protocols/802_3";
 import { dhcpDaemonInit, handleDHCPPacket } from "../utils/dhcpClient";
 import { writeFileInLocation } from "../utils/osFiles";
-import { interfacesDhcp } from "@/app/virtualPrograms/interfacesDhcp";
-import { fileManager } from "../panels/fileManager";
+import interfacesDhcp from "@/app/virtualPrograms/interfacesDhcp";
+import fileManager from "../panels/fileManager";
 
 export type OSUDPPacket = {
   from: IPv4Address;

@@ -13,23 +13,23 @@ import {
   PartialIPv4Packet,
   ProtocolCode,
 } from "../../protocols/rfc_760";
-import { hello } from "../../virtualPrograms/hello";
-import { interfacesL3 } from "../../virtualPrograms/interfacesl3";
-import { l2send } from "../../virtualPrograms/l2send";
-import { ping } from "../../virtualPrograms/ping";
+import hello from "../../virtualPrograms/hello";
+import interfacesL3 from "../../virtualPrograms/interfacesl3";
+import l2send from "../../virtualPrograms/l2send";
+import ping from "../../virtualPrograms/ping";
 import { DeviceEmulator, runOnInterpreter } from "../DeviceEmulator";
-import { arptable } from "@/app/virtualPrograms/arptable";
-import { udpSend } from "@/app/virtualPrograms/udpSend";
+import arptable from "@/app/virtualPrograms/arptable";
+import udpSend from "@/app/virtualPrograms/udpSend";
 import { UDPSerializer } from "@/app/protocols/udp";
 import { handleArpPacket } from "../utils/handleArpPacket";
 import { forwardIPv4Packet, sendIPv4Packet } from "../utils/sendIPv4Packet";
 import { countLeadingOnes, throwString } from "@/app/common";
 import { Button } from "@/app/editorComponents/RoundBtn";
-import { routing } from "@/app/virtualPrograms/routing";
-import { gatewayCmd } from "@/app/virtualPrograms/gateway";
+import routing from "@/app/virtualPrograms/routing";
+import gatewayCmd from "@/app/virtualPrograms/gateway";
 import { DropDown } from "@/app/editorComponents/DropDown";
 import { handleDHCPPacket } from "../utils/dhcpServer";
-import { dhcpCmd } from "@/app/virtualPrograms/dhcpServer";
+import dhcpCmd from "@/app/virtualPrograms/dhcpServer";
 
 export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   configPanel: {

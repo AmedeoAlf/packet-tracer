@@ -10,7 +10,9 @@ export interface FileManagerPanelState extends OSInternalState<FileManagerPanelS
   fileTextArea_t?: string;
 }
 
-export function fileManager(ctx: EmulatorContext<FileManagerPanelState>) {
+export default function fileManager(
+  ctx: EmulatorContext<FileManagerPanelState>,
+) {
   const currPath = ctx.state.currPath_t ?? "/";
   // Solo uno dei due non ritornerà un errore
   const dir = os.getDir(ctx.state.filesystem, currPath);

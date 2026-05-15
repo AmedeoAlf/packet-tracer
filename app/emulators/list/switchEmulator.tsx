@@ -1,7 +1,7 @@
 import { EthernetFrameSerializer } from "@/app/protocols/802_3";
-import { hello } from "../../virtualPrograms/hello";
-import { interfaces } from "../../virtualPrograms/interfaces";
-import { l2send } from "../../virtualPrograms/l2send";
+import hello from "../../virtualPrograms/hello";
+import interfaces from "../../virtualPrograms/interfaces";
+import l2send from "../../virtualPrograms/l2send";
 import { DeviceEmulator } from "../DeviceEmulator";
 import { SwitchInternalState } from "@/app/devices/list/Switch";
 

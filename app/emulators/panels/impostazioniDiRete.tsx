@@ -55,7 +55,7 @@ export interface NetworkSettingsPanelState extends OSInternalState<NetworkSettin
   netSeterror_t?: string;
 }
 
-export function impostazioniDiRete(
+export default function impostazioniDiRete(
   ctx: EmulatorContext<NetworkSettingsPanelState>,
   intf: number = 0,
 ) {
