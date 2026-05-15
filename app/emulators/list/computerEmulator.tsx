@@ -31,6 +31,7 @@ import { EthernetFrameSerializer, EtherType } from "@/app/protocols/802_3";
 import { dhcpDaemonInit, handleDHCPPacket } from "../utils/dhcpClient";
 import { writeFileInLocation } from "../utils/osFiles";
 import { interfacesDhcp } from "@/app/virtualPrograms/interfacesDhcp";
+import { fileManager } from "../panels/fileManager";
 
 export type OSUDPPacket = {
   from: IPv4Address;
@@ -42,6 +43,7 @@ export type OSUDPPacket = {
 export const computerEmulator: DeviceEmulator<ComputerInternalState> = {
   configPanel: {
     "Impostazioni di rete": (ctx) => impostazioniDiRete(ctx, 1),
+    Filemanager: fileManager,
   },
   init: dhcpDaemonInit,
   packetHandler(ctx, data, intf) {

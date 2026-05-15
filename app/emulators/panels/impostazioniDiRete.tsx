@@ -1,4 +1,4 @@
-import { ComputerInternalState } from "@/app/devices/list/Computer";
+import { OSInternalState } from "@/app/devices/list/Computer";
 import { EmulatorContext } from "../DeviceEmulator";
 import { getDns } from "../utils/dnsUtils";
 import {
@@ -11,7 +11,7 @@ import { removeFile, writeFileInLocation } from "../utils/osFiles";
 import { Button } from "@/app/editorComponents/RoundBtn";
 
 type ComputerStringProp = NonNullable<
-  KeysOfType<ComputerInternalState, string | undefined>
+  KeysOfType<NetworkSettingsPanelState, string | undefined>
 >;
 function NetworkField({
   ctx,
@@ -19,7 +19,7 @@ function NetworkField({
   prop,
   ifUnset,
 }: {
-  ctx: EmulatorContext<ComputerInternalState>;
+  ctx: EmulatorContext<NetworkSettingsPanelState>;
   label: string;
   prop: ComputerStringProp;
   ifUnset: string;
@@ -46,8 +46,17 @@ function NetworkField({
   );
 }
 
+export interface NetworkSettingsPanelState extends OSInternalState<NetworkSettingsPanelState> {
+  fieldIp_t?: string;
+  fieldSubnet_t?: string;
+  fieldGateway_t?: string;
+  fieldDns_t?: string;
+
+  netSeterror_t?: string;
+}
+
 export function impostazioniDiRete(
-  ctx: EmulatorContext<ComputerInternalState>,
+  ctx: EmulatorContext<NetworkSettingsPanelState>,
   intf: number = 0,
 ) {
   const dnsOrErr = getDns(ctx.state.filesystem);

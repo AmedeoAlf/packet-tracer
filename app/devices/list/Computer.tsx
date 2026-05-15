@@ -52,14 +52,7 @@ export interface DhcpInternalState<
   dhcpEnabled: boolean[];
 }
 
-export type ComputerInternalState = OSInternalState<ComputerInternalState> & {
-  fieldIp_t?: string;
-  fieldSubnet_t?: string;
-  fieldGateway_t?: string;
-  fieldDns_t?: string;
-
-  netSeterror_t?: string;
-};
+export type ComputerInternalState = OSInternalState<ComputerInternalState>;
 
 export const Computer: DeviceFactory<ComputerInternalState> = {
   proto: {
