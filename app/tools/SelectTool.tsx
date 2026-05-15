@@ -16,6 +16,7 @@ import { makeRectTool } from "./RectTool";
 import { BtnArray, BtnArrEl } from "../editorComponents/BtnArray";
 import { ReactNode } from "react";
 import { DropDown } from "../editorComponents/DropDown";
+import { TextInput } from "../editorComponents/TextInput";
 
 export type SelectTool = Tool<SelectTool> & {
   selected: Set<number>;
@@ -157,13 +158,10 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
                 >
                   <p className="flex-1">1 dispositivo selezionato</p>
                 </SelectionActions>
-                <input
-                  className="text-xl font-bold flex-1 bg-onsidebar w-full px-2 py-1 rounded-md border-b"
-                  type="text"
-                  size={2}
+                <TextInput
                   value={device.name}
-                  onChange={(ev) => {
-                    device.name = ev.target.value;
+                  setValue={(name) => {
+                    device.name = name;
                     emuCtx.updateState();
                   }}
                 />
