@@ -261,7 +261,7 @@ export class ProjectManager {
           data,
           ifIdx,
         ),
-      1,
+      toSelf ? 0 : 1,
     );
   }
   areTicksPending() {

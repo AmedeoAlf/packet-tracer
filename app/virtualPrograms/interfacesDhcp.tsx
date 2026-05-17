@@ -92,4 +92,4 @@ export const interfacesDhcp = <
     },
   );
 
-export default interfaces;
+export default interfacesDhcp;
