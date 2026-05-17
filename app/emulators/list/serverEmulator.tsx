@@ -46,6 +46,7 @@ import cat from "@/app/virtualPrograms/cat";
 import writeFile from "@/app/virtualPrograms/writeFile";
 import ls from "@/app/virtualPrograms/ls";
 import { TCPCallback } from "@/app/devices/list/Computer";
+import fileManager from "../panels/fileManager";
 
 export const defaultServerFS: OSDir = {
   etc: {
@@ -76,6 +77,7 @@ export const defaultServerFS: OSDir = {
 export const serverEmulator: DeviceEmulator<ServerInternalState> = {
   configPanel: {
     "Impostazioni di rete": (ctx) => impostazioniDiRete(ctx, 1),
+    Filemanager: fileManager,
   },
   init(ctx) {
     dhcpDaemonInit(ctx);
