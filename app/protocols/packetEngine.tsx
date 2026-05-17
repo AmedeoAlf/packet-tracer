@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { trustMeBroCast } from "../common";
+import { MACToString } from "./802_3";
+import { ipv4ToString } from "./rfc_760";
 
 abstract class Field<T> {
   abstract serialize(into: Buffer, value: T): void;
   abstract deserialize(bytes: Buffer): T;
   abstract getSizeFor(value?: T): number;
+  stringify(value: T): string {
+    return JSON.stringify(value);
+  }
   constructor(
     public name: string,
     public def?: T,
@@ -23,7 +28,11 @@ export class U32Field extends Field<number> {
   }
 }
 
-export class IPv4Field extends U32Field {}
+export class IPv4Field extends U32Field {
+  stringify(value: number): string {
+    return ipv4ToString(value);
+  }
+}
 
 export class U16Field extends Field<number> {
   serialize(into: Buffer, value: number): void {
@@ -59,6 +68,9 @@ export class MACField extends Field<number> {
   }
   getSizeFor(): number {
     return 6;
+  }
+  stringify(value: number): string {
+    return MACToString(value);
   }
 }
 
