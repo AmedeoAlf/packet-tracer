@@ -23,6 +23,8 @@ export class U32Field extends Field<number> {
   }
 }
 
+export class IPv4Field extends U32Field {}
+
 export class U16Field extends Field<number> {
   serialize(into: Buffer, value: number): void {
     into.writeUInt16BE(value);
