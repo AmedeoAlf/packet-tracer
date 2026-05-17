@@ -8,6 +8,7 @@ import { SelectableCard } from "../editorComponents/SelectableCard";
 export type AddTool = Tool<AddTool> & {
   deviceType: keyof typeof deviceTypesDB;
   cursorPos: Coords;
+  quickAddCounter: number;
 };
 
 export const makeAddTool: ToolConstructor<AddTool> = (
@@ -17,6 +18,7 @@ export const makeAddTool: ToolConstructor<AddTool> = (
     cursorPos: [-10000, 0],
     deviceType: Object.keys(deviceTypesDB)[0] as DeviceType,
     ...prev,
+    quickAddCounter: 0,
     toolname: "add",
     panel: (ctx) => (
       <div className="m-2">
@@ -88,11 +90,14 @@ const DeviceTypeSelector = memo(
           isSelected={it == ctx.tool.deviceType}
           onClick={(ev) => {
             if (ev.shiftKey) {
+              const baseX = ctx.projectRef.current.viewBoxX - 250;
+              const baseY = ctx.projectRef.current.viewBoxY - 100;
+              const counter = ctx.toolRef.current.quickAddCounter++;
               ctx.projectRef.current.createDevice(
                 deviceTypesDB[it].proto.deviceType,
                 [
-                  (ctx.projectRef.current.lastId % 5) * 100 - 600,
-                  Math.floor(ctx.projectRef.current.lastId / 5) * 100 - 350,
+                  (counter % 5) * 100 + baseX,
+                  Math.floor(counter / 5) * 100 + baseY,
                 ],
               );
               ctx.updateProject();
