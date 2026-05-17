@@ -46,6 +46,12 @@ type Callback = {
   fn: (t: ToolCtx) => void;
 };
 
+export type PacketLogEntry = {
+  bytes: Buffer;
+  tick: number;
+  from: InterfaceId;
+  to: InterfaceId;
+};
 /*
  * La classe che contiene tutti i dati del progetto attuale.
  * È l'unico oggetto da serializzare per salvare un progetto.
@@ -67,6 +73,8 @@ export class ProjectManager {
   >;
 
   private callbacks: Callback[] = [];
+
+  packetLog: PacketLogEntry[] = [];
 
   // Il tick processato in questo momento
   private emulatorTick: number = -1;
@@ -254,6 +262,14 @@ export class ProjectManager {
     if (!dev) return;
     const ifIdx = idxOfIntf(target);
     console.assert(dev.internalState.netInterfaces.length > ifIdx);
+
+    this.packetLog.push({
+      bytes: data,
+      from: intf,
+      to: target,
+      tick: this.currTick,
+    });
+
     this.delay(
       (toolCtx: ToolCtx) =>
         dev.emulator.packetHandler(
@@ -526,6 +542,7 @@ export class ProjectManager {
   newInstance() {
     this.applyMutations();
     const next = new ProjectManager({ ...this.project }, this.tickRef);
+    next.packetLog = [...this.packetLog];
     next.emulatorTick = this.emulatorTick;
     if (this.mutatedDevices || !this.cableCache) this.computeCables();
     next.cableCache = this.cableCache;

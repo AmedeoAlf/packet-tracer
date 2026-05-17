@@ -12,7 +12,7 @@ import { AnyTool, CanvasEvent, ToolCtx, TOOLS } from "./tools/Tool";
 import { makeSelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { Cables } from "./editorComponents/Cables";
-import { SideBar } from "./editorComponents/SideBar";
+import { PropertiesBar } from "./editorComponents/SideBar";
 import { ToolSelector } from "./editorComponents/ToolSelector";
 import { Devices } from "./editorComponents/Devices";
 import { ProjectManager } from "./ProjectManager";
@@ -26,6 +26,7 @@ import {
   useNoPinchToZoom,
   useSimulation,
 } from "./editorComponents/hooks";
+import { PacketLog } from "./editorComponents/PacketLog";
 
 /*
  * Questo componente è tutta l'interfaccia del sito. Crea gli hook sia per il
@@ -121,7 +122,8 @@ export function Editor({
         <Chrono tickRef={tickRef} />
       </div>
 
-      <SideBar toolCtx={toolCtx} />
+      <PropertiesBar toolCtx={toolCtx} />
+      <PacketLog log={project.packetLog} devices={project.immutableDevices} />
 
       <ToolSelector
         toolname={tool.toolname}
