@@ -68,6 +68,13 @@ export default function fileManager(
             os.writeFileInLocation(ctx.state.filesystem, currPath, contents);
             ctx.updateState();
           }}
+          close={() => {
+            const path = ctx.state.currPath_t!.split("/");
+            path.pop();
+            ctx.state.currPath_t = path.join("/");
+            ctx.state.pathInput_t = undefined;
+            ctx.updateState();
+          }}
         />
       )}
     </>
@@ -123,24 +130,31 @@ function FileEditor({
   value,
   setValue,
   save,
+  close,
 }: {
   value: string;
   setValue: (val: string) => void;
   save: (val: string) => void;
+  close: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-1 items-center">
+    <div className="flex flex-col gap-1 items-end">
       <textarea
         className="w-full bg-background rounded-sm p-2 h-25 font-mono"
         value={value}
         onChange={(ev) => setValue(ev.target.value)}
       />
-      <Button
-        onClick={() => save(value)}
-        className="bg-primary hover:brightness-110"
-      >
-        Salva
-      </Button>
+      <div className="flex gap-1">
+        <Button onClick={close} className="bg-onsidebar hover:brightness-110">
+          Chiudi
+        </Button>
+        <Button
+          onClick={() => save(value)}
+          className="bg-primary hover:brightness-110"
+        >
+          Salva
+        </Button>
+      </div>
     </div>
   );
 }
