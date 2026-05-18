@@ -23,89 +23,69 @@
  */
 
 import { EtherType, EthernetFrame, MAC_BROADCAST, MacAddress } from "./802_3";
+import {
+  IPv4Field,
+  MACField,
+  PacketSerializer,
+  U16Field,
+  U8Field,
+} from "./packetEngine";
 import { IPv4Address } from "./rfc_760";
-import { Buffer } from "node:buffer";
 
-export class ARPPacket {
-  response: boolean;
+export enum Operation {
+  request = 1,
+  reply = 2,
+}
+
+export type ARPPacket = {
+  hardwareType?: number;
+  protocolType?: number;
+  hwLen?: number;
+  protoLen?: number;
+  operation?: Operation;
   senderMAC: MacAddress;
   senderIP: IPv4Address;
-  targetMAC: MacAddress;
+  targetMAC?: MacAddress;
   targetIP: IPv4Address;
+};
 
-  constructor(
-    senderMAC: MacAddress,
-    senderIP: IPv4Address,
-    targetIP: IPv4Address,
-    targetMAC = 0,
-    response = false,
-  ) {
-    this.senderMAC = senderMAC;
-    this.senderIP = senderIP;
-    this.targetIP = targetIP;
+export const ArpSerializer = new PacketSerializer<ARPPacket>([
+  new U16Field("hardwareType", 1),
+  new U16Field("protocolType", 0x800),
+  new U8Field("hwLen", 6),
+  new U8Field("protoLen", 4),
+  new U8Field("operation", Operation.request),
+  new MACField("senderMAC"),
+  new IPv4Field("senderIP"),
+  new MACField("targetMAC", 0),
+  new IPv4Field("targetIP"),
+]);
 
-    this.response = response;
-    this.targetMAC = targetMAC;
-  }
+export function arpToL2(packet: ARPPacket): EthernetFrame {
+  return {
+    payload: ArpSerializer.toBuffer(packet),
+    src: packet.senderMAC,
+    dst: packet.targetMAC || MAC_BROADCAST,
+    lenOrEtherType: EtherType.arp,
+  };
+}
 
-  respondWith(myMAC: MacAddress): ARPPacket {
-    if (this.response) throw "Tried to respond to ARP response";
-    return new ARPPacket(
-      myMAC,
-      this.targetIP,
-      this.senderIP,
-      this.senderMAC,
-      true,
-    );
-  }
-
-  toL2(): EthernetFrame {
-    const buf = Buffer.alloc(28);
-    buf.writeUInt32BE(0x00010800); // HW type (ethernet) + Protocol type (IPv4)
-    buf.writeUInt16BE(0x0604, 4); // HW len (6 = sizeof MAC) + Protocl len (4 = sizeof IPv4)
-    buf.writeUInt16BE(this.response ? 2 : 1, 6); // Operation (1 = request, 2 = reply)
-
-    buf.writeUInt16BE(Math.floor(this.senderMAC / 2 ** 32), 8);
-    buf.writeUInt32BE(this.senderMAC % 0x100000000, 10);
-
-    buf.writeUInt32BE(this.senderIP, 14);
-
-    buf.writeUInt16BE(Math.floor(this.targetMAC / 2 ** 32), 18);
-    buf.writeUInt32BE(this.targetMAC % 0x100000000, 20);
-
-    buf.writeUInt32BE(this.targetIP, 24);
-
-    return {
-      payload: buf,
-      src: this.senderMAC,
-      dst: this.targetMAC || MAC_BROADCAST,
-      lenOrEtherType: EtherType.arp,
-    };
-  }
-
-  static fromL2(l2Packet: EthernetFrame): ARPPacket {
-    if (l2Packet.lenOrEtherType != EtherType.arp)
-      throw "Tried to parse a non-arp packet as one";
-    const bytes = l2Packet.payload;
-    if (bytes.length < 28)
-      throw `Buffer too small (${bytes.length} < 28) to be an ARPPacket`;
-    if (bytes.readUInt32BE() != 0x00010800)
-      throw `Invalid start bytes ${bytes.readUInt32BE()} in ARPPacket`;
-    if (bytes.readUInt16BE(4) != 0x0604)
-      throw `Invalid size bytes ${bytes.readUInt16BE(4)} in ARPPacket`;
-
-    const senderMAC = bytes.readUInt16BE(8) * 2 ** 32 + bytes.readUInt32BE(10);
-    const targetMAC = bytes.readUInt16BE(18) * 2 ** 32 + bytes.readUInt32BE(20);
-
-    // if (senderMAC > 2 ** 48) throw `senderMAC is ${senderMAC.toString(16)}, bigger than ${(2 ** 48).toString(16)}`
-    // if (targetMAC > 2 ** 48) throw `targetMAC is ${targetMAC.toString(16)}, bigger than ${(2 ** 48).toString(16)}`
-
-    return new ARPPacket(
-      senderMAC,
-      bytes.readUInt32BE(14),
-      bytes.readUInt32BE(24),
-      targetMAC,
-      bytes.readUInt16BE(6) == 2,
-    );
-  }
+// TODO: remove
+//
+// export function arpFromL2(packet: EthernetFrame): ARPPacket {
+//   if (packet.lenOrEtherType != EtherType.arp)
+//     throwString("Tried to parse an arp packet from a non-arp ethernetframe");
+//   return ArpSerializer.fromBytes(packet.payload);
+// }
+//
+export function respondTo(packet: ARPPacket, myMAC: MacAddress): ARPPacket {
+  if (packet.operation == Operation.reply)
+    throw "Tried to respond to ARP reply";
+  return {
+    senderMAC: myMAC,
+    targetMAC: packet.senderMAC,
+    targetIP: packet.senderIP,
+    senderIP: packet.targetIP,
+    operation: Operation.reply,
+  };
 }

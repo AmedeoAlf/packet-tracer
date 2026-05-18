@@ -251,7 +251,7 @@ export class PartialIPv4Packet extends IPv4Packet {
 export function targetIP<State extends L3InternalState<State>>(
   state: State,
   destination: IPv4Address,
-): { intf: number; ok: boolean; targetIp: IPv4Address } {
+): [ok: boolean, intf: number, targetIp: IPv4Address] {
   let targetIp = destination;
   // L'interfaccia su cui inviare il pacchetto
   let intf = getMatchingInterface(state.l3Ifs, targetIp);
@@ -277,8 +277,8 @@ export function targetIP<State extends L3InternalState<State>>(
       targetIp = state.gateway;
       intf = getMatchingInterface(state.l3Ifs, targetIp);
       // Il gateway è invalido
-      if (intf == -1) return { intf: 0, targetIp: 0, ok: false };
+      if (intf == -1) return [false, 0, 0];
     }
   }
-  return { targetIp, intf, ok: true };
+  return [true, intf, targetIp];
 }

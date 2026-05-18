@@ -6,7 +6,7 @@ import {
   targetIP,
 } from "@/app/protocols/rfc_760";
 import { EmulatorContext } from "../DeviceEmulator";
-import { ARPPacket } from "@/app/protocols/rfc_826";
+import { arpToL2 } from "@/app/protocols/rfc_826";
 import { filterObject } from "@/app/common";
 import { EthernetFrameSerializer } from "@/app/protocols/802_3";
 
@@ -16,7 +16,7 @@ export function sendIPv4Packet<State extends L3InternalState<State>>(
   protocol: ProtocolCode,
   data: Buffer,
 ): boolean {
-  const { intf, ok } = targetIP(ctx.state, destination);
+  const [ok, intf] = targetIP(ctx.state, destination);
   if (!ok) return false;
 
   const packet = new IPv4Packet(
@@ -34,7 +34,7 @@ export function forwardIPv4Packet<State extends L3InternalState<State>>(
   packet: IPv4Packet,
   destinationMACFrom: IPv4Address,
 ) {
-  const { targetIp, intf, ok } = targetIP(ctx.state, destinationMACFrom);
+  const [ok, intf, destIp] = targetIP(ctx.state, destinationMACFrom);
   if (!ok) return false;
 
   const ownIntf = destinationMACFrom === ctx.state.l3Ifs[intf]?.ip;
@@ -43,25 +43,26 @@ export function forwardIPv4Packet<State extends L3InternalState<State>>(
     ? ctx.state.netInterfaces[intf].mac
     : ctx.state.netInterfaces[intf].type == "localhost"
       ? 0
-      : ctx.state.macTable_t.get(targetIp);
+      : ctx.state.macTable_t.get(destIp);
 
   if (typeof dst == "undefined") {
     ctx.sendOnIf(
       intf,
       EthernetFrameSerializer.toBuffer(
-        new ARPPacket(
-          ctx.state.netInterfaces[intf].mac,
-          ctx.state.l3Ifs[intf]!.ip,
-          targetIp,
-        ).toL2(),
+        arpToL2({
+          senderIP: ctx.state.l3Ifs[intf]!.ip,
+          targetIP: destIp,
+          senderMAC: ctx.state.netInterfaces[intf].mac,
+          targetMAC: 0,
+        }),
       ),
     );
-    ctx.state.packetsWaitingForARP_t[targetIp] ??= [];
-    ctx.state.packetsWaitingForARP_t[targetIp].push(packet);
+    ctx.state.packetsWaitingForARP_t[destIp] ??= [];
+    ctx.state.packetsWaitingForARP_t[destIp].push(packet);
     ctx.schedule(50, (ctx: EmulatorContext<State>) => {
       ctx.state.packetsWaitingForARP_t = filterObject(
         ctx.state.packetsWaitingForARP_t,
-        ([ip]) => +ip != targetIp,
+        ([ip]) => +ip != destIp,
       );
     });
     return false;

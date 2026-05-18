@@ -6,6 +6,7 @@ import {
   PacketSerializer,
 } from "@/app/protocols/packetEngine";
 import { PartialIPv4Packet, ProtocolCode } from "@/app/protocols/rfc_760";
+import { ArpSerializer } from "@/app/protocols/rfc_826";
 import { TCPPacket } from "@/app/protocols/tcp";
 import { UDPSerializer } from "@/app/protocols/udp";
 
@@ -16,7 +17,9 @@ export function unpacket(packet: Buffer): Record<string, string>[] {
 
   switch (l2Pkt.lenOrEtherType) {
     case EtherType.arp:
-      layers.push({ todo: "arp packets not implemented" });
+      layers.push(
+        packetAsRecord(ArpSerializer.fromBytes(l2Pkt.payload), ArpSerializer),
+      );
       return layers;
   }
   const l3Pkt = new PartialIPv4Packet(l2Pkt.payload);

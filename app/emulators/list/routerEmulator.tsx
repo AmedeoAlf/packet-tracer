@@ -1,4 +1,4 @@
-import { ARPPacket } from "@/app/protocols/rfc_826";
+import { ArpSerializer } from "@/app/protocols/rfc_826";
 import { RouterInternalState } from "../../devices/list/Router";
 import { EthernetFrameSerializer, EtherType } from "../../protocols/802_3";
 import {
@@ -256,7 +256,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
     const l2Packet = EthernetFrameSerializer.fromBytes(data);
     switch (l2Packet.lenOrEtherType) {
       case EtherType.arp:
-        handleArpPacket(ctx, ARPPacket.fromL2(l2Packet), intf);
+        handleArpPacket(ctx, ArpSerializer.fromBytes(l2Packet.payload), intf);
         return;
       case EtherType.dhcp:
         if (!ctx.state.dhcpSettings) return;

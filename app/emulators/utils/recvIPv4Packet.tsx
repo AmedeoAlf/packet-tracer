@@ -13,7 +13,7 @@ import {
   MAC_BROADCAST,
 } from "@/app/protocols/802_3";
 import { handleArpPacket } from "./handleArpPacket";
-import { ARPPacket } from "@/app/protocols/rfc_826";
+import { ArpSerializer } from "@/app/protocols/rfc_826";
 import {
   echoResponse,
   ICMPPacketSerializer,
@@ -27,7 +27,7 @@ export function recvIPv4Packet<State extends L3InternalState<State>>(
   intf: number,
 ): IPv4Packet | undefined {
   if (l2Packet.lenOrEtherType == EtherType.arp) {
-    handleArpPacket(ctx, ARPPacket.fromL2(l2Packet), intf);
+    handleArpPacket(ctx, ArpSerializer.fromBytes(l2Packet.payload), intf);
     return;
   }
   try {

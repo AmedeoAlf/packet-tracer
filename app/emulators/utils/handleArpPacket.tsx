@@ -1,5 +1,10 @@
 import { EmulatorContext } from "../DeviceEmulator";
-import { ARPPacket } from "@/app/protocols/rfc_826";
+import {
+  ARPPacket,
+  arpToL2,
+  Operation,
+  respondTo,
+} from "@/app/protocols/rfc_826";
 import { forwardIPv4Packet } from "./sendIPv4Packet";
 import { EthernetFrameSerializer } from "@/app/protocols/802_3";
 import { L3InternalState } from "@/app/protocols/rfc_760";
@@ -9,7 +14,7 @@ export function handleArpPacket<State extends L3InternalState<State>>(
   packet: ARPPacket,
   intf: number,
 ) {
-  if (packet.response) {
+  if (packet.operation == Operation.reply) {
     if (
       packet.targetMAC != ctx.state.netInterfaces[intf].mac ||
       packet.targetIP != ctx.state.l3Ifs[intf]!.ip
@@ -35,7 +40,7 @@ export function handleArpPacket<State extends L3InternalState<State>>(
   ctx.sendOnIf(
     intf,
     EthernetFrameSerializer.toBuffer(
-      packet.respondWith(ctx.state.netInterfaces[intf].mac).toL2(),
+      arpToL2(respondTo(packet, ctx.state.netInterfaces[intf].mac)),
     ),
   );
   // ctx.updateState();
