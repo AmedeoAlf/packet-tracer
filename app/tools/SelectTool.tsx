@@ -13,10 +13,10 @@ import { Decal } from "../Project";
 import { deviceOfIntf, idxOfIntf, ProjectManager } from "../ProjectManager";
 import { makeLabelTool } from "./LabelTool";
 import { makeRectTool } from "./RectTool";
-import { BtnArray, BtnArrEl } from "../editorComponents/BtnArray";
+import { BtnArray, BtnArrEl } from "../editorComponents/reusable/BtnArray";
 import { ReactNode } from "react";
-import { DropDown } from "../editorComponents/DropDown";
-import { TextInput } from "../editorComponents/TextInput";
+import { DropDown } from "../editorComponents/reusable/DropDown";
+import { TextInput } from "../editorComponents/reusable/TextInput";
 
 export type SelectTool = Tool<SelectTool> & {
   selected: Set<number>;

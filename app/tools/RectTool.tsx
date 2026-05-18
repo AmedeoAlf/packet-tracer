@@ -1,5 +1,5 @@
 import { Coords, cssColor } from "../common";
-import { PalettePicker } from "../editorComponents/PalettePicker";
+import { PalettePicker } from "../editorComponents/reusable/PalettePicker";
 import { ProjectManager } from "../ProjectManager";
 import { isSelectTool, SelectTool } from "./SelectTool";
 import { Tool, ToolConstructor } from "./Tool";

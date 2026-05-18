@@ -3,7 +3,7 @@ import { DeviceType, deviceTypesDB } from "../devices/deviceTypesDB";
 import { capitalize, Coords, trustMeBroCast } from "../common";
 import { memo, MouseEventHandler, ReactNode } from "react";
 import { ICONS } from "../devices/ICONS";
-import { SelectableCard } from "../editorComponents/SelectableCard";
+import { SelectableCard } from "../editorComponents/reusable/SelectableCard";
 
 export type AddTool = Tool<AddTool> & {
   deviceType: keyof typeof deviceTypesDB;

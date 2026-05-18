@@ -1,8 +1,8 @@
 import { OSInternalState } from "@/app/devices/list/Computer";
 import { EmulatorContext } from "../DeviceEmulator";
 import * as os from "../utils/osFiles";
-import { TextInput } from "@/app/editorComponents/TextInput";
-import { Button } from "@/app/editorComponents/RoundBtn";
+import { TextInput } from "@/app/editorComponents/reusable/TextInput";
+import { Button } from "@/app/editorComponents/reusable/RoundBtn";
 
 export interface FileManagerPanelState extends OSInternalState<FileManagerPanelState> {
   currPath_t?: string;

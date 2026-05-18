@@ -1,5 +1,4 @@
-import { memo, ReactNode, useEffect, useRef, useState } from "react";
-import { ToolCtx } from "../tools/Tool";
+import { ReactNode, useEffect, useRef, useState } from "react";
 
 // La barra laterale dell'interfaccia: il suo contenuto è intermente deciso dal
 // tool in uso.
@@ -110,14 +109,3 @@ export function SideBar({
     </>
   );
 }
-
-export const PropertiesBar = memo(
-  function PropertiesBar({ toolCtx }: { toolCtx: ToolCtx }) {
-    return (
-      <SideBar initialWidth={420} rightSide>
-        {toolCtx.tool.panel(toolCtx)}
-      </SideBar>
-    );
-  },
-  (p, n) => p.toolCtx.tool === n.toolCtx.tool,
-);

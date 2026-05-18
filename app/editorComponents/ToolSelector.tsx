@@ -1,7 +1,7 @@
 import { memo, ReactNode } from "react";
 import { TOOL_LIST, TOOLS } from "../tools/Tool";
 import { WrapToolIcon } from "../tools/TOOL_ICONS";
-import { SelectableCard } from "./SelectableCard";
+import { SelectableCard } from "./reusable/SelectableCard";
 
 // Il selettore del tool in uso
 export const ToolSelector = memo(

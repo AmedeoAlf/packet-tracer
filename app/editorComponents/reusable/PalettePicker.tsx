@@ -1,4 +1,4 @@
-import { cssPaletteColor, intRange, PALETTE_LEN } from "../common";
+import { cssPaletteColor, intRange, PALETTE_LEN } from "@/app/common";
 
 export function PalettePicker({
   value,

@@ -24,10 +24,10 @@ import { UDPSerializer } from "@/app/protocols/udp";
 import { handleArpPacket } from "../utils/handleArpPacket";
 import { forwardIPv4Packet, sendIPv4Packet } from "../utils/sendIPv4Packet";
 import { countLeadingOnes, throwString } from "@/app/common";
-import { Button } from "@/app/editorComponents/RoundBtn";
+import { Button } from "@/app/editorComponents/reusable/RoundBtn";
 import routing from "@/app/virtualPrograms/routing";
 import gatewayCmd from "@/app/virtualPrograms/gateway";
-import { DropDown } from "@/app/editorComponents/DropDown";
+import { DropDown } from "@/app/editorComponents/reusable/DropDown";
 import { handleDHCPPacket } from "../utils/dhcpServer";
 import dhcpCmd from "@/app/virtualPrograms/dhcpServer";
 

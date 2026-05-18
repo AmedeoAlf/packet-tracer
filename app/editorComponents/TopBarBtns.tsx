@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { ToolCtx } from "../tools/Tool";
 import { ProjectManager } from "../ProjectManager";
-import { BtnArray, BtnArrEl } from "./BtnArray";
+import { BtnArray, BtnArrEl } from "./reusable/BtnArray";
 
 export const TopBarBtns = memo(function TopBarBtns({
   ctx: { projectRef, updateProject },

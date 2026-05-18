@@ -4,7 +4,7 @@ import {
   PacketLogEntry,
   ProjectManager,
 } from "../ProjectManager";
-import { SideBar } from "./SideBar";
+import { SideBar } from "./reusable/SideBar";
 
 export function PacketLog({
   log,

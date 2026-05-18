@@ -8,7 +8,7 @@ import {
 } from "@/app/protocols/rfc_760";
 import { KeysOfType, throwString } from "@/app/common";
 import { removeFile, writeFileInLocation } from "../utils/osFiles";
-import { Button } from "@/app/editorComponents/RoundBtn";
+import { Button } from "@/app/editorComponents/reusable/RoundBtn";
 
 type ComputerStringProp = NonNullable<
   KeysOfType<NetworkSettingsPanelState, string | undefined>

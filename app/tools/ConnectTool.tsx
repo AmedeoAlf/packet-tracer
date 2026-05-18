@@ -4,7 +4,7 @@ import { Coords } from "../common";
 import { intfColor } from "../editorComponents/Cables";
 import { ProjectManager, toInterfaceId } from "../ProjectManager";
 import { NetworkInterface } from "../emulators/DeviceEmulator";
-import { Button } from "../editorComponents/RoundBtn";
+import { Button } from "../editorComponents/reusable/RoundBtn";
 import { memo } from "react";
 import { isSelectTool, SelectTool } from "./SelectTool";
 

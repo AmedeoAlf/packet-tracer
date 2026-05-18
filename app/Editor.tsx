@@ -12,7 +12,6 @@ import { AnyTool, CanvasEvent, ToolCtx, TOOLS } from "./tools/Tool";
 import { makeSelectTool } from "./tools/SelectTool";
 import { ICONS } from "./devices/ICONS";
 import { Cables } from "./editorComponents/Cables";
-import { PropertiesBar } from "./editorComponents/SideBar";
 import { ToolSelector } from "./editorComponents/ToolSelector";
 import { Devices } from "./editorComponents/Devices";
 import { ProjectManager } from "./ProjectManager";
@@ -27,6 +26,7 @@ import {
   useSimulation,
 } from "./editorComponents/hooks";
 import { PacketLog } from "./editorComponents/PacketLog";
+import { PropertiesBar } from "./editorComponents/PropertiesBar";
 
 /*
  * Questo componente è tutta l'interfaccia del sito. Crea gli hook sia per il
