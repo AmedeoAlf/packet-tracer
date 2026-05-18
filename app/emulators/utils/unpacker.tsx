@@ -7,7 +7,7 @@ import {
 } from "@/app/protocols/packetEngine";
 import { PartialIPv4Packet, ProtocolCode } from "@/app/protocols/rfc_760";
 import { ArpSerializer } from "@/app/protocols/rfc_826";
-import { TCPPacket } from "@/app/protocols/tcp";
+import { TcpSerializer } from "@/app/protocols/tcp";
 import { UDPSerializer } from "@/app/protocols/udp";
 
 export function unpacket(packet: Buffer): Record<string, string>[] {
@@ -41,9 +41,9 @@ export function unpacket(packet: Buffer): Record<string, string>[] {
       layers.push(packetAsRecord(udpPkt, UDPSerializer));
       break;
     case ProtocolCode.tcp:
-      const tcpPkt = TCPPacket.fromBytes(l3Pkt.rebuiltPayload);
+      const tcpPkt = TcpSerializer.fromBytes(l3Pkt.rebuiltPayload);
       l4Payload = tcpPkt.payload;
-      layers.push({ todo: "tcp packets not implemented" });
+      layers.push(packetAsRecord(tcpPkt, TcpSerializer));
       break;
   }
 
@@ -79,7 +79,7 @@ export function quickAnalysis(packet: Buffer): string {
     case ProtocolCode.icmp:
       return "icmp";
     case ProtocolCode.tcp:
-      const tcpPkt = TCPPacket.fromBytes(l3Pkt.payload);
+      const tcpPkt = TcpSerializer.fromBytes(l3Pkt.payload);
       return `tcp (${tcpPkt.source}->${tcpPkt.destination})`;
     case ProtocolCode.udp:
       const udpPkt = UDPSerializer.fromBytes(l3Pkt.payload);

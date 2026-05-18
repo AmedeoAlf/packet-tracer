@@ -16,6 +16,10 @@ abstract class Field<T> {
   ) {}
 }
 
+function numberStringify(size: number, value: number) {
+  return `0x${value.toString(16).padStart(size * 2, "0")} (${value})`;
+}
+
 export class U32Field extends Field<number> {
   serialize(into: Buffer, value: number): void {
     into.writeUInt32BE(value);
@@ -25,6 +29,9 @@ export class U32Field extends Field<number> {
   }
   getSizeFor(): number {
     return 4;
+  }
+  stringify(value: number): string {
+    return numberStringify(4, value);
   }
 }
 
@@ -44,6 +51,9 @@ export class U16Field extends Field<number> {
   getSizeFor(): number {
     return 2;
   }
+  stringify(value: number): string {
+    return numberStringify(2, value);
+  }
 }
 
 export class U8Field extends Field<number> {
@@ -55,6 +65,9 @@ export class U8Field extends Field<number> {
   }
   getSizeFor(): number {
     return 1;
+  }
+  stringify(value: number): string {
+    return numberStringify(1, value);
   }
 }
 
@@ -259,7 +272,7 @@ export class PacketSerializer<T extends Record<string, any>> {
     return buf;
   }
 
-  fromBytes(bytes: Buffer): T {
+  fromBytes(bytes: Buffer): Required<T> {
     this.beforeFromBytes(bytes);
     const result: Record<string, any> = {};
 
@@ -270,7 +283,7 @@ export class PacketSerializer<T extends Record<string, any>> {
       bytes = bytes.subarray(f.getSizeFor(val));
     }
 
-    trustMeBroCast<T>(result);
+    trustMeBroCast<Required<T>>(result);
     this.afterFromBytes(bytes, result);
     return result;
   }

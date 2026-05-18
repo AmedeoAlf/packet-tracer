@@ -6,7 +6,7 @@ import {
 import { EmulatorContext } from "../DeviceEmulator";
 import { IPv4Address, ProtocolCode } from "@/app/protocols/rfc_760";
 import { sendIPv4Packet } from "./sendIPv4Packet";
-import { TCPPacket } from "@/app/protocols/tcp";
+import { synPacket, TCPFlag, TcpSerializer } from "@/app/protocols/tcp";
 
 export function readUDP<State extends OSInternalState<State>>(
   state: State,
@@ -39,17 +39,22 @@ export function dialTCP<State extends OSInternalState<State>>(
   let sourcePort = 0xc000;
   while (ctx.state.tcpSockets_t.has(++sourcePort));
 
-  const synPacket = TCPPacket.synPacket(sourcePort, port);
+  const synPkt = synPacket(sourcePort, port);
   ctx.state.tcpSockets_t.set(sourcePort, {
     state: "syn_sent",
     callback: onConnect,
     address,
     port,
-    seq: synPacket.seq,
+    seq: synPkt.seq!,
     ack: 0,
   });
 
-  sendIPv4Packet(ctx, address, ProtocolCode.tcp, synPacket.toBytes());
+  sendIPv4Packet(
+    ctx,
+    address,
+    ProtocolCode.tcp,
+    TcpSerializer.toBuffer(synPkt),
+  );
 
   ctx.updateState();
   return sourcePort;
@@ -80,13 +85,13 @@ export function send<State extends OSInternalState<State>>(
     ctx,
     connection.address,
     ProtocolCode.tcp,
-    new TCPPacket(
-      socket,
-      connection.port,
-      connection.seq,
+    TcpSerializer.toBuffer({
+      source: socket,
+      destination: connection.port,
+      seq: connection.seq,
       payload,
-      connection.ack,
-    ).toBytes(),
+      ack: connection.ack,
+    }),
   );
 }
 
@@ -108,15 +113,14 @@ export function tcpClose<State extends OSInternalState<State>>(
       ctx,
       connection.address,
       ProtocolCode.tcp,
-      new TCPPacket(
-        socket,
-        connection.port,
-        connection.seq + 1,
-        Buffer.alloc(0),
-        connection.ack,
-        false,
-        true,
-      ).toBytes(),
+      TcpSerializer.toBuffer({
+        source: socket,
+        destination: connection.port,
+        seq: connection.seq + 1,
+        payload: Buffer.alloc(0),
+        ack: connection.ack,
+        flags: TCPFlag.fin,
+      }),
     );
   }
   ctx.state.tcpSockets_t.delete(socket);

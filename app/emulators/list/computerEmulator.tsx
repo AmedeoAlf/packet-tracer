@@ -20,7 +20,13 @@ import cat from "@/app/virtualPrograms/cat";
 import writeFile from "@/app/virtualPrograms/writeFile";
 import ls from "@/app/virtualPrograms/ls";
 import { recvIPv4Packet } from "../utils/recvIPv4Packet";
-import { TCPPacket } from "@/app/protocols/tcp";
+import {
+  ackPacket,
+  synAckPacket,
+  TCPFlag,
+  TCPPacket,
+  TcpSerializer,
+} from "@/app/protocols/tcp";
 import { sendIPv4Packet } from "../utils/sendIPv4Packet";
 import tcphello from "@/app/virtualPrograms/tcpsend";
 import tcplisten from "@/app/virtualPrograms/tcplisten";
@@ -114,7 +120,7 @@ export function tcpPacketHandler<State extends OSInternalState<State>>(
 ) {
   if (packet.protocol !== ProtocolCode.tcp)
     throw "Why did this function get a non tcp packet?";
-  const tcpPacket = TCPPacket.fromBytes(packet.payload);
+  const tcpPacket = TcpSerializer.fromBytes(packet.payload);
   const connectionState = ctx.state.tcpSockets_t.get(tcpPacket.destination);
   if (!connectionState) return;
 
@@ -124,27 +130,33 @@ export function tcpPacketHandler<State extends OSInternalState<State>>(
   const osCallback = () =>
     connectionState.callback(ctx, tcpPacket.destination, tcpPacket.payload);
   const answerWith = (tcpPacket: TCPPacket) =>
-    sendIPv4Packet(ctx, packet.source, ProtocolCode.tcp, tcpPacket.toBytes());
+    sendIPv4Packet(
+      ctx,
+      packet.source,
+      ProtocolCode.tcp,
+      TcpSerializer.toBuffer(tcpPacket),
+    );
 
   switch (connectionState.state) {
     case "listen": {
-      if (!tcpPacket.syn || tcpPacket.ack !== undefined) return destroySocket();
-      const answer = TCPPacket.synAckPacket(tcpPacket);
+      if (tcpPacket.flags != TCPFlag.syn) return destroySocket();
+      const answer = synAckPacket(tcpPacket);
       ctx.state.tcpSockets_t.set(tcpPacket.destination, {
         state: "syn_recved",
         address: packet.source,
         callback: connectionState.callback,
         port: tcpPacket.source,
-        seq: answer.seq,
+        seq: answer.seq!,
         ack: answer.ack!,
       });
       answerWith(answer);
       break;
     }
     case "syn_sent": {
-      if (!tcpPacket.syn || tcpPacket.ack === undefined) return destroySocket();
+      if (tcpPacket.flags != (TCPFlag.syn | TCPFlag.ack))
+        return destroySocket();
 
-      const answer = TCPPacket.ackPacket(tcpPacket);
+      const answer = ackPacket(tcpPacket);
       connectionState.ack = answer.ack!;
       answerWith(answer);
       connectionState.state = "connected";
@@ -152,13 +164,13 @@ export function tcpPacketHandler<State extends OSInternalState<State>>(
       break;
     }
     case "syn_recved": {
-      if (tcpPacket.syn || tcpPacket.ack === undefined) return destroySocket();
+      if (tcpPacket.flags != TCPFlag.ack) return destroySocket();
       connectionState.state = "accepted";
       osCallback();
       break;
     }
     case "accepted":
-      if (tcpPacket.fin) {
+      if (tcpPacket.flags & TCPFlag.fin) {
         connectionState.state = "closing";
         osCallback();
         ctx.state.tcpSockets_t.set(tcpPacket.destination, {
@@ -168,7 +180,7 @@ export function tcpPacketHandler<State extends OSInternalState<State>>(
         break;
       }
     case "connected":
-      if (tcpPacket.fin) {
+      if (tcpPacket.flags & TCPFlag.fin) {
         connectionState.state = "closing";
         osCallback();
         destroySocket();
