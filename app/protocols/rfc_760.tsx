@@ -217,7 +217,8 @@ export class IPv4PacketAssembler {
         (it) => it.offset == firstMissingByte,
       );
       if (!payload) return false;
-      firstMissingByte = payload.offset + payload.data.length;
+      firstMissingByte =
+        payload.offset + this.matchedData.ihl * 4 + payload.data.length;
     }
 
     const payload = Buffer.alloc(this.completeSize);
