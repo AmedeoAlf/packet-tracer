@@ -62,7 +62,7 @@ export function SideBar({
         }
         style={{ width }}
       >
-        <div className="bg-sidebar p-4 border-zinc-500 border-2 w-full pl-5 rounded-xl pointer-events-auto overflow-y-auto h-max max-h-full relative">
+        <div className="bg-sidebar p-4 border-zinc-500 border-2 w-full pl-5 rounded-xl pointer-events-auto h-max max-h-full relative">
           <div
             className={`absolute top-0 ${rightSide ? "left-0" : "right-0"} h-full py-4`}
           >
@@ -78,7 +78,7 @@ export function SideBar({
               ></div>
             </div>
           </div>
-          {children}
+          <div className="overflow-y-auto">{children}</div>
         </div>
       </div>
       <button
