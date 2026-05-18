@@ -26,15 +26,21 @@
 
 import { PacketSerializer } from "./packetEngine";
 import { FillingBufferField } from "./packetEngineFields/bufferFields";
-import { U16Field, U32Field, U8Field } from "./packetEngineFields/numberFields";
+import {
+  U16Field,
+  U32Field,
+  U4MajorField,
+  U4MinorField,
+  U8Field,
+} from "./packetEngineFields/numberFields";
 
 export type TCPPacket = {
   source: number;
   destination: number;
   seq?: number;
   ack?: number;
-  // TODO: use u4major/minor field
   dataOffset?: number;
+  reserved?: number;
   flags?: TCPFlag;
   window?: number;
   checksum?: number;
@@ -43,13 +49,13 @@ export type TCPPacket = {
 };
 
 // NOTE: small regression, data is read without consideration for dataOffset
-// NOTE: users should know that dataOffset is a four bit number
 export const TcpSerializer = new PacketSerializer<TCPPacket>([
   new U16Field("source"),
   new U16Field("destination"),
   new U32Field("seq"),
   new U32Field("ack", 0),
-  new U8Field("dataOffset", 0x50),
+  new U4MajorField("dataOffset", 0x5),
+  new U4MinorField("dataOffset"),
   new U8Field("flags", 0),
   new U16Field("window", 1),
   new U16Field("checksum", 0),
