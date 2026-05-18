@@ -68,7 +68,7 @@ function LogRow({
   const fromDev = nameOfFn(entry.from);
   const toDev = nameOfFn(entry.to);
 
-  const timestamp = `${pad(entry.tick / 60000)}:${pad(entry.tick / 1000)}.${pad(entry.tick % 1000, 3)}`;
+  const timestamp = `${pad(entry.tick / 60000)}:${pad((entry.tick / 1000) % 60)}.${pad(entry.tick % 1000, 3)}`;
   return (
     <tr onClick={onClick}>
       <td>{timestamp}</td>
