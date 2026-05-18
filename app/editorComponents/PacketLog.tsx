@@ -100,24 +100,28 @@ function EntryDisplay({
   const timestamp = `${pad(entry.tick / 60000)}:${pad(entry.tick / 1000)}.${pad(entry.tick % 1000, 3)}`;
   return (
     <div>
-      <Button onClick={back} className="bg-onsidebar">
-        Indietro
-      </Button>
-      <p>{timestamp}</p>
-      <p>
-        {fromDev} {"->"} {toDev}
-      </p>
-      <p>{entry.bytes.length} bytes </p>
-      {layers.map((it, idx) => (
-        <div key={idx} className="text-xs">
-          <span className="font-bold">Layer {idx + 2}</span>
-          {Object.entries(it).map(([k, v]) => (
-            <p key={k}>
-              {k}: {v}
-            </p>
-          ))}
+      <div className="flex flex-wrap gap-x-2 items-center pb-3">
+        <Button onClick={back} className="bg-onsidebar">
+          Indietro
+        </Button>
+        <div>{timestamp}</div>
+        <div>
+          {fromDev} {"->"} {toDev}
         </div>
-      ))}
+        <div>{entry.bytes.length} bytes</div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {layers.map((it, idx) => (
+          <div key={idx} className="text-xs">
+            <span className="font-bold">Layer {idx + 2}</span>
+            {Object.entries(it).map(([k, v]) => (
+              <p key={k}>
+                {k}: {v}
+              </p>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
