@@ -127,8 +127,13 @@ export function tcpPacketHandler<State extends OSInternalState<State>>(
   const destroySocket = () => {
     ctx.state.tcpSockets_t.delete(tcpPacket.destination);
   };
-  const osCallback = () =>
-    connectionState.callback(ctx, tcpPacket.destination, tcpPacket.payload);
+  const osCallback = () => {
+    try {
+      connectionState.callback(ctx, tcpPacket.destination, tcpPacket.payload);
+    } catch (e) {
+      console.log(e);
+    }
+  };
   const answerWith = (tcpPacket: TCPPacket) =>
     sendIPv4Packet(
       ctx,
