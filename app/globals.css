@@ -62,3 +62,11 @@ html,
 body {
   overscroll-behavior-x: none;
 }
+
+td {
+  padding: var(--spacing);
+}
+
+th {
+  padding: 0px calc(2 * var(--spacing));
+}

@@ -61,3 +61,27 @@ function packetAsRecord<T extends Record<string, any>>(
   }
   return out;
 }
+
+export function quickAnalysis(packet: Buffer): string {
+  const l2Pkt = EthernetFrameSerializer.fromBytes(packet);
+  switch (l2Pkt.lenOrEtherType) {
+    case EtherType.arp:
+      return "arp";
+    case EtherType.dhcp:
+      return "dhcp";
+  }
+
+  const l3Pkt = new PartialIPv4Packet(l2Pkt.payload);
+  switch (l3Pkt.protocol) {
+    case ProtocolCode.icmp:
+      return "icmp";
+    case ProtocolCode.tcp:
+      const tcpPkt = TCPPacket.fromBytes(l3Pkt.payload);
+      return `tcp (${tcpPkt.source}->${tcpPkt.destination})`;
+    case ProtocolCode.udp:
+      const udpPkt = UDPSerializer.fromBytes(l3Pkt.payload);
+      return `udp (${udpPkt.source}->${udpPkt.destination})`;
+    default:
+      return `unknown ip (protocol ${l3Pkt.protocol})`;
+  }
+}
