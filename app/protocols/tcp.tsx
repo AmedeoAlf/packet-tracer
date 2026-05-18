@@ -24,19 +24,16 @@
  * simulatore)
  */
 
-import {
-  FillingBufferField,
-  PacketSerializer,
-  U16Field,
-  U32Field,
-  U8Field,
-} from "./packetEngine";
+import { PacketSerializer } from "./packetEngine";
+import { FillingBufferField } from "./packetEngineFields/bufferFields";
+import { U16Field, U32Field, U8Field } from "./packetEngineFields/numberFields";
 
 export type TCPPacket = {
   source: number;
   destination: number;
   seq?: number;
   ack?: number;
+  // TODO: use u4major/minor field
   dataOffset?: number;
   flags?: TCPFlag;
   window?: number;

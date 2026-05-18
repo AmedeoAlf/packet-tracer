@@ -14,12 +14,9 @@
  * simulatore)
  */
 
-import {
-  FillingBufferField,
-  PacketSerializer,
-  U16Field,
-  U32Field,
-} from "./packetEngine";
+import { PacketSerializer } from "./packetEngine";
+import { FillingBufferField } from "./packetEngineFields/bufferFields";
+import { U16Field, U32Field } from "./packetEngineFields/numberFields";
 
 // https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages
 export enum ICMPType {

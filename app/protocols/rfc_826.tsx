@@ -23,13 +23,10 @@
  */
 
 import { EtherType, EthernetFrame, MAC_BROADCAST, MacAddress } from "./802_3";
-import {
-  IPv4Field,
-  MACField,
-  PacketSerializer,
-  U16Field,
-  U8Field,
-} from "./packetEngine";
+import { PacketSerializer } from "./packetEngine";
+import { IPv4Field } from "./packetEngineFields/IPv4Field";
+import { MACField } from "./packetEngineFields/MACField";
+import { U16Field, U8Field } from "./packetEngineFields/numberFields";
 import { IPv4Address } from "./rfc_760";
 
 export enum Operation {

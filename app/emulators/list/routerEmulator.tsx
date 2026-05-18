@@ -7,10 +7,12 @@ import {
   ICMPType,
 } from "../../protocols/icmp";
 import {
+  getDestinationOf,
   getMatchingInterface,
+  IPv4PacketAssembler,
+  Ipv4Serializer,
   ipv4ToString,
   parseIpv4,
-  PartialIPv4Packet,
   ProtocolCode,
 } from "../../protocols/rfc_760";
 import hello from "../../virtualPrograms/hello";
@@ -261,10 +263,11 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
       case EtherType.dhcp:
         if (!ctx.state.dhcpSettings) return;
 
-        const ipPkt = new PartialIPv4Packet(l2Packet.payload);
+        const ipPkt = Ipv4Serializer.fromBytes(l2Packet.payload);
+        const assembler = new IPv4PacketAssembler(ipPkt);
         if (ipPkt.protocol != ProtocolCode.udp)
           throw "Why did I get a non-udp dhcp packet?";
-        if (!ipPkt.isPayloadFinished())
+        if (!assembler.getOriginal())
           throw "DHCP packets defragmentation is not implemented :-(";
 
         ctx.state.dhcpState_t ??= { assigned: new Set(), pending: new Set() };
@@ -278,12 +281,12 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         return;
     }
     try {
-      const destination = PartialIPv4Packet.getDestination(l2Packet.payload);
+      const destination = getDestinationOf(l2Packet.payload);
       const isDestinedInterface = ctx.state.l3Ifs.findIndex(
         (v) => v && v.ip == destination,
       );
 
-      let packet = new PartialIPv4Packet(l2Packet.payload);
+      let packet = Ipv4Serializer.fromBytes(l2Packet.payload);
 
       // Non è indirizzato a me?
       if (isDestinedInterface == -1) {
@@ -304,21 +307,25 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         return;
       }
 
-      if (!packet.isPayloadFinished()) {
+      let assembler = new IPv4PacketAssembler(packet);
+      if (!assembler.getOriginal()) {
         const packets = ctx.state.ipPackets_t;
-        if (!ctx.state.ipPackets_t.has(packet.id)) {
-          packets.set(packet.id, packet);
+        if (!packets.has(packet.identification)) {
+          packets.set(packet.identification, assembler);
         } else {
-          packets.get(packet.id)!.add(l2Packet.payload);
+          packets.get(packet.identification)!.add(packet);
         }
-        packet = packets.get(packet.id)!;
-        if (!packet.isPayloadFinished()) {
+        assembler = packets.get(packet.identification)!;
+        if (!assembler.getOriginal()) {
+          // TODO: è necessario?
           ctx.updateState();
           return;
         }
         // Il payload è concluso, elimina il pacchetto dalla coda
-        packets.delete(packet.id);
+        packets.delete(packet.identification);
       }
+
+      packet = assembler.getOriginal()!;
 
       switch (packet.protocol) {
         case ProtocolCode.icmp:

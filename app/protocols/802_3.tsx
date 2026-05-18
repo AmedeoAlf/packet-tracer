@@ -11,14 +11,11 @@
  * simulatore)
  */
 
-import {
-  FillingBufferField,
-  MACField,
-  PacketSerializer,
-  U16Field,
-  U32Field,
-  VLANTagField,
-} from "./packetEngine";
+import { PacketSerializer } from "./packetEngine";
+import { FillingBufferField } from "./packetEngineFields/bufferFields";
+import { VLANTagField } from "./packetEngineFields/extraFields";
+import { MACField } from "./packetEngineFields/MACField";
+import { U16Field, U32Field } from "./packetEngineFields/numberFields";
 
 export type MacAddress = number;
 
@@ -48,26 +45,25 @@ export type EthernetFrame = {
   crc?: number;
 };
 
-class EthernetFrameSerializerConstructor extends PacketSerializer<EthernetFrame> {
-  constructor() {
-    super([
-      new MACField("dst"),
-      new MACField("src"),
-      new VLANTagField("vlanTag"),
-      new U16Field("lenOrEtherType", 0),
-      new FillingBufferField("payload", 4),
-      new U32Field("crc", 0),
-    ]);
-  }
+export const EthernetFrameSerializer =
+  new (class extends PacketSerializer<EthernetFrame> {
+    constructor() {
+      super([
+        new MACField("dst"),
+        new MACField("src"),
+        new VLANTagField("vlanTag"),
+        new U16Field("lenOrEtherType", 0),
+        new FillingBufferField("payload", 4),
+        new U32Field("crc", 0),
+      ]);
+    }
 
-  protected beforeToBytes(value: EthernetFrame): void {
-    // If value under MTU/unset compute it
-    if (
-      typeof value.lenOrEtherType == "undefined" ||
-      value.lenOrEtherType <= 1500
-    )
-      value.lenOrEtherType = value.payload.byteLength;
-  }
-}
-
-export const EthernetFrameSerializer = new EthernetFrameSerializerConstructor();
+    protected beforeToBytes(value: EthernetFrame): void {
+      // If value under MTU/unset compute it
+      if (
+        typeof value.lenOrEtherType == "undefined" ||
+        value.lenOrEtherType <= 1500
+      )
+        value.lenOrEtherType = value.payload.byteLength;
+    }
+  })();

@@ -1,11 +1,11 @@
 import { EthernetFrameSerializer, EtherType } from "@/app/protocols/802_3";
 import { ICMPPacketSerializer } from "@/app/protocols/icmp";
+import { PacketSerializer } from "@/app/protocols/packetEngine";
 import {
-  FillingBufferField,
   FixedBufferField,
-  PacketSerializer,
-} from "@/app/protocols/packetEngine";
-import { PartialIPv4Packet, ProtocolCode } from "@/app/protocols/rfc_760";
+  FillingBufferField,
+} from "@/app/protocols/packetEngineFields/bufferFields";
+import { Ipv4Serializer, ProtocolCode } from "@/app/protocols/rfc_760";
 import { ArpSerializer } from "@/app/protocols/rfc_826";
 import { TcpSerializer } from "@/app/protocols/tcp";
 import { UDPSerializer } from "@/app/protocols/udp";
@@ -22,30 +22,22 @@ export function unpacket(packet: Buffer): Record<string, string>[] {
       );
       return layers;
   }
-  const l3Pkt = new PartialIPv4Packet(l2Pkt.payload);
-  layers.push({ todo: "ipv4 packets not implemented" });
+  const l3Pkt = Ipv4Serializer.fromBytes(l2Pkt.payload);
+  layers.push(packetAsRecord(l3Pkt, Ipv4Serializer));
 
-  let l4Payload: Buffer;
-  switch (l3Pkt.protocol) {
-    case ProtocolCode.icmp:
-      layers.push(
-        packetAsRecord(
-          ICMPPacketSerializer.fromBytes(l3Pkt.rebuiltPayload),
-          ICMPPacketSerializer,
-        ),
-      );
-      return layers;
-    case ProtocolCode.udp:
-      const udpPkt = UDPSerializer.fromBytes(l3Pkt.rebuiltPayload);
-      l4Payload = udpPkt.payload;
-      layers.push(packetAsRecord(udpPkt, UDPSerializer));
-      break;
-    case ProtocolCode.tcp:
-      const tcpPkt = TcpSerializer.fromBytes(l3Pkt.rebuiltPayload);
-      l4Payload = tcpPkt.payload;
-      layers.push(packetAsRecord(tcpPkt, TcpSerializer));
-      break;
-  }
+  const serializer = {
+    [ProtocolCode.icmp]: ICMPPacketSerializer,
+    [ProtocolCode.tcp]: TcpSerializer,
+    [ProtocolCode.udp]: UDPSerializer,
+  }[l3Pkt.protocol];
+
+  layers.push(
+    packetAsRecord<typeof serializer>(
+      serializer.fromBytes(l3Pkt.payload),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      serializer as any,
+    ),
+  );
 
   return layers;
 }
@@ -74,7 +66,7 @@ export function quickAnalysis(packet: Buffer): string {
       return "dhcp";
   }
 
-  const l3Pkt = new PartialIPv4Packet(l2Pkt.payload);
+  const l3Pkt = Ipv4Serializer.fromBytes(l2Pkt.payload);
   switch (l3Pkt.protocol) {
     case ProtocolCode.icmp:
       return "icmp";

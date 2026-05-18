@@ -10,7 +10,7 @@ import {
 } from "@/app/protocols/dhcp";
 import {
   IPv4Address,
-  IPv4Packet,
+  ipv4ToFragmentedBytes,
   L3InternalState,
   ProtocolCode,
 } from "@/app/protocols/rfc_760";
@@ -189,17 +189,17 @@ function dhcpAnswer<State extends L3InternalState<State>>(
   packet: DHCPPacket,
   fromIntf: number,
 ) {
-  const ipPkt = new IPv4Packet(
-    ProtocolCode.udp,
-    UDPSerializer.toBuffer({
+  const payloads = ipv4ToFragmentedBytes({
+    protocol: ProtocolCode.udp,
+    payload: UDPSerializer.toBuffer({
       payload: DHCPSerializer.toBuffer(packet),
       destination: 68,
       source: 67,
     }),
-    ctx.state.l3Ifs[fromIntf]!.ip,
-    packet.yIAddr!,
-  );
-  const payloads = ipPkt.toFragmentedBytes();
+    source: ctx.state.l3Ifs[fromIntf]!.ip,
+    destination: packet.yIAddr!,
+    ttl: 128,
+  });
   for (const payload of payloads) {
     ctx.sendOnIf(
       fromIntf,

@@ -35,16 +35,11 @@
 
 import { bufferOfU32BE, bufferOfU8, randomU32, throwString } from "../common";
 import { MacAddress } from "./802_3";
-import {
-  DHCPTLVField,
-  DHCPTLVOption,
-  FixedBufferField,
-  IPv4Field,
-  PacketSerializer,
-  U16Field,
-  U32Field,
-  U8Field,
-} from "./packetEngine";
+import { PacketSerializer } from "./packetEngine";
+import { FixedBufferField } from "./packetEngineFields/bufferFields";
+import { DHCPTLVOption, DHCPTLVField } from "./packetEngineFields/extraFields";
+import { IPv4Field } from "./packetEngineFields/IPv4Field";
+import { U8Field, U32Field, U16Field } from "./packetEngineFields/numberFields";
 import { IPv4Address } from "./rfc_760";
 
 export enum HType {

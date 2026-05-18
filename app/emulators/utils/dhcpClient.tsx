@@ -1,9 +1,10 @@
 import {
   IPV4_BROADCAST,
   IPv4Address,
-  IPv4Packet,
+  IPv4PacketAssembler,
+  Ipv4Serializer,
+  ipv4ToFragmentedBytes,
   L3InternalState,
-  PartialIPv4Packet,
   ProtocolCode,
 } from "@/app/protocols/rfc_760";
 import { EmulatorContext } from "../DeviceEmulator";
@@ -58,12 +59,18 @@ export function handleDHCPPacket<State extends DhcpInternalState<State>>(
   {
     if (l2Pkt.dst != ctx.state.netInterfaces[intfId].mac) return;
     if (!ctx.state.dhcpEnabled[intfId]) return;
-    const ipPkt = new PartialIPv4Packet(l2Pkt.payload);
-    if (ipPkt.protocol != ProtocolCode.udp)
-      throw "Why did I get a non-udp dhcp packet?";
-    if (!ipPkt.isPayloadFinished())
-      throw "DHCP packets defragmentation is not implemented :-(";
-    const udpPkt = UDPSerializer.fromBytes(ipPkt.payload);
+    const ipAssembler = new IPv4PacketAssembler(
+      Ipv4Serializer.fromBytes(l2Pkt.payload),
+    );
+    if (ipAssembler.matchedData.protocol != ProtocolCode.udp)
+      throwString("Why did I get a non-udp dhcp packet?");
+
+    const udpPkt = UDPSerializer.fromBytes(
+      (
+        ipAssembler.getOriginal() ??
+        throwString("DHCP packets defragmentation is not implemented :-(")
+      ).payload,
+    );
     if (udpPkt.source != 67 || udpPkt.destination != 68) return;
 
     dhcpPkt = DHCPSerializer.fromBytes(udpPkt.payload);
@@ -114,17 +121,17 @@ function dhcpQuestion<State extends L3InternalState<State>>(
   onIntf: number,
   packet: DHCPPacket,
 ) {
-  const ipPkt = new IPv4Packet(
-    ProtocolCode.udp,
-    UDPSerializer.toBuffer({
+  const payloads = ipv4ToFragmentedBytes({
+    protocol: ProtocolCode.udp,
+    payload: UDPSerializer.toBuffer({
       payload: DHCPSerializer.toBuffer(packet),
       destination: 67,
       source: 68,
     }),
-    0,
-    IPV4_BROADCAST,
-  );
-  const payloads = ipPkt.toFragmentedBytes();
+    source: 0,
+    destination: IPV4_BROADCAST,
+    ttl: 128,
+  });
   for (const payload of payloads) {
     ctx.sendOnIf(
       onIntf,

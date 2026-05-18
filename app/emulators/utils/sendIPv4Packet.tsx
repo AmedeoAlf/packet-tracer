@@ -1,6 +1,7 @@
 import {
   IPv4Address,
   IPv4Packet,
+  ipv4ToFragmentedBytes,
   L3InternalState,
   ProtocolCode,
   targetIP,
@@ -14,19 +15,22 @@ export function sendIPv4Packet<State extends L3InternalState<State>>(
   ctx: EmulatorContext<State>,
   destination: IPv4Address,
   protocol: ProtocolCode,
-  data: Buffer,
+  payload: Buffer,
 ): boolean {
   const [ok, intf] = targetIP(ctx.state, destination);
   if (!ok) return false;
 
-  const packet = new IPv4Packet(
-    protocol,
-    data,
-    ctx.state.l3Ifs[intf]!.ip,
+  return forwardIPv4Packet(
+    ctx,
+    {
+      source: ctx.state.l3Ifs[intf]!.ip,
+      payload,
+      protocol,
+      destination,
+      ttl: 128,
+    },
     destination,
   );
-
-  return forwardIPv4Packet(ctx, packet, packet.destination);
 }
 
 export function forwardIPv4Packet<State extends L3InternalState<State>>(
@@ -68,7 +72,7 @@ export function forwardIPv4Packet<State extends L3InternalState<State>>(
     return false;
   }
 
-  const payloads = packet.toFragmentedBytes();
+  const payloads = ipv4ToFragmentedBytes(packet);
   for (const payload of payloads) {
     ctx.sendOnIf(
       intf,

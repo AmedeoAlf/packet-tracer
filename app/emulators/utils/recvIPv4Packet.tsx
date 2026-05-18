@@ -1,9 +1,11 @@
 import { EmulatorContext } from "../DeviceEmulator";
 import {
+  getDestinationOf,
   getMatchingInterface,
   IPv4Packet,
+  IPv4PacketAssembler,
+  Ipv4Serializer,
   L3InternalState,
-  PartialIPv4Packet,
   ProtocolCode,
 } from "@/app/protocols/rfc_760";
 import {
@@ -31,7 +33,7 @@ export function recvIPv4Packet<State extends L3InternalState<State>>(
     return;
   }
   try {
-    const destination = PartialIPv4Packet.getDestination(l2Packet.payload);
+    const destination = getDestinationOf(l2Packet.payload);
     const isDestinedInterface =
       ctx.state.netInterfaces[intf].type == "localhost" ||
       ctx.state.l3Ifs.findIndex((v) => v && v.ip == destination) != -1;
@@ -48,22 +50,26 @@ export function recvIPv4Packet<State extends L3InternalState<State>>(
       return;
     }
 
-    let packet = new PartialIPv4Packet(l2Packet.payload);
-    if (!packet.isPayloadFinished()) {
+    let packet = Ipv4Serializer.fromBytes(l2Packet.payload);
+    let assembler = new IPv4PacketAssembler(packet);
+    if (!assembler.getOriginal()) {
       const packets = ctx.state.ipPackets_t;
-      if (!ctx.state.ipPackets_t.has(packet.id)) {
-        packets.set(packet.id, packet);
+      const id = packet.identification;
+      if (!packets.has(id)) {
+        packets.set(id, assembler);
       } else {
-        packets.get(packet.id)!.add(l2Packet.payload);
+        packets.get(id)!.add(packet);
       }
-      packet = packets.get(packet.id)!;
-      if (!packet.isPayloadFinished()) {
+      assembler = packets.get(id)!;
+      if (!assembler.getOriginal()) {
         ctx.updateState();
         return;
       }
       // Il payload è concluso, elimina il pacchetto dalla coda
-      packets.delete(packet.id);
+      packets.delete(id);
     }
+
+    packet = assembler.getOriginal()!;
 
     // Gestisci i pacchetti echo ICMP
     if (packet.protocol == ProtocolCode.icmp) {

@@ -12,7 +12,9 @@
  * simulatore)
  */
 
-import { FillingBufferField, PacketSerializer, U16Field } from "./packetEngine";
+import { PacketSerializer } from "./packetEngine";
+import { FillingBufferField } from "./packetEngineFields/bufferFields";
+import { U16Field } from "./packetEngineFields/numberFields";
 
 export type UDPPacket = {
   source: number;
