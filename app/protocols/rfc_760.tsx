@@ -200,8 +200,7 @@ export class IPv4PacketAssembler {
     const offset = (packet.offsetAndFlags & OFFSET_MASK) << 3;
     const moreFragments = !!(packet.offsetAndFlags & MORE_FRAGMENTS_BIT);
 
-    if (!moreFragments)
-      this.completeSize = offset + packet.ihl * 4 + packet.payload.length;
+    if (!moreFragments) this.completeSize = offset + packet.payload.length;
 
     this.subpayloads.push({ data: packet.payload, offset });
 
@@ -217,8 +216,7 @@ export class IPv4PacketAssembler {
         (it) => it.offset == firstMissingByte,
       );
       if (!payload) return false;
-      firstMissingByte =
-        payload.offset + this.matchedData.ihl * 4 + payload.data.length;
+      firstMissingByte = payload.offset + payload.data.length;
     }
 
     const payload = Buffer.alloc(this.completeSize);
