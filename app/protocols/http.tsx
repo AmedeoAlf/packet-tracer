@@ -1,4 +1,4 @@
-import { findInBuffer } from "../common";
+import { findInBuffer, throwString } from "../common";
 
 export const HTTP_METHODS = [
   "GET",
@@ -111,11 +111,11 @@ export class HttpRequest extends HttpMessage {
 
   readFirstLine(line: string): void {
     if (line.split(" ").length < 3)
-      throw `First line '${line}' is not of an HTTP request`;
+      throwString(`First line '${line}' is not of an HTTP request`);
 
     const [method, uri, http_version] = line.split(" ");
 
-    if (!isHTTPMethod(method)) throw `Invalid HTTP method ${method}`;
+    if (!isHTTPMethod(method)) throwString(`Invalid HTTP method ${method}`);
     if (http_version !== "HTTP/1.1")
       console.log(
         `NOTE: I wasn't really supposed to handle not HTTP/1.1 requests '${line}'`,
