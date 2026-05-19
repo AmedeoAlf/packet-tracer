@@ -139,6 +139,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
               ctx.toolRef.current.startPos,
               ev.pos,
             );
+            ctx.saveSnapshot();
             const decal = ctx.projectRef.current.mutDecal(
               ctx.toolRef.current.editing,
             );
@@ -158,6 +159,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
           ctx.updateTool();
           if (ev.pos[0] || ev.pos[1]) {
             if (ctx.toolRef.current.editing !== undefined) {
+              ctx.saveSnapshot();
               const decal = ctx.projectRef.current.mutDecal(
                 ctx.toolRef.current.editing,
               );
@@ -165,6 +167,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
               decal.pos = [x, y];
               decal.size = { width, height };
             } else {
+              ctx.saveSnapshot();
               ctx.projectRef.current.addDecal({
                 type: "rect",
                 pos: [x, y],

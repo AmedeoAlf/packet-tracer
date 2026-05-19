@@ -13,6 +13,7 @@ export type LabelTool = Tool<LabelTool> & {
 };
 
 function finalizeCurrinput(ctx: ToolCtx<LabelTool>) {
+  ctx.saveSnapshot();
   ctx.projectRef.current.addDecal({
     type: "text",
     ...ctx.tool.currInput!,
@@ -82,6 +83,7 @@ export const makeLabelTool: ToolConstructor<LabelTool> = (
             ctx.toolRef.current.currInput = {
               ...ev.decal,
             };
+            ctx.saveSnapshot();
             ctx.projectRef.current.removeDecal(ev.decal.id);
             ctx.updateProject();
           } else {

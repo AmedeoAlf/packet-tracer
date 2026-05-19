@@ -351,6 +351,7 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
             } else {
               const diffX = ev.pos[0] - self.lastCursorPos[0];
               const diffY = ev.pos[1] - self.lastCursorPos[1];
+              ctx.saveSnapshot();
               if (diffX || diffY) {
                 for (const dev of self.selected) {
                   ctx.projectRef.current.mutDevice(dev)!.pos[0] += diffX;
@@ -370,6 +371,8 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
           ev.consumed = true;
           switch (ev.key) {
             case "Delete": {
+              if (!self.selected.size && !self.selectedDecals.size) return;
+              ctx.saveSnapshot();
               for (const s of self.selected) {
                 ctx.projectRef.current.deleteDevice(s);
               }
