@@ -60,6 +60,9 @@ export type ToolCtx<T extends Tool<T> = AnyTool> = {
 
   // Revert to last tool (should be called on completed actions)
   revertTool: () => void;
+
+  // Saves devices/decals layout snapshot
+  saveSnapshot: () => void;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

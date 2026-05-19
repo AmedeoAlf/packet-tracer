@@ -22,6 +22,7 @@ import { Chrono } from "./editorComponents/Chrono";
 import {
   useAutoSave,
   useCanvasSize,
+  useHistory,
   useNoPinchToZoom,
   useSimulation,
 } from "./editorComponents/hooks";
@@ -54,6 +55,11 @@ export function Editor({
   const svgPt = svgCanvas.current?.createSVGPoint();
   const [shouldSave, setShouldSave] = useAutoSave(project, save);
 
+  const addToHistory = useHistory((proj: ProjectManager) => {
+    projectRef.current = proj;
+    toolCtx.updateProject();
+  });
+
   const toolCtx: ToolCtx = useMemo(
     () => ({
       tool,
@@ -64,6 +70,9 @@ export function Editor({
         setShouldSave(true);
         setProject(projectRef.current.newInstance());
       },
+      saveSnapshot() {
+        addToHistory(project);
+      },
       updateTool() {
         setTool({ ...toolCtx.toolRef.current });
       },
@@ -73,7 +82,7 @@ export function Editor({
         this.updateTool();
       },
     }),
-    [lastTool, project, tool, setShouldSave],
+    [lastTool, project, addToHistory, tool, setShouldSave],
   );
 
   useNoPinchToZoom();

@@ -65,3 +65,32 @@ export function useNoPinchToZoom() {
     );
   }, []);
 }
+
+export function useHistory<T>(restoreTo: (t: T) => void): (t: T) => void {
+  const [history, setHistory] = useState<T[]>([]);
+  const [lookBack, setLookBack] = useState(-1);
+  // console.log(
+  //   ...history.map((it) =>
+  //     (it as ProjectManager).immutableDevices.keys().toArray(),
+  //   ),
+  // );
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!(e.key == "z" && e.ctrlKey)) return;
+      setLookBack(Math.max(lookBack - 1, -history.length));
+      const target = history.at(lookBack);
+      if (target) restoreTo(target);
+      // console.log(lookBack);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [history, lookBack, restoreTo]);
+
+  return (t) => {
+    const arr = history.slice(0, history.length + lookBack + 1);
+    arr.push(t);
+    setHistory(arr);
+    setLookBack(-1);
+  };
+}

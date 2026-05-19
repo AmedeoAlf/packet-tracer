@@ -383,6 +383,7 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
               return;
             }
             case "d": {
+              ctx.saveSnapshot();
               duplicateSelection(ctx.toolRef.current, ctx.projectRef.current);
               ctx.updateTool();
               ctx.updateProject();

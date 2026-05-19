@@ -541,7 +541,14 @@ export class ProjectManager {
   // per scatenare un rerender
   newInstance() {
     this.applyMutations();
-    const next = new ProjectManager({ ...this.project }, this.tickRef);
+    const next = new ProjectManager(
+      {
+        ...this.project,
+        devices: new Map(this.project.devices),
+        decals: [...this.project.decals],
+      },
+      this.tickRef,
+    );
     next.packetLog = [...this.packetLog];
     next.emulatorTick = this.emulatorTick;
     if (this.mutatedDevices || !this.cableCache) this.computeCables();
