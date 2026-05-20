@@ -7,6 +7,7 @@ import {
   KeyboardEvent,
   WheelEventHandler,
   RefObject,
+  useEffect,
 } from "react";
 import { AnyTool, CanvasEvent, ToolCtx, TOOLS } from "./tools/Tool";
 import { makeSelectTool } from "./tools/SelectTool";
@@ -56,7 +57,7 @@ export function Editor({
   const [shouldSave, setShouldSave] = useAutoSave(project, save);
 
   const addToHistory = useHistory((proj: ProjectManager) => {
-    projectRef.current = proj;
+    projectRef.current = proj.newInstance();
     toolCtx.updateProject();
   });
 
@@ -71,7 +72,7 @@ export function Editor({
         setProject(projectRef.current.newInstance());
       },
       saveSnapshot() {
-        addToHistory(project);
+        addToHistory(project.newInstance());
       },
       updateTool() {
         setTool({ ...toolCtx.toolRef.current });

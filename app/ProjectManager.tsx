@@ -91,7 +91,10 @@ export class ProjectManager {
 
     this.mutatedDevices ??= [];
 
-    if (!this.mutatedDevices.includes(id)) this.mutatedDevices.push(id);
+    if (!this.mutatedDevices.includes(id)) {
+      this.project.devices.set(id, cloneDevice(this.project.devices.get(id)!));
+      this.mutatedDevices.push(id);
+    }
     return this.project.devices.get(id);
   }
   get immutableDevices(): Project["devices"] {
@@ -561,3 +564,6 @@ export class ProjectManager {
 export function removeTempFields<T extends object>(obj: T): T {
   return filterObject(obj, ([k]) => !k.endsWith("_t")) as T;
 }
+
+const cloneDevice = (d: Device): Device =>
+  Object.setPrototypeOf({...d, pos: [...d.pos]}, Object.getPrototypeOf(d));

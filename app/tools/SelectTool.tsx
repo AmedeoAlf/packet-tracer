@@ -22,6 +22,7 @@ export type SelectTool = Tool<SelectTool> & {
   selected: Set<number>;
   selectedDecals: Set<number>;
   lastCursorPos?: Coords;
+  movedSelection: boolean;
   // User is in rectangle selection if this is not undefined
   selectionRectangle?: Coords;
   stdout: string;
@@ -88,6 +89,7 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
     previousCmds: [],
     selectingDevicePanel: true,
     ...prev,
+    movedSelection: false,
     toolname: "select",
     svgElements: (ctx) => {
       if (!ctx.tool.selectionRectangle || !ctx.tool.lastCursorPos) return <></>;
@@ -292,6 +294,8 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
         case "mousemove":
           if (self.lastCursorPos) {
             if (!self.selectionRectangle) {
+              if (!self.movedSelection) ctx.saveSnapshot();
+              self.movedSelection = true;
               for (const dev of self.selected) {
                 ctx.projectRef.current.mutDevice(dev)!.pos[0] +=
                   ev.pos[0] - self.lastCursorPos[0];
@@ -351,7 +355,6 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
             } else {
               const diffX = ev.pos[0] - self.lastCursorPos[0];
               const diffY = ev.pos[1] - self.lastCursorPos[1];
-              ctx.saveSnapshot();
               if (diffX || diffY) {
                 for (const dev of self.selected) {
                   ctx.projectRef.current.mutDevice(dev)!.pos[0] += diffX;
@@ -363,6 +366,7 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
                 }
                 ctx.updateProject();
               }
+              self.movedSelection = false;
               self.lastCursorPos = undefined;
             }
           }
