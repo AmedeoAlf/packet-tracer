@@ -77,7 +77,8 @@ export function useHistory<T>(restoreTo: (t: T) => void): (t: T) => void {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (!(e.key == "z" && e.ctrlKey)) return;
+      if (!(e.key == "z" || e.key == "Z" && e.ctrlKey)) return;
+      e.preventDefault();
       const newLookback = e.shiftKey ? Math.min(lookBack + 1, 0) : Math.max(lookBack - 1, -history.length);
       setLookBack(newLookback);
       const target = history.at(newLookback);
