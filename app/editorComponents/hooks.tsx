@@ -69,11 +69,11 @@ export function useNoPinchToZoom() {
 export function useHistory<T>(restoreTo: (t: T) => void): (t: T) => void {
   const [history, setHistory] = useState<T[]>([]);
   const [lookBack, setLookBack] = useState(0);
-  console.log(
-    ...history.map((it) =>
-      (it as ProjectManager).immutableDevices.keys().toArray(),
-    ),
-  );
+  // console.log(
+  //   ...history.map((it) =>
+  //     (it as ProjectManager).immutableDevices.keys().toArray(),
+  //   ),
+  // );
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -83,7 +83,7 @@ export function useHistory<T>(restoreTo: (t: T) => void): (t: T) => void {
       setLookBack(newLookback);
       const target = history.at(newLookback);
       if (target) restoreTo(target);
-      console.log(newLookback);
+      // console.log(newLookback);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
