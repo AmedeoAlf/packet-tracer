@@ -104,9 +104,13 @@ export class ProjectManager {
     return this.project.decals;
   }
   mutDecal(id: number): Decal | undefined {
-    if (!this.project.decals.at(id)) return;
+    const dec = this.project.decals.at(id)
+    if (!dec) return;
     this.mutatedDecals ??= [];
-    if (!this.mutatedDecals.includes(id)) this.mutatedDecals.push(id);
+    if (!this.mutatedDecals.includes(id)) {
+      this.project.decals[id] = {...dec};
+      this.mutatedDecals.push(id);
+    }
     return this.project.decals.at(id) ?? undefined;
   }
   decalFromTag(tag: HTMLOrSVGElement): Decal | undefined {
@@ -483,19 +487,20 @@ export class ProjectManager {
   }
   applyMutations() {
     if (this.mutatedDevices) {
-      for (const id of this.mutatedDevices) {
-        this.project.devices.set(
-          id,
-          cloneWithProto(this.project.devices.get(id)!),
-        );
-      }
+      // TODO: check if needed
+      // for (const id of this.mutatedDevices) {
+      //   this.project.devices.set(
+      //     id,
+      //     cloneWithProto(this.project.devices.get(id)!),
+      //   );
+      // }
       this.project.devices = new Map(this.project.devices);
       this.mutatedDevices = undefined;
     }
     if (this.mutatedDecals) {
-      for (const id of this.mutatedDecals) {
-        this.project.decals[id] = { ...this.project.decals[id]! };
-      }
+      // for (const id of this.mutatedDecals) {
+      //   this.project.decals[id] = { ...this.project.decals[id]! };
+      // }
       this.project.decals = [...this.project.decals];
       this.mutatedDecals = undefined;
     }
