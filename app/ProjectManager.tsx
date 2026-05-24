@@ -2,7 +2,6 @@
 import { RefObject } from "react";
 import {
   clamp,
-  cloneWithProto,
   Coords,
   deepCopy,
   arraySwap,
@@ -104,11 +103,11 @@ export class ProjectManager {
     return this.project.decals;
   }
   mutDecal(id: number): Decal | undefined {
-    const dec = this.project.decals.at(id)
+    const dec = this.project.decals.at(id);
     if (!dec) return;
     this.mutatedDecals ??= [];
     if (!this.mutatedDecals.includes(id)) {
-      this.project.decals[id] = {...dec};
+      this.project.decals[id] = { ...dec };
       this.mutatedDecals.push(id);
     }
     return this.project.decals.at(id) ?? undefined;
@@ -571,4 +570,5 @@ export function removeTempFields<T extends object>(obj: T): T {
 }
 
 const cloneDevice = (d: Device): Device =>
-  Object.setPrototypeOf({...d, pos: [...d.pos]}, Object.getPrototypeOf(d));
+  Object.setPrototypeOf({ ...d, pos: [...d.pos] }, Object.getPrototypeOf(d));
+

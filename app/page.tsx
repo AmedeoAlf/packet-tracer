@@ -5,6 +5,7 @@ import { parseIpv4 } from "./protocols/rfc_760";
 import { ProjectManager } from "./ProjectManager";
 import dynamic from "next/dynamic";
 import { isRecord } from "./common";
+import { jsonReplacer } from "./Project";
 const Editor = dynamic(() => import("./Editor").then((m) => m.Editor), {
   ssr: false,
 });
@@ -37,7 +38,10 @@ export default function Home() {
       save={(proj) => {
         setIsSaved(false);
         const exported = proj.exportProject();
-        localStorage.setItem("project:v0", JSON.stringify(exported));
+        localStorage.setItem(
+          "project:v0",
+          JSON.stringify(exported, jsonReplacer),
+        );
         setIsSaved(true);
         // navigator
         //   .clipboard

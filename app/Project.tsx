@@ -2,6 +2,12 @@
 import { Coords } from "./common";
 import { Device } from "./devices/Device";
 
+export const jsonReplacer = (key: string, val: unknown): unknown => {
+  if (key == "pos" && Array.isArray(val))
+    val = val.map((it) => Number(it.toFixed(2)));
+  return val;
+};
+
 export type InterfaceId = number;
 
 export type DecalData = {
