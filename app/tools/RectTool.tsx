@@ -50,8 +50,8 @@ export const makeRectTool: ToolConstructor<RectTool> = (
         if (decal.type != "rect") throw "How did I select a non-rect decal???";
         return (
           <>
-            Dimensioni: {decal.size.width.toFixed(1)}x
-            {decal.size.height.toFixed(1)} <br />
+            Dimensioni: {decal.size[0].toFixed(1)}x{decal.size[1].toFixed(1)}{" "}
+            <br />
             <table>
               <tbody>
                 <ColorSelectorRow
@@ -145,7 +145,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
             );
             if (decal?.type != "rect") throw "How did I get a non-rect decal";
             decal.pos = [x, y];
-            decal.size = { width, height };
+            decal.size = [width, height];
             ctx.updateProject();
           }
           break;
@@ -165,13 +165,13 @@ export const makeRectTool: ToolConstructor<RectTool> = (
               );
               if (decal?.type != "rect") throw "How did I get a non-rect decal";
               decal.pos = [x, y];
-              decal.size = { width, height };
+              decal.size = [width, height];
             } else {
               ctx.saveSnapshot();
               ctx.projectRef.current.addDecal({
                 type: "rect",
                 pos: [x, y],
-                size: { width, height },
+                size: [width, height],
                 fill: ctx.toolRef.current.fill,
                 stroke: ctx.toolRef.current.stroke,
               });
@@ -191,8 +191,8 @@ export const makeRectTool: ToolConstructor<RectTool> = (
         if (decal.type != "rect") throw "How did I get a non-rect decal";
         return (
           <rect
-            x={decal.pos[0] + decal.size.width - 5}
-            y={decal.pos[1] + decal.size.height - 5}
+            x={decal.pos[0] + decal.size[0] - 5}
+            y={decal.pos[1] + decal.size[1] - 5}
             width={10}
             height={10}
             fill="red"
@@ -205,8 +205,8 @@ export const makeRectTool: ToolConstructor<RectTool> = (
               if (rect?.type != "rect") throw "Why am i not a rect?????";
               ctx.toolRef.current.startPos = rect.pos;
               ctx.toolRef.current.currPos = [
-                rect.pos[0] + rect.size.width,
-                rect.pos[1] + rect.size.height,
+                rect.pos[0] + rect.size[0],
+                rect.pos[1] + rect.size[1],
               ];
               ctx.updateTool();
             }}

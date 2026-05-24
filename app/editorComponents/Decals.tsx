@@ -38,7 +38,8 @@ export const Decals = memo(
               key={idx}
               x={d.pos[0]}
               y={d.pos[1]}
-              {...d.size}
+              width={d.size[0]}
+              height={d.size[1]}
               stroke={cssColor(d.stroke) ?? "none"}
               strokeWidth={2}
               fill={cssColor(d.fill) ?? "none"}

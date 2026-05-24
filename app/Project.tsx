@@ -20,7 +20,7 @@ export type DecalData = {
     }
   | {
       type: "rect";
-      size: { width: number; height: number };
+      size: Coords;
       fill?: number;
       stroke?: number;
     }
