@@ -7,7 +7,6 @@ import {
   KeyboardEvent,
   WheelEventHandler,
   RefObject,
-  useEffect,
 } from "react";
 import { AnyTool, CanvasEvent, ToolCtx, TOOLS } from "./tools/Tool";
 import { makeSelectTool } from "./tools/SelectTool";
