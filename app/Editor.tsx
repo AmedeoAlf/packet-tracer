@@ -55,10 +55,18 @@ export function Editor({
   const svgPt = svgCanvas.current?.createSVGPoint();
   const [shouldSave, setShouldSave] = useAutoSave(project, save);
 
-  const addToHistory = useHistory((proj: ProjectManager) => {
-    projectRef.current = proj.newInstance();
-    toolCtx.updateProject();
-  });
+  const addToHistory = useHistory(
+    (proj: ProjectManager) => {
+      projectRef.current = proj.newInstance();
+      const constructor = TOOLS[toolRef.current.toolname] as (
+        o: object,
+      ) => AnyTool;
+      toolRef.current = constructor({});
+      toolCtx.updateProject();
+      toolCtx.updateTool();
+    },
+    () => projectRef.current.newInstance(),
+  );
 
   const toolCtx: ToolCtx = useMemo(
     () => ({

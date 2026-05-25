@@ -66,10 +66,14 @@ export function useNoPinchToZoom() {
   }, []);
 }
 
-export function useHistory<T>(restoreTo: (t: T) => void): (t: T) => void {
+export function useHistory<T>(
+  restoreTo: (t: T) => void,
+  getSnapshot: () => T,
+): (t: T) => void {
   const [history, setHistory] = useState<T[]>([]);
-  const [lookBack, setLookBack] = useState(0);
+  const [lookBack, setLookBack] = useState(-1);
   // console.log(
+  //   lookBack,
   //   ...history.map((it) =>
   //     (it as ProjectManager).immutableDevices.keys().toArray(),
   //   ),
@@ -77,22 +81,37 @@ export function useHistory<T>(restoreTo: (t: T) => void): (t: T) => void {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (!(e.key == "z" || e.key == "Z" && e.ctrlKey)) return;
+      if (!((e.key == "z" || e.key == "Z") && e.ctrlKey)) return;
       e.preventDefault();
-      const newLookback = e.shiftKey ? Math.min(lookBack + 1, 0) : Math.max(lookBack - 1, -history.length);
-      setLookBack(newLookback);
-      const target = history.at(newLookback);
-      if (target) restoreTo(target);
-      // console.log(newLookback);
+
+      if (history.length < 1) return;
+
+      if (e.shiftKey) {
+        if (lookBack == -1) return;
+        const newLookback = lookBack + 1;
+        setLookBack(newLookback);
+        const target = history.at(newLookback);
+        if (target) restoreTo(target);
+      } else if (lookBack == -1) {
+        const target = history.at(-1)!;
+        setHistory([...history, getSnapshot()]);
+        setLookBack(-2);
+        restoreTo(target);
+      } else {
+        const newLookback = Math.max(lookBack - 1, -history.length);
+        setLookBack(newLookback);
+        const target = history.at(newLookback);
+        if (target) restoreTo(target);
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [history, lookBack, restoreTo]);
+  }, [history, lookBack, restoreTo, getSnapshot]);
 
   return (t) => {
-    const arr = history.slice(0, history.length + lookBack);
+    const arr = history.slice(0, history.length + lookBack + 1);
     arr.push(t);
     setHistory(arr);
-    setLookBack(0);
+    setLookBack(-1);
   };
 }
