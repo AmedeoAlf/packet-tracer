@@ -294,8 +294,6 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
         case "mousemove":
           if (self.lastCursorPos) {
             if (!self.selectionRectangle) {
-              if (!self.movedSelection) ctx.saveSnapshot();
-              self.movedSelection = true;
               for (const dev of self.selected) {
                 ctx.projectRef.current.mutDevice(dev)!.pos[0] +=
                   ev.pos[0] - self.lastCursorPos[0];
@@ -308,6 +306,8 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
                 ctx.projectRef.current.mutDecal(dec)!.pos[1] +=
                   ev.pos[1] - self.lastCursorPos[1];
               }
+              if (!self.movedSelection) ctx.saveSnapshot();
+              self.movedSelection = true;
               ctx.updateProject();
             }
             self.lastCursorPos = ev.pos;
@@ -376,7 +376,6 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
           switch (ev.key) {
             case "Delete": {
               if (!self.selected.size && !self.selectedDecals.size) return;
-              ctx.saveSnapshot();
               for (const s of self.selected) {
                 ctx.projectRef.current.deleteDevice(s);
               }
@@ -387,11 +386,12 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
               self.selectedDecals.clear();
               ctx.updateTool();
               ctx.updateProject();
+              ctx.saveSnapshot();
               return;
             }
             case "d": {
-              ctx.saveSnapshot();
               duplicateSelection(ctx.toolRef.current, ctx.projectRef.current);
+              ctx.saveSnapshot();
               ctx.updateTool();
               ctx.updateProject();
               return;

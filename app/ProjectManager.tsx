@@ -541,8 +541,6 @@ export class ProjectManager {
   // Costruttore che serve a creare copie identiche del progetto
   // per scatenare un rerender
   newInstance() {
-    const changedCables = this.mutatedDevices || !this.cableCache;
-    this.applyMutations();
     const next = new ProjectManager(
       {
         ...this.project,
@@ -555,10 +553,12 @@ export class ProjectManager {
     next.packetLog = [...this.packetLog];
     next.emulatorTick = this.emulatorTick;
 
-    if (changedCables) this.computeCables();
+    if (this.mutatedDevices || !this.cableCache) this.computeCables();
     next.cableCache = this.cableCache;
 
     next.callbacks = [...this.callbacks];
+
+    this.applyMutations();
     return next;
   }
 }

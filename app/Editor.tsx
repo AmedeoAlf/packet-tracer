@@ -79,7 +79,7 @@ export function Editor({
         setProject(projectRef.current.newInstance());
       },
       saveSnapshot() {
-        addToHistory(project.newInstance());
+        addToHistory(projectRef.current.newInstance());
       },
       updateTool() {
         setTool({ ...toolCtx.toolRef.current });
