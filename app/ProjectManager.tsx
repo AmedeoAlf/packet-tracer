@@ -547,6 +547,7 @@ export class ProjectManager {
         ...this.project,
         devices: new Map(this.project.devices),
         decals: [...this.project.decals],
+        connections: new Map(this.project.connections),
       },
       this.tickRef,
     );
