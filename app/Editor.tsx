@@ -232,6 +232,7 @@ function buildMouseEventHandler(
     };
   } else {
     return (ev: MouseEvent) => {
+      if (ev.button == 1) return false;
       ctx.tool.onEvent(ctx, {
         type,
         pos: getPos(ev),
