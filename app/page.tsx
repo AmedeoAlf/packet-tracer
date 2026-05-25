@@ -56,7 +56,7 @@ function loadSavedProject(
     if (!json) return;
     return ProjectManager.fromSerialized(json, tickRef);
   } catch (e) {
-    alert(e);
+    console.log(e);
   }
 }
 

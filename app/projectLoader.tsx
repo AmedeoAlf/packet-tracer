@@ -51,7 +51,7 @@ const converters: Record<string, (parsed: Record<string, unknown>) => string> =
       if (!Array.isArray(v.decals))
         throwString(`decals is not an array, but ${JSON.stringify(v.decals)}`);
       for (const it of v.decals) {
-        if (it.type != "rect") continue;
+        if (it == null || it.type != "rect") continue;
         it.size = [it.size.width || 0, it.size.height || 0];
       }
       return "v1";
