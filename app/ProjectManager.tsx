@@ -185,7 +185,7 @@ export class ProjectManager {
     this.project.connections.delete(this.project.connections.get(intfB) || -1);
     this.project.connections.set(intfA, intfB);
     this.project.connections.set(intfB, intfA);
-    delete this.cableCache;
+    this.cableCache = undefined;
     return;
   }
   disconnect(devId: number, ifId: number) {
@@ -193,7 +193,7 @@ export class ProjectManager {
     if (!this.project.connections.has(intf)) return;
     this.project.connections.delete(this.project.connections.get(intf)!);
     this.project.connections.delete(intf);
-    delete this.cableCache;
+    this.cableCache = undefined;
   }
   getCables(): NonNullable<typeof this.cableCache> {
     if (!this.cableCache) {
@@ -541,6 +541,7 @@ export class ProjectManager {
   // Costruttore che serve a creare copie identiche del progetto
   // per scatenare un rerender
   newInstance() {
+    const changedCables = this.mutatedDevices || !this.cableCache;
     this.applyMutations();
     const next = new ProjectManager(
       {
@@ -553,9 +554,11 @@ export class ProjectManager {
     );
     next.packetLog = [...this.packetLog];
     next.emulatorTick = this.emulatorTick;
-    if (this.mutatedDevices || !this.cableCache) this.computeCables();
+
+    if (changedCables) this.computeCables();
     next.cableCache = this.cableCache;
-    next.callbacks = this.callbacks;
+
+    next.callbacks = [...this.callbacks];
     return next;
   }
 }
