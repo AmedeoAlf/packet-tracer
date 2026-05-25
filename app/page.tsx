@@ -4,8 +4,7 @@ import { RouterInternalState } from "./devices/list/Router";
 import { parseIpv4 } from "./protocols/rfc_760";
 import { ProjectManager } from "./ProjectManager";
 import dynamic from "next/dynamic";
-import { isRecord } from "./common";
-import { jsonReplacer } from "./Project";
+import { save, load } from "./projectLoader";
 const Editor = dynamic(() => import("./Editor").then((m) => m.Editor), {
   ssr: false,
 });
@@ -38,10 +37,7 @@ export default function Home() {
       save={(proj) => {
         setIsSaved(false);
         const exported = proj.exportProject();
-        localStorage.setItem(
-          "project:v0",
-          JSON.stringify(exported, jsonReplacer),
-        );
+        save(exported);
         setIsSaved(true);
         // navigator
         //   .clipboard
@@ -56,20 +52,12 @@ function loadSavedProject(
   tickRef: ProjectManager["tickRef"],
 ): ProjectManager | undefined {
   try {
-    {
-      const oldLocalStorage = localStorage.getItem("project");
-      if (oldLocalStorage != null) {
-        localStorage.setItem("project:v0", oldLocalStorage);
-        localStorage.removeItem("project");
-      }
-    }
-    const saved = localStorage.getItem("project:v0");
-    if (saved == null) return;
-    const json = JSON.parse(saved);
-    if (!isRecord(json)) return;
+    const json = load();
+    if (!json) return;
     return ProjectManager.fromSerialized(json, tickRef);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_) {}
+  } catch (e) {
+    alert(e);
+  }
 }
 
 function defaultProject(tickRef: ProjectManager["tickRef"]): ProjectManager {

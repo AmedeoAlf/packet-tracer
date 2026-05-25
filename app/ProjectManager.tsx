@@ -410,13 +410,7 @@ export class ProjectManager {
       ...serialized,
     };
     setIfPresent("devices", (d) => {
-      if (typeof d != "object" || d == null) return;
-      // Convert old objects
-      if (!Array.isArray(d)) {
-        d = Object.values(d) as unknown[];
-        console.log("Loaded old savefile");
-      }
-      trustMeBroCast<unknown[]>(d);
+      if (!Array.isArray(d)) return;
 
       type Validated = {
         type: DeviceType;
@@ -571,4 +565,3 @@ export function removeTempFields<T extends object>(obj: T): T {
 
 const cloneDevice = (d: Device): Device =>
   Object.setPrototypeOf({ ...d, pos: [...d.pos] }, Object.getPrototypeOf(d));
-
