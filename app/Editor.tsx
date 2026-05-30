@@ -7,6 +7,7 @@ import {
   KeyboardEvent,
   WheelEventHandler,
   RefObject,
+  useCallback,
 } from "react";
 import { AnyTool, CanvasEvent, ToolCtx, TOOLS } from "./tools/Tool";
 import { makeSelectTool } from "./tools/SelectTool";
@@ -55,20 +56,28 @@ export function Editor({
   const svgPt = svgCanvas.current?.createSVGPoint();
   const [isSaveQueued, queueSave] = useAutoSave(project, save);
 
-  const addToHistory = useHistory(
-    (proj: ProjectManager) => {
-      projectRef.current = proj.newInstance();
-      const constructor = TOOLS[toolRef.current.toolname] as (
-        o: object,
-      ) => AnyTool;
-      toolRef.current = constructor({});
-      toolCtx.updateTool();
+  const updateTool = useCallback(
+    () => setTool({ ...toolRef.current }),
+    [setTool, toolRef],
+  );
 
-      // must not update history...
-      toolCtx.updateProject();
-      queueSave();
-    },
-    () => projectRef.current.newInstance(),
+  const addToHistory = useHistory(
+    useCallback(
+      (proj: ProjectManager) => {
+        projectRef.current = proj.newInstance();
+        const constructor = TOOLS[toolRef.current.toolname] as (
+          o: object,
+        ) => AnyTool;
+        toolRef.current = constructor({});
+        updateTool();
+
+        // must not update history...
+        queueSave();
+        setProject(proj);
+      },
+      [queueSave, updateTool],
+    ),
+    useCallback(() => projectRef.current.newInstance(), []),
   );
 
   const toolCtx: ToolCtx = useMemo(
@@ -85,16 +94,14 @@ export function Editor({
           addToHistory(inst);
         }
       },
-      updateTool() {
-        setTool({ ...toolCtx.toolRef.current });
-      },
+      updateTool,
       revertTool() {
         if (lastTool == toolCtx.tool.toolname) return;
         toolRef.current = TOOLS[lastTool](toolRef.current, projectRef.current);
         this.updateTool();
       },
     }),
-    [lastTool, project, addToHistory, tool, queueSave],
+    [lastTool, updateTool, project, addToHistory, tool, queueSave],
   );
 
   useNoPinchToZoom();
