@@ -7,7 +7,7 @@ import {
   InternalState,
   runOnInterpreter,
 } from "../emulators/DeviceEmulator";
-import { Coords } from "../common";
+import { Coords, pluralize } from "../common";
 import { Device } from "../devices/Device";
 import { Decal } from "../Project";
 import { deviceOfIntf, idxOfIntf, ProjectManager } from "../ProjectManager";
@@ -213,6 +213,23 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
             );
           }
         default:
+          const devicesStr = pluralize(
+            ctx.tool.selected.size,
+            "dispositivo",
+            "dispositivi",
+          );
+
+          const decalsStr = pluralize(
+            ctx.tool.selectedDecals.size,
+            "decal",
+            "decals",
+          );
+
+          const infoStr =
+            devicesStr && decalsStr
+              ? `${devicesStr} e ${decalsStr} selezionati`
+              : `${devicesStr ?? decalsStr} selezionati`;
+
           return (
             <SelectionActions
               duplicate={() => {
@@ -228,9 +245,7 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
                 ctx.updateProject();
               }}
             >
-              <p className="flex-1">
-                {ctx.tool.selected.size} dispositivi selezionati
-              </p>
+              <p className="flex-1">{infoStr}</p>
             </SelectionActions>
           );
       }

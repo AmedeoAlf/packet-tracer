@@ -186,3 +186,10 @@ export function runCatching<T>(
     if (catchFn) catchFn(e);
   }
 }
+
+export const pluralize = (
+  n: number,
+  one: string,
+  multi: string,
+): string | undefined =>
+  n < 1 ? undefined : n == 1 ? `1 ${one}` : `${n} ${multi}`;
