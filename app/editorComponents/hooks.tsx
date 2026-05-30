@@ -70,7 +70,7 @@ export function useHistory<T>(
   restoreTo: (t: T) => void,
   getSnapshot: () => T,
 ): (t: T) => void {
-  const [history, setHistory] = useState<T[]>([getSnapshot()]);
+  const [history, setHistory] = useState<T[]>(() => [getSnapshot()]);
   const [lookBack, setLookBack] = useState(-1);
   // console.log(
   //   lookBack,
@@ -98,8 +98,9 @@ export function useHistory<T>(
     return () => window.removeEventListener("keydown", handler);
   }, [history, lookBack, restoreTo, getSnapshot]);
 
+  // FOR SOME FUCKASS REASON I CAN'T MOVE THIS LOC INTO THE CALLBACK
+  const arr = history.slice(0, history.length + lookBack + 1);
   return (t) => {
-    const arr = history.slice(0, history.length + lookBack + 1);
     arr.push(t);
     setHistory(arr);
     setLookBack(-1);
