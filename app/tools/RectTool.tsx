@@ -145,8 +145,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
             if (decal?.type != "rect") throw "How did I get a non-rect decal";
             decal.pos = [x, y];
             decal.size = [width, height];
-            ctx.saveSnapshot();
-            ctx.updateProject();
+            ctx.updateProject(true);
           }
           break;
         case "mouseup":
@@ -174,8 +173,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
                 stroke: ctx.toolRef.current.stroke,
               });
             }
-            ctx.saveSnapshot();
-            ctx.updateProject();
+            ctx.updateProject(true);
             ctx.revertTool();
           }
           return;

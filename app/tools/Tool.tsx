@@ -51,7 +51,7 @@ export type ToolCtx<T extends Tool<T> = AnyTool> = {
   projectRef: RefObject<ProjectManager>;
 
   // Triggers a React rerender with changes applied to project
-  updateProject: () => void;
+  updateProject: (save?: boolean) => void;
 
   tool: T;
   toolRef: RefObject<T>;
@@ -60,9 +60,6 @@ export type ToolCtx<T extends Tool<T> = AnyTool> = {
 
   // Revert to last tool (should be called on completed actions)
   revertTool: () => void;
-
-  // Saves devices/decals layout snapshot
-  saveSnapshot: () => void;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

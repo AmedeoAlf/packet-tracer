@@ -17,8 +17,7 @@ function finalizeCurrinput(ctx: ToolCtx<LabelTool>) {
     type: "text",
     ...ctx.tool.currInput!,
   });
-  ctx.updateProject();
-  ctx.saveSnapshot();
+  ctx.updateProject(true);
   ctx.toolRef.current.currInput = undefined;
   ctx.updateTool();
   ctx.revertTool();
@@ -84,8 +83,7 @@ export const makeLabelTool: ToolConstructor<LabelTool> = (
               ...ev.decal,
             };
             ctx.projectRef.current.removeDecal(ev.decal.id);
-            ctx.saveSnapshot();
-            ctx.updateProject();
+            ctx.updateProject(true);
           } else {
             ctx.toolRef.current.currInput = {
               text: "",

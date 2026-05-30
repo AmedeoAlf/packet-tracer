@@ -306,7 +306,6 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
                 ctx.projectRef.current.mutDecal(dec)!.pos[1] +=
                   ev.pos[1] - self.lastCursorPos[1];
               }
-              if (!self.movedSelection) ctx.saveSnapshot();
               self.movedSelection = true;
               ctx.updateProject();
             }
@@ -364,8 +363,8 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
                   ctx.projectRef.current.mutDecal(dec)!.pos[0] += diffX;
                   ctx.projectRef.current.mutDecal(dec)!.pos[1] += diffY;
                 }
-                ctx.updateProject();
               }
+              ctx.updateProject(true);
               self.movedSelection = false;
               self.lastCursorPos = undefined;
             }
@@ -385,15 +384,13 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
               self.selected.clear();
               self.selectedDecals.clear();
               ctx.updateTool();
-              ctx.updateProject();
-              ctx.saveSnapshot();
+              ctx.updateProject(true);
               return;
             }
             case "d": {
               duplicateSelection(ctx.toolRef.current, ctx.projectRef.current);
-              ctx.saveSnapshot();
               ctx.updateTool();
-              ctx.updateProject();
+              ctx.updateProject(true);
               return;
             }
             default:

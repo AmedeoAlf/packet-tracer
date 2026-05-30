@@ -35,8 +35,7 @@ export const makeAddTool: ToolConstructor<AddTool> = (
       switch (ev.type) {
         case "click":
           ctx.projectRef.current.createDevice(ctx.tool.deviceType, ev.pos);
-          ctx.saveSnapshot();
-          ctx.updateProject();
+          ctx.updateProject(true);
           ctx.revertTool();
           break;
         case "mousemove":
@@ -101,8 +100,7 @@ const DeviceTypeSelector = memo(
                   Math.floor(counter / 5) * 100 + baseY,
                 ],
               );
-              ctx.saveSnapshot();
-              ctx.updateProject();
+              ctx.updateProject(true);
             } else {
               ctx.toolRef.current.deviceType = it;
               ctx.updateTool();

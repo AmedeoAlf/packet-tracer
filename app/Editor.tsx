@@ -74,12 +74,13 @@ export function Editor({
       project,
       toolRef,
       projectRef,
-      updateProject() {
-        setShouldSave(true);
-        setProject(projectRef.current.newInstance());
-      },
-      saveSnapshot() {
-        addToHistory(projectRef.current.newInstance());
+      updateProject(save) {
+        const inst = projectRef.current.newInstance();
+        setProject(inst);
+        if (save) {
+          setShouldSave(true);
+          addToHistory(inst);
+        }
       },
       updateTool() {
         setTool({ ...toolCtx.toolRef.current });
