@@ -107,7 +107,7 @@ export class ProjectManager {
     if (!dec) return;
     this.mutatedDecals ??= [];
     if (!this.mutatedDecals.includes(id)) {
-      this.project.decals[id] = { ...dec };
+      this.project.decals[id] = deepCopy(dec);
       this.mutatedDecals.push(id);
     }
     return this.project.decals.at(id) ?? undefined;
