@@ -370,6 +370,7 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
               const diffX = ev.pos[0] - self.lastCursorPos[0];
               const diffY = ev.pos[1] - self.lastCursorPos[1];
               if (diffX || diffY) {
+                self.movedSelection = true;
                 for (const dev of self.selected) {
                   ctx.projectRef.current.mutDevice(dev)!.pos[0] += diffX;
                   ctx.projectRef.current.mutDevice(dev)!.pos[1] += diffY;
@@ -379,7 +380,7 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
                   ctx.projectRef.current.mutDecal(dec)!.pos[1] += diffY;
                 }
               }
-              ctx.updateProject(true);
+              if (self.movedSelection) ctx.updateProject(true);
               self.movedSelection = false;
               self.lastCursorPos = undefined;
             }
