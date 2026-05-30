@@ -62,8 +62,11 @@ export function Editor({
         o: object,
       ) => AnyTool;
       toolRef.current = constructor({});
-      toolCtx.updateProject(true);
       toolCtx.updateTool();
+
+      // must not update history...
+      toolCtx.updateProject();
+      queueSave();
     },
     () => projectRef.current.newInstance(),
   );
