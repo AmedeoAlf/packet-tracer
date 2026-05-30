@@ -12,6 +12,7 @@
   --palette-2: light-dark(blue, dodgerblue);
   --palette-3: light-dark(green, springgreen);
   --palette-4: light-dark(darkorange, yellow);
+  --palette-5: var(--background);
 }
 
 @theme inline {

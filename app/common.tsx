@@ -168,7 +168,8 @@ export function cssPaletteColor(color: number): string {
   return `var(--palette-${color})`;
 }
 
-export const PALETTE_LEN = 5;
+// --palette-5 is the last color available
+export const PALETTE_LEN = 6;
 
 export type SimpleRecord = Record<string, any>;
 
