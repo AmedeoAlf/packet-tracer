@@ -116,10 +116,8 @@ export const makeRectTool: ToolConstructor<RectTool> = (
       );
     },
     onEvent: (ctx, ev) => {
-      if (
-        ctx.toolRef.current.editing !== undefined &&
-        !ctx.toolRef.current.startPos
-      ) {
+      const self = ctx.toolRef.current;
+      if (self.editing !== undefined && !self.startPos) {
         if (ev.type == "mouseup") ctx.revertTool();
         return;
       }
@@ -127,40 +125,29 @@ export const makeRectTool: ToolConstructor<RectTool> = (
       switch (ev.type) {
         case "mousedown":
           // Handle editing a rectangle correctly
-          if (!ctx.toolRef.current.startPos)
-            ctx.toolRef.current.startPos = ev.pos;
-          ctx.toolRef.current.currPos = ev.pos;
+          if (!self.startPos) self.startPos = ev.pos;
+          self.currPos = ev.pos;
           break;
         case "mousemove":
-          if (!ctx.toolRef.current.startPos) return;
-          ctx.toolRef.current.currPos = ev.pos;
-          if (ctx.toolRef.current.editing !== undefined) {
-            const { x, y, width, height } = rectProps(
-              ctx.toolRef.current.startPos,
-              ev.pos,
-            );
-            const decal = ctx.projectRef.current.mutDecal(
-              ctx.toolRef.current.editing,
-            );
+          if (!self.startPos) return;
+          self.currPos = ev.pos;
+          if (self.editing !== undefined) {
+            const { x, y, width, height } = rectProps(self.startPos, ev.pos);
+            const decal = ctx.projectRef.current.mutDecal(self.editing);
             if (decal?.type != "rect") throw "How did I get a non-rect decal";
             decal.pos = [x, y];
             decal.size = [width, height];
-            ctx.updateProject(true);
+            ctx.updateProject();
           }
           break;
         case "mouseup":
-          if (!ctx.toolRef.current.startPos) return;
-          const { x, y, width, height } = rectProps(
-            ctx.toolRef.current.startPos,
-            ev.pos,
-          );
-          ctx.toolRef.current.startPos = undefined;
+          if (!self.startPos) return;
+          const { x, y, width, height } = rectProps(self.startPos, ev.pos);
+          self.startPos = undefined;
           ctx.updateTool();
           if (ev.pos[0] || ev.pos[1]) {
-            if (ctx.toolRef.current.editing !== undefined) {
-              const decal = ctx.projectRef.current.mutDecal(
-                ctx.toolRef.current.editing,
-              );
+            if (self.editing !== undefined) {
+              const decal = ctx.projectRef.current.mutDecal(self.editing);
               if (decal?.type != "rect") throw "How did I get a non-rect decal";
               decal.pos = [x, y];
               decal.size = [width, height];
@@ -169,8 +156,8 @@ export const makeRectTool: ToolConstructor<RectTool> = (
                 type: "rect",
                 pos: [x, y],
                 size: [width, height],
-                fill: ctx.toolRef.current.fill,
-                stroke: ctx.toolRef.current.stroke,
+                fill: self.fill,
+                stroke: self.stroke,
               });
             }
             ctx.updateProject(true);
