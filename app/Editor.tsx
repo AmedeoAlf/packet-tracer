@@ -53,7 +53,7 @@ export function Editor({
   const svgCanvas = useRef<SVGSVGElement>(null);
   const canvasSize = useCanvasSize(svgCanvas);
   const svgPt = svgCanvas.current?.createSVGPoint();
-  const [shouldSave, setShouldSave] = useAutoSave(project, save);
+  const [isSaveQueued, queueSave] = useAutoSave(project, save);
 
   const addToHistory = useHistory(
     (proj: ProjectManager) => {
@@ -62,7 +62,7 @@ export function Editor({
         o: object,
       ) => AnyTool;
       toolRef.current = constructor({});
-      toolCtx.updateProject();
+      toolCtx.updateProject(true);
       toolCtx.updateTool();
     },
     () => projectRef.current.newInstance(),
@@ -78,7 +78,7 @@ export function Editor({
         const inst = projectRef.current.newInstance();
         setProject(inst);
         if (save) {
-          setShouldSave(true);
+          queueSave();
           addToHistory(inst);
         }
       },
@@ -91,7 +91,7 @@ export function Editor({
         this.updateTool();
       },
     }),
-    [lastTool, project, addToHistory, tool, setShouldSave],
+    [lastTool, project, addToHistory, tool, queueSave],
   );
 
   useNoPinchToZoom();
@@ -135,7 +135,7 @@ export function Editor({
         <TopBarBtns ctx={toolCtx} tickRef={tickRef} />
 
         <p className="inline ml-3">
-          {!shouldSave && isSaved ? "Salvato" : "Salvataggio in corso"}
+          {!isSaveQueued && isSaved ? "Salvato" : "Salvataggio in corso"}
         </p>
         <Chrono tickRef={tickRef} />
       </div>

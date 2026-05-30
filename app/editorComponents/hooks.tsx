@@ -41,7 +41,7 @@ export function useAutoSave(
   project: ProjectManager,
   save: (p: ProjectManager) => void,
   delay: number = 500,
-): [boolean, (b: boolean) => void] {
+): [isSaveQueued: boolean, queueSave: () => void] {
   const [shouldSave, setShouldSave] = useState(false);
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -51,7 +51,7 @@ export function useAutoSave(
     window.onbeforeunload = shouldSave ? () => save(project) : null;
     return () => clearTimeout(timeout);
   }, [project, save, shouldSave, delay]);
-  return [shouldSave, setShouldSave];
+  return [shouldSave, () => setShouldSave(true)];
 }
 
 export function useNoPinchToZoom() {
