@@ -149,13 +149,13 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
                       ctx.projectRef.current,
                     );
                     ctx.updateTool();
-                    ctx.updateProject();
+                    ctx.updateProject(true);
                   }}
                   del={() => {
                     ctx.projectRef.current.deleteDevice(device.id);
                     ctx.toolRef.current.selected.clear();
                     ctx.updateTool();
-                    ctx.updateProject();
+                    ctx.updateProject(true);
                   }}
                 >
                   <p className="flex-1">1 dispositivo selezionato</p>
@@ -192,12 +192,30 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
               const newIdx = ctx.projectRef.current.moveDecalIdx(decal, of);
               if (newIdx != -1) {
                 ctx.toolRef.current.selectedDecals = new Set([newIdx]);
-                ctx.updateProject();
+                ctx.updateProject(true);
                 ctx.updateTool();
               }
             };
             return (
               <div>
+                <SelectionActions
+                  duplicate={() => {
+                    duplicateSelection(
+                      ctx.toolRef.current,
+                      ctx.projectRef.current,
+                    );
+                    ctx.updateTool();
+                    ctx.updateProject(true);
+                  }}
+                  del={() => {
+                    ctx.projectRef.current.removeDecal(decal);
+                    ctx.toolRef.current.selectedDecals.clear();
+                    ctx.updateTool();
+                    ctx.updateProject(true);
+                  }}
+                >
+                  <p className="flex-1">1 decal selezionato</p>
+                </SelectionActions>
                 <input
                   type="button"
                   value="Sposta su"
@@ -235,14 +253,14 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
               duplicate={() => {
                 duplicateSelection(ctx.toolRef.current, ctx.projectRef.current);
                 ctx.updateTool();
-                ctx.updateProject();
+                ctx.updateProject(true);
               }}
               del={() => {
                 for (const id of ctx.toolRef.current.selected)
                   ctx.projectRef.current.deleteDevice(id);
                 ctx.toolRef.current.selected.clear();
                 ctx.updateTool();
-                ctx.updateProject();
+                ctx.updateProject(true);
               }}
             >
               <p className="flex-1">{infoStr}</p>
