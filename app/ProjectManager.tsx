@@ -541,15 +541,15 @@ export class ProjectManager {
   // Costruttore che serve a creare copie identiche del progetto
   // per scatenare un rerender
   newInstance() {
-    const next = new ProjectManager(
-      {
-        ...this.project,
-        devices: new Map(this.project.devices),
-        decals: [...this.project.decals],
-        connections: new Map(this.project.connections),
-      },
-      this.tickRef,
-    );
+    const newProj = { ...this.project };
+    if (this.mutatedDevices) newProj.devices = new Map(this.project.devices);
+    if (this.mutatedDecals) newProj.decals = [...this.project.decals];
+    if (this.mutatedDevices || !this.cableCache) {
+      newProj.connections = new Map(this.project.connections);
+      this.computeCables();
+    }
+
+    const next = new ProjectManager(newProj, this.tickRef);
     next.packetLog = [...this.packetLog];
     next.emulatorTick = this.emulatorTick;
 
