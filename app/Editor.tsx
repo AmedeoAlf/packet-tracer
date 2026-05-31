@@ -194,8 +194,8 @@ function buildKeyboardEventHandler(
 ) {
   return (ev: KeyboardEvent<HTMLDivElement>) => {
     if (
-      (ev.target as HTMLElement).tagName == "INPUT" ||
-      (ev.target as HTMLElement).tagName == "TEXTAREA"
+      ev.target instanceof HTMLTextAreaElement ||
+      ev.target instanceof HTMLInputElement
     )
       return;
     const evObj = {
