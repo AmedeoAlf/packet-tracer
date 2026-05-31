@@ -32,6 +32,7 @@ import gatewayCmd from "@/app/virtualPrograms/gateway";
 import { DropDown } from "@/app/editorComponents/reusable/DropDown";
 import { handleDHCPPacket } from "../utils/dhcpServer";
 import dhcpCmd from "@/app/virtualPrograms/dhcpServer";
+import { NetworkField } from "../panels/impostazioniDiRete";
 
 export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   configPanel: {
@@ -69,9 +70,11 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
               ev.preventDefault();
               const fd = new FormData(ev.target as HTMLFormElement);
               try {
-                const ip = (fd.get("ip") as string) ?? throwString("Empty ip");
+                const ip =
+                  (fd.get("ifIpInput_t") as string) ?? throwString("Empty ip");
                 const subnet =
-                  (fd.get("subnet") as string) ?? throwString("Empty subnet");
+                  (fd.get("ifSubnetInput_t") as string) ??
+                  throwString("Empty subnet");
 
                 const parsedIp =
                   parseIpv4(ip) ?? throwString("Invalid ip " + ip);
@@ -92,45 +95,18 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
               }
             }}
           >
-            <p>
-              Indirizzo ip:
-              <input
-                type="text"
-                name="ip"
-                value={
-                  ctx.state.ifIpInput_t ?? (l3if ? ipv4ToString(l3if.ip) : "")
-                }
-                onChange={(ev) => {
-                  ctx.state.ifIpInput_t = ev.target.value;
-                  ctx.updateState();
-                }}
-                className={
-                  typeof ctx.state.ifIpInput_t == "undefined" ? "" : "text-temp"
-                }
-                placeholder="0.0.0.0"
-              />
-            </p>
-            <p>
-              Subnet mask:
-              <input
-                type="text"
-                name="subnet"
-                value={
-                  ctx.state.ifSubnetInput_t ??
-                  (l3if ? ipv4ToString(l3if.mask) : "")
-                }
-                onChange={(ev) => {
-                  ctx.state.ifSubnetInput_t = ev.target.value;
-                  ctx.updateState();
-                }}
-                className={
-                  typeof ctx.state.ifSubnetInput_t == "undefined"
-                    ? ""
-                    : "text-temp"
-                }
-                placeholder="255.255.255.0"
-              />
-            </p>
+            <NetworkField
+              ctx={ctx}
+              prop={"ifIpInput_t"}
+              ifUnset={l3if ? ipv4ToString(l3if.ip) : ""}
+              label="Indirizzo ip"
+            />
+            <NetworkField
+              ctx={ctx}
+              prop={"ifSubnetInput_t"}
+              ifUnset={l3if ? ipv4ToString(l3if.mask) : "255.255.255.0"}
+              label="Subnet mask"
+            />
             <Button
               type="submit"
               className="bg-primary disabled:opacity-70"

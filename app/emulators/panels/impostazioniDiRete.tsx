@@ -1,5 +1,5 @@
 import { OSInternalState } from "@/app/devices/list/Computer";
-import { EmulatorContext } from "../DeviceEmulator";
+import { EmulatorContext, InternalState } from "../DeviceEmulator";
 import { getDns } from "../utils/dnsUtils";
 import {
   IPV4_BROADCAST,
@@ -10,31 +10,28 @@ import { KeysOfType, throwString } from "@/app/common";
 import { removeFile, writeFileInLocation } from "../utils/osFiles";
 import { Button } from "@/app/editorComponents/reusable/RoundBtn";
 
-type ComputerStringProp = NonNullable<
-  KeysOfType<NetworkSettingsPanelState, string | undefined>
->;
-function NetworkField({
+export function NetworkField<T extends InternalState<T>>({
   ctx,
   label,
   prop,
   ifUnset,
 }: {
-  ctx: EmulatorContext<NetworkSettingsPanelState>;
+  ctx: EmulatorContext<T>;
   label: string;
-  prop: ComputerStringProp;
+  prop: KeysOfType<T, string | undefined>;
   ifUnset: string;
 }) {
   return (
     <>
       {label}
       <input
+        name={prop.toString()}
         type="text"
-        value={ctx.state[prop] ?? ifUnset}
+        value={(ctx.state[prop] as string) ?? ifUnset}
         onChange={(ev) => {
           // I hope this warning is a mistake...
 
-          // eslint-disable-next-line react-hooks/immutability
-          ctx.state[prop] = ev.target.value;
+          (ctx.state[prop] as string) = ev.target.value;
           ctx.updateState();
         }}
         className={
