@@ -290,17 +290,13 @@ function canvasWheelEventHandler(
         currProject.viewBoxX += (cursor.x - center.x) * (1 - factor);
         currProject.viewBoxY += (cursor.y - center.y) * (1 - factor);
       }
-      ctx.updateProject();
-      ctx.updateTool();
     } else if (ev.shiftKey) {
       currProject.viewBoxX += ev.deltaY / ctx.project.viewBoxZoom;
-      ctx.updateProject();
-      // ctx.update()
     } else {
       currProject.viewBoxX += ev.deltaX / ctx.project.viewBoxZoom;
       currProject.viewBoxY += ev.deltaY / ctx.project.viewBoxZoom;
-      ctx.updateProject();
-      // ctx.update()
     }
+    if (ctx.toolRef.current.toolname == "hand") ctx.updateTool();
+    ctx.updateProject();
   };
 }
