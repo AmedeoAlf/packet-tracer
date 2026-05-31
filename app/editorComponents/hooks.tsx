@@ -81,7 +81,12 @@ export function useHistory<T>(
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (!((e.key == "z" || e.key == "Z") && e.ctrlKey)) return;
+      if (
+        !((e.key == "z" || e.key == "Z") && e.ctrlKey) ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLInputElement
+      )
+        return;
       e.preventDefault();
 
       if (history.length < 1) return;
