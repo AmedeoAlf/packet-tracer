@@ -89,10 +89,8 @@ export function Editor({
       updateProject(save) {
         const inst = projectRef.current.newInstance();
         setProject(inst);
-        if (save) {
-          queueSave();
-          addToHistory(inst);
-        }
+        queueSave();
+        if (save) addToHistory(inst);
       },
       updateTool,
       revertTool() {
