@@ -12,14 +12,32 @@ import { Button } from "@/app/editorComponents/reusable/RoundBtn";
 
 export function NetworkField<T extends InternalState<T>>({
   ctx,
-  label,
-  prop,
-  ifUnset,
+  ...props
 }: {
-  ctx: EmulatorContext<T>;
+  ctx: Pick<EmulatorContext<T>, "state" | "updateState">;
   label: string;
   prop: KeysOfType<T, string | undefined>;
   ifUnset: string;
+}) {
+  return NetworkFieldOfState({
+    state: ctx.state,
+    updateState: ctx.updateState,
+    ...props,
+  });
+}
+
+export function NetworkFieldOfState<T extends object>({
+  label,
+  prop,
+  ifUnset,
+  state,
+  updateState,
+}: {
+  label: string;
+  prop: KeysOfType<T, string | undefined>;
+  ifUnset: string;
+  state: T;
+  updateState: () => void;
 }) {
   return (
     <>
@@ -27,16 +45,16 @@ export function NetworkField<T extends InternalState<T>>({
       <input
         name={prop.toString()}
         type="text"
-        value={(ctx.state[prop] as string) ?? ifUnset}
+        value={(state[prop] as string) ?? ifUnset}
         onChange={(ev) => {
           // I hope this warning is a mistake...
 
-          (ctx.state[prop] as string) = ev.target.value;
-          ctx.updateState();
+          (state[prop] as string) = ev.target.value;
+          updateState();
         }}
         className={
           "flex-1 bg-onsidebar w-full px-2 py-1 rounded-md border-b " +
-          (typeof ctx.state[prop] == "undefined" ? "" : "text-temp")
+          (typeof state[prop] == "undefined" ? "" : "text-temp")
         }
       />
     </>

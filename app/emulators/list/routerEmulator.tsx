@@ -33,6 +33,7 @@ import { DropDown } from "@/app/editorComponents/reusable/DropDown";
 import { handleDHCPPacket } from "../utils/dhcpServer";
 import dhcpCmd from "@/app/virtualPrograms/dhcpServer";
 import { NetworkField } from "../panels/impostazioniDiRete";
+import { dhcpPanel } from "../panels/dhcpServerUI";
 
 export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   configPanel: {
@@ -229,6 +230,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         </>
       );
     },
+    DHCP: dhcpPanel,
   },
   packetHandler(ctx, data, intf) {
     const l2Packet = EthernetFrameSerializer.fromBytes(data);
