@@ -46,6 +46,9 @@ export const Decals = memo(
               {...data}
             />
           );
+        default:
+          const exhaustive: never = d;
+          return exhaustive;
       }
     });
   },
