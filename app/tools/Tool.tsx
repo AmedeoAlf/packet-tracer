@@ -77,7 +77,7 @@ export const TOOLS = {
   connect: makeConnectTool,
   label: makeLabelTool,
   rect: makeRectTool,
-};
+} as const;
 
 export const TOOL_LIST = [
   "select",
