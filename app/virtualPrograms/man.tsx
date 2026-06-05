@@ -34,9 +34,9 @@ export const man = <State extends InternalState<State>>(
         const cmd =
           shell.subcommands[cmdName] ??
           throwString("How did I get an invalid cmd?");
-        ctx.write(`${cmdName} - ${cmd.desc}\n`);
+        ctx.write(`NAME:\n  ${cmdName} - ${cmd.desc}\n`);
 
-        ctx.write("Usage:");
+        ctx.write("SYNOPSIS:");
         traverse((s) => ctx.write(`  ${cmdName} ${s}`), cmd);
       },
     },
