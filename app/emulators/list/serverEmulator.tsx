@@ -47,6 +47,7 @@ import writeFile from "@/app/virtualPrograms/writeFile";
 import ls from "@/app/virtualPrograms/ls";
 import { TCPCallback } from "@/app/devices/list/Computer";
 import fileManager from "../panels/fileManager";
+import autoMan from "@/app/virtualPrograms/man";
 
 export const defaultServerFS: OSDir = {
   etc: {
@@ -101,7 +102,7 @@ export const serverEmulator: DeviceEmulator<ServerInternalState> = {
     }
   },
   cmdInterpreter: {
-    shell: {
+    shell: autoMan({
       subcommands: {
         gateway: gatewayCmd(),
         interfaces: interfacesDhcp(),
@@ -116,7 +117,7 @@ export const serverEmulator: DeviceEmulator<ServerInternalState> = {
         writeFile: writeFile(),
         ls: ls(),
       },
-    },
+    }),
   },
 };
 

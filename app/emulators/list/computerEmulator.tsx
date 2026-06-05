@@ -38,6 +38,7 @@ import { dhcpDaemonInit, handleDHCPPacket } from "../utils/dhcpClient";
 import { writeFileInLocation } from "../utils/osFiles";
 import interfacesDhcp from "@/app/virtualPrograms/interfacesDhcp";
 import fileManager from "../panels/fileManager";
+import autoMan from "@/app/virtualPrograms/man";
 
 export type OSUDPPacket = {
   from: IPv4Address;
@@ -66,7 +67,7 @@ export const computerEmulator: DeviceEmulator<ComputerInternalState> = {
     if (packet) computerPacketHandler(ctx, packet);
   },
   cmdInterpreter: {
-    shell: {
+    shell: autoMan({
       subcommands: {
         hello: hello(),
         interfaces: interfacesDhcp(),
@@ -83,7 +84,7 @@ export const computerEmulator: DeviceEmulator<ComputerInternalState> = {
         curl: curl(),
         gateway: gatewayCmd(),
       },
-    },
+    }),
   },
 };
 

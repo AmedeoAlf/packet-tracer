@@ -4,6 +4,7 @@ import interfaces from "../../virtualPrograms/interfaces";
 import l2send from "../../virtualPrograms/l2send";
 import { DeviceEmulator } from "../DeviceEmulator";
 import { SwitchInternalState } from "@/app/devices/list/Switch";
+import autoMan from "@/app/virtualPrograms/man";
 
 export const switchEmulator: DeviceEmulator<SwitchInternalState> = {
   configPanel: {
@@ -39,13 +40,13 @@ export const switchEmulator: DeviceEmulator<SwitchInternalState> = {
     },
   },
   cmdInterpreter: {
-    shell: {
+    shell: autoMan({
       subcommands: {
         hello: hello(),
         interfaces: interfaces(),
         l2send: l2send(),
       },
-    },
+    }),
   },
   packetHandler(ctx, data, from_intf) {
     const l2Packet = EthernetFrameSerializer.fromBytes(data);

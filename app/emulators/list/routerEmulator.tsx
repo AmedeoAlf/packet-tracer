@@ -34,6 +34,7 @@ import { handleDHCPPacket } from "../utils/dhcpServer";
 import dhcpCmd from "@/app/virtualPrograms/dhcpServer";
 import { NetworkField } from "../panels/impostazioniDiRete";
 import { dhcpPanel } from "../panels/dhcpServerUI";
+import autoMan from "@/app/virtualPrograms/man";
 
 export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   configPanel: {
@@ -334,7 +335,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
     }
   },
   cmdInterpreter: {
-    shell: {
+    shell: autoMan({
       subcommands: {
         hello: hello(),
         interfaces: interfacesL3(),
@@ -346,6 +347,6 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         routing,
         dhcp: dhcpCmd(),
       },
-    },
+    }),
   },
 };
