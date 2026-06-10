@@ -270,12 +270,15 @@ export class ProjectManager {
     const ifIdx = idxOfIntf(target);
     console.assert(dev.internalState.netInterfaces.length > ifIdx);
 
-    this.packetLog.push({
-      bytes: data,
-      from: intf,
-      to: target,
-      tick: this.currTick,
-    });
+    this.packetLog = [
+      ...this.packetLog,
+      {
+        bytes: data,
+        from: intf,
+        to: target,
+        tick: this.currTick,
+      },
+    ];
 
     this.delay(
       (toolCtx: ToolCtx) =>
@@ -549,7 +552,7 @@ export class ProjectManager {
     }
 
     const next = new ProjectManager(newProj, this.tickRef);
-    next.packetLog = [...this.packetLog];
+    next.packetLog = this.packetLog;
     next.emulatorTick = this.emulatorTick;
 
     if (this.mutatedDevices || !this.cableCache) this.computeCables();

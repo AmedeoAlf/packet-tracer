@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { quickAnalysis, unpacket } from "../emulators/utils/unpacker";
 import {
   deviceOfIntf,
@@ -9,52 +9,55 @@ import { SideBar } from "./reusable/SideBar";
 import { InterfaceId } from "../Project";
 import { Button } from "./reusable/RoundBtn";
 
-export function PacketLog({
-  log,
-  devices,
-}: {
-  log: PacketLogEntry[];
-  devices: ProjectManager["immutableDevices"];
-}) {
-  const [selected, setSelected] = useState<PacketLogEntry | null>(null);
-  const nameOf = intfIdToString.bind(null, devices);
-  return (
-    <SideBar initialWidth={200} minWidth={200}>
-      {!log.length ? null : selected ? (
-        <EntryDisplay
-          entry={selected}
-          nameOfFn={nameOf}
-          back={() => setSelected(null)}
-        />
-      ) : (
-        <table className="min-w-max text-center">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Tipo</th>
-              <th>Byte</th>
-              <th>Da</th>
-              <th>A</th>
-            </tr>
-          </thead>
-          <tbody>
-            {log
-              .toReversed()
-              .slice(0, 10)
-              .map((it, idx) => (
-                <LogRow
-                  key={idx}
-                  nameOfFn={nameOf}
-                  entry={it}
-                  onClick={() => setSelected(it)}
-                />
-              ))}
-          </tbody>
-        </table>
-      )}
-    </SideBar>
-  );
-}
+export const PacketLog = memo(
+  function PacketLog({
+    log,
+    devices,
+  }: {
+    log: PacketLogEntry[];
+    devices: ProjectManager["immutableDevices"];
+  }) {
+    const [selected, setSelected] = useState<PacketLogEntry | null>(null);
+    const nameOf = intfIdToString.bind(null, devices);
+    return (
+      <SideBar initialWidth={200} minWidth={200}>
+        {!log.length ? null : selected ? (
+          <EntryDisplay
+            entry={selected}
+            nameOfFn={nameOf}
+            back={() => setSelected(null)}
+          />
+        ) : (
+          <table className="min-w-max text-center">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Tipo</th>
+                <th>Byte</th>
+                <th>Da</th>
+                <th>A</th>
+              </tr>
+            </thead>
+            <tbody>
+              {log
+                .toReversed()
+                .slice(0, 10)
+                .map((it, idx) => (
+                  <LogRow
+                    key={idx}
+                    nameOfFn={nameOf}
+                    entry={it}
+                    onClick={() => setSelected(it)}
+                  />
+                ))}
+            </tbody>
+          </table>
+        )}
+      </SideBar>
+    );
+  },
+  (p, n) => p.devices.size == n.devices.size && p.log == n.log,
+);
 
 function LogRow({
   entry,
