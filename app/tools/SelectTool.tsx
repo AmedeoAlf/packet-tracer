@@ -349,7 +349,13 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
                 .forEach((it) => self.selected.add(it.id));
 
               ctx.projectRef.current.immutableDecals
-                .filter((it) => it && pointInRect(it.pos, selection))
+                .filter(
+                  (it) =>
+                    it &&
+                    (it.type == "rect"
+                      ? doRectsOverlap([...it.pos, ...it.size], selection)
+                      : pointInRect(it.pos, selection)),
+                )
                 .forEach((it) => self.selectedDecals.add(it!.id));
               ctx.updateTool();
               return;
