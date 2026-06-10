@@ -9,6 +9,7 @@ import {
   filterObject,
   SimpleRecord,
   capitalize,
+  isRecord,
 } from "./common";
 import { Device, makeDevice } from "./devices/Device";
 import { DeviceType, deviceTypesDB } from "./devices/deviceTypesDB";
@@ -426,11 +427,9 @@ export class ProjectManager {
         d
           .filter(
             (dev) =>
-              typeof dev == "object" &&
-              dev !== null &&
+              isRecord(dev) &&
               mustHaveProps.every(
-                ([prop, type]) =>
-                  prop in dev && typeof (dev as SimpleRecord)[prop] == type,
+                ([prop, type]) => prop in dev && typeof dev[prop] == type,
               ) &&
               (dev as Validated).type in deviceTypesDB,
           )

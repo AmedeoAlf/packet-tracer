@@ -172,7 +172,7 @@ export function cssPaletteColor(color: number): string {
 // --palette-5 is the last color available
 export const PALETTE_LEN = 6;
 
-export type SimpleRecord = Record<string, any>;
+export type SimpleRecord = Record<string, unknown>;
 
 export function isRecord(obj: any): obj is Record<string, unknown> {
   return typeof obj == "object" && obj != null;
