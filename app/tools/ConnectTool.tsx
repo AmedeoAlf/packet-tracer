@@ -48,7 +48,7 @@ function connect(c: ToolCtx<ConnectTool>) {
     c.tool.idxB!,
   );
   clearSelection(c);
-  c.updateProject();
+  c.updateProject(true);
   c.revertTool();
 }
 
@@ -263,7 +263,7 @@ const InterfaceSelector = memo(
               <Button
                 onClick={() => {
                   ctx.projectRef.current.disconnect(device.id, i);
-                  ctx.updateProject();
+                  ctx.updateProject(true);
                   selectIntf(i);
                 }}
                 className="bg-bad hover:brightness-130 active:brightness-100"
@@ -332,7 +332,7 @@ const firstEmptyInterface = (
 ): number => {
   let firstIf: number | undefined = undefined;
   const res = physicalInterfaces(device).find(([idx]) => {
-    if (project.getConnectedTo(toInterfaceId(device.id, idx)) == undefined) {
+    if (project.getConnectedTo(toInterfaceId(device.id, idx)) === undefined) {
       firstIf ??= idx;
       return (
         type === undefined ||

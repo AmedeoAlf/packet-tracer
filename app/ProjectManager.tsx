@@ -546,7 +546,18 @@ export class ProjectManager {
     const newProj = { ...this.project };
     if (this.mutatedDevices) newProj.devices = new Map(this.project.devices);
     if (this.mutatedDecals) newProj.decals = [...this.project.decals];
-    if (this.mutatedDevices || !this.cableCache) {
+    if (
+      !this.cableCache ||
+      (this.mutatedDevices &&
+        this.mutatedDevices.length != 0 &&
+        this.mutatedDevices.some((dev) =>
+          this.immutableDevices
+            .get(dev)!
+            .internalState.netInterfaces.some((_, idx) =>
+              this.project.connections.has(toInterfaceId(dev, idx)),
+            ),
+        ))
+    ) {
       newProj.connections = new Map(this.project.connections);
       this.computeCables();
     }
@@ -555,7 +566,6 @@ export class ProjectManager {
     next.packetLog = this.packetLog;
     next.emulatorTick = this.emulatorTick;
 
-    if (this.mutatedDevices || !this.cableCache) this.computeCables();
     next.cableCache = this.cableCache;
 
     next.callbacks = [...this.callbacks];
