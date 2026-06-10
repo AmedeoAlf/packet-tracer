@@ -12,12 +12,13 @@ export const Decals = memo(
     decals: (Decal | null)[];
     tool: AnyTool;
   }): ReactNode {
-    const highlighted = isSelectTool(tool)
+    const checkHighlighted = isSelectTool(tool)
       ? isDecalHighlighted.bind(null, tool)
       : undefined;
     return decals.map((d, idx) => {
       if (!d) return;
       const data = { "data-decalid": idx };
+      const highlighted = checkHighlighted && checkHighlighted(d);
       switch (d.type) {
         case "text":
           return (
@@ -27,7 +28,7 @@ export const Decals = memo(
               y={d.pos[1]}
               {...data}
               fill={cssColor(d.fg)}
-              className={highlighted && highlighted(d) ? "opacity-50" : ""}
+              opacity={highlighted ? 0.5 : 1}
             >
               {d.text}
             </text>
@@ -43,6 +44,7 @@ export const Decals = memo(
               stroke={cssColor(d.stroke) ?? "none"}
               strokeWidth={2}
               fill={cssColor(d.fill) ?? "none"}
+              opacity={highlighted ? 0.7 : 1}
               {...data}
             />
           );
