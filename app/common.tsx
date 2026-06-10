@@ -2,6 +2,7 @@
 "use client";
 
 export type Coords = [x: number, y: number];
+export type Rect = [x: number, y: number, w: number, h: number];
 
 export function areArraysShallowEqual<T>(a: T[], b: T[]): boolean {
   if (a.length != b.length) return false;
@@ -194,3 +195,23 @@ export const pluralize = (
   multi: string,
 ): string | undefined =>
   n < 1 ? undefined : n == 1 ? `1 ${one}` : `${n} ${multi}`;
+
+export const pointInRect = (point: Coords, rect: Rect): boolean =>
+  rect[0] < point[0] &&
+  point[0] < rect[0] + rect[2] &&
+  rect[1] < point[1] &&
+  point[1] < rect[1] + rect[3];
+
+export const rectBetween = (a: Coords, b: Coords): Rect => [
+  Math.min(a[0], b[0]),
+  Math.min(a[1], b[1]),
+  Math.abs(a[0] - b[0]),
+  Math.abs(a[1] - b[1]),
+];
+
+export const doOverlap = (a: number, b: number, c: number, d: number) =>
+  b > c && a < d;
+
+export const doRectsOverlap = (a: Rect, b: Rect) =>
+  doOverlap(a[0], a[0] + a[2], b[0], b[0] + b[2]) &&
+  doOverlap(a[1], a[1] + a[3], b[1], b[1] + b[3]);

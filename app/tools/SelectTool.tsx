@@ -7,7 +7,7 @@ import {
   InternalState,
   runOnInterpreter,
 } from "../emulators/DeviceEmulator";
-import { Coords, pluralize } from "../common";
+import { Coords, pluralize, pointInRect, rectBetween } from "../common";
 import { Device } from "../devices/Device";
 import { Decal } from "../Project";
 import { deviceOfIntf, idxOfIntf, ProjectManager } from "../ProjectManager";
@@ -41,19 +41,9 @@ export function isDeviceHighlighted(tool: SelectTool, dev: Device) {
   if (tool.selected.has(dev.id)) return true;
   if (!tool.lastCursorPos || !tool.selectionRectangle) return false;
 
-  // Check if it is part of the selection rectangle
-  const x = [tool.lastCursorPos[0], tool.selectionRectangle[0]].toSorted(
-    (a, b) => a - b,
-  );
-  const y = [tool.lastCursorPos[1], tool.selectionRectangle[1]].toSorted(
-    (a, b) => a - b,
-  );
-
-  return (
-    x[0] < dev.pos[0] &&
-    dev.pos[0] < x[1] &&
-    y[0] < dev.pos[1] &&
-    dev.pos[1] < y[1]
+  return pointInRect(
+    dev.pos,
+    rectBetween(tool.lastCursorPos, tool.selectionRectangle),
   );
 }
 
@@ -61,19 +51,9 @@ export function isDecalHighlighted(tool: SelectTool, dec: Decal) {
   if (tool.selectedDecals.has(dec.id)) return true;
   if (!tool.lastCursorPos || !tool.selectionRectangle) return false;
 
-  // Check if it is part of the selection rectangle
-  const x = [tool.lastCursorPos[0], tool.selectionRectangle[0]].toSorted(
-    (a, b) => a - b,
-  );
-  const y = [tool.lastCursorPos[1], tool.selectionRectangle[1]].toSorted(
-    (a, b) => a - b,
-  );
-
-  return (
-    x[0] < dec.pos[0] &&
-    dec.pos[0] < x[1] &&
-    y[0] < dec.pos[1] &&
-    dec.pos[1] < y[1]
+  return pointInRect(
+    dec.pos,
+    rectBetween(tool.lastCursorPos, tool.selectionRectangle),
   );
 }
 
