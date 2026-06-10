@@ -7,7 +7,13 @@ import {
   InternalState,
   runOnInterpreter,
 } from "../emulators/DeviceEmulator";
-import { Coords, pluralize, pointInRect, rectBetween } from "../common";
+import {
+  Coords,
+  doRectsOverlap,
+  pluralize,
+  pointInRect,
+  rectBetween,
+} from "../common";
 import { Device } from "../devices/Device";
 import { Decal } from "../Project";
 import { deviceOfIntf, idxOfIntf, ProjectManager } from "../ProjectManager";
@@ -51,10 +57,10 @@ export function isDecalHighlighted(tool: SelectTool, dec: Decal) {
   if (tool.selectedDecals.has(dec.id)) return true;
   if (!tool.lastCursorPos || !tool.selectionRectangle) return false;
 
-  return pointInRect(
-    dec.pos,
-    rectBetween(tool.lastCursorPos, tool.selectionRectangle),
-  );
+  const selection = rectBetween(tool.lastCursorPos, tool.selectionRectangle);
+  return dec.type == "rect"
+    ? doRectsOverlap(selection, [...dec.pos, ...dec.size])
+    : pointInRect(dec.pos, selection);
 }
 
 export const makeSelectTool: ToolConstructor<SelectTool> = (
@@ -330,37 +336,20 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
         case "mouseup":
           if (self.lastCursorPos) {
             if (self.selectionRectangle) {
-              const x = [
-                self.selectionRectangle[0],
-                self.lastCursorPos[0],
-              ].toSorted((a, b) => a - b);
-              const y = [
-                self.selectionRectangle[1],
-                self.lastCursorPos[1],
-              ].toSorted((a, b) => a - b);
+              const selection = rectBetween(
+                self.selectionRectangle,
+                self.lastCursorPos,
+              );
               self.lastCursorPos = undefined;
               self.selectionRectangle = undefined;
-              if (x[0] == x[1] || y[0] == y[1]) return;
+              if (selection[2] == 0 || selection[3] == 0) return;
               ctx.projectRef.current.immutableDevices
                 .values()
-                .filter(
-                  (it) =>
-                    x[0] < it.pos[0] &&
-                    it.pos[0] < x[1] &&
-                    y[0] < it.pos[1] &&
-                    it.pos[1] < y[1],
-                )
+                .filter((it) => pointInRect(it.pos, selection))
                 .forEach((it) => self.selected.add(it.id));
 
               ctx.projectRef.current.immutableDecals
-                .filter(
-                  (it) =>
-                    it &&
-                    x[0] < it.pos[0] &&
-                    it.pos[0] < x[1] &&
-                    y[0] < it.pos[1] &&
-                    it.pos[1] < y[1],
-                )
+                .filter((it) => it && pointInRect(it.pos, selection))
                 .forEach((it) => self.selectedDecals.add(it!.id));
               ctx.updateTool();
               return;
