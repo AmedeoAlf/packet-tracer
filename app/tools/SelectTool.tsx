@@ -40,7 +40,7 @@ export type SelectTool = Tool<SelectTool> & {
 };
 
 export function isSelectTool(tool: AnyTool | object): tool is SelectTool {
-  return "toolname" in tool ? tool.toolname == "select" : false;
+  return "toolname" in tool && tool.toolname == "select";
 }
 
 export function isDeviceHighlighted(tool: SelectTool, dev: Device) {
