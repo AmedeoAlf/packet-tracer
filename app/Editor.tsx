@@ -17,7 +17,7 @@ import { ToolSelector } from "./editorComponents/ToolSelector";
 import { Devices } from "./editorComponents/Devices";
 import { ProjectManager } from "./ProjectManager";
 import { TopBarBtns } from "./editorComponents/TopBarBtns";
-import { Coords } from "./common";
+import { Coords, Rect } from "./common";
 import { Decals } from "./editorComponents/Decals";
 import { Chrono } from "./editorComponents/Chrono";
 import {
@@ -105,14 +105,14 @@ export function Editor({
   useNoPinchToZoom();
 
   const svgViewBox = useMemo(() => {
-    const vb = [project.viewBoxX, project.viewBoxY, 10000, 10000];
+    const vb: Rect = [project.viewBoxX, project.viewBoxY, 10000, 10000];
     if (canvasSize) {
       vb[2] = canvasSize[0] / project.viewBoxZoom;
       vb[3] = canvasSize[1] / project.viewBoxZoom;
       vb[0] -= vb[2] * 0.5;
       vb[1] -= vb[3] * 0.5;
     }
-    return vb;
+    return vb.join(" ");
   }, [canvasSize, project.viewBoxZoom, project.viewBoxX, project.viewBoxY]);
 
   useSimulation(toolCtx, 50);
@@ -171,7 +171,7 @@ export function Editor({
         onMouseLeave={mouseHandler("mouseleave")}
         onWheel={canvasWheelEventHandler(toolCtx, svgToDOMPoint, canvasSize)}
         className={`${svgCanvas.current ? "bg-background" : "bg-selectable-border"} -z-1 w-full h-screen transition-colors select-none`}
-        viewBox={svgViewBox.join(" ")}
+        viewBox={svgViewBox}
         ref={svgCanvas}
       >
         <defs> {Object.values(ICONS)} </defs>
