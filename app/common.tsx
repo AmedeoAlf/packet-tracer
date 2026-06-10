@@ -20,7 +20,7 @@ export function clamp(n: number, min: number, max: number): number {
   return Math.max(Math.min(n, max), min);
 }
 
-export function cloneWithProto<T extends object>(obj: T): T {
+export function cloneWithProto<T extends SimpleRecord>(obj: T): T {
   return Object.setPrototypeOf({ ...obj }, Object.getPrototypeOf(obj));
 }
 
@@ -174,7 +174,7 @@ export const PALETTE_LEN = 6;
 
 export type SimpleRecord = Record<string, unknown>;
 
-export function isRecord(obj: any): obj is Record<string, unknown> {
+export function isRecord(obj: any): obj is SimpleRecord {
   return typeof obj == "object" && obj != null;
 }
 

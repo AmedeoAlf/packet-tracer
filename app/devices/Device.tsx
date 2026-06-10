@@ -1,5 +1,5 @@
 "use client";
-import { Coords } from "../common";
+import { Coords, SimpleRecord } from "../common";
 import { DeviceEmulator, InternalState } from "../emulators/DeviceEmulator";
 import { DeviceType } from "./deviceTypesDB";
 import { ICONS } from "./ICONS";
@@ -20,8 +20,8 @@ export interface DeviceFactory<State extends InternalState<State>> {
     deviceType: DeviceType;
     iconId: keyof typeof ICONS;
     emulator: DeviceEmulator<State>;
-    serializeState?: () => object;
-    deserializeState?: (o: Record<string, unknown>) => State;
+    serializeState?: () => SimpleRecord;
+    deserializeState?: (o: SimpleRecord) => State;
   };
   defaultState: () => State;
 }

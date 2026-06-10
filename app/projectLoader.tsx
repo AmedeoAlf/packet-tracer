@@ -1,8 +1,8 @@
-import { isRecord, throwString } from "./common";
+import { isRecord, SimpleRecord, throwString } from "./common";
 import { jsonReplacer } from "./Project";
 export const currVersion = "v1";
 
-export function save(exported: object) {
+export function save(exported: SimpleRecord) {
   localStorage.setItem(
     "project:" + currVersion,
     JSON.stringify(exported, jsonReplacer),
@@ -37,23 +37,22 @@ export function load() {
   return json;
 }
 
-const converters: Record<string, (parsed: Record<string, unknown>) => string> =
-  {
-    devicesAsObj: (v) => {
-      const devices = v.devices;
-      if (devices && typeof devices == "object" && !Array.isArray(devices)) {
-        v.devices = Object.values(devices) as unknown[];
-      }
-      return "v0";
-    },
-    v0: (v) => {
-      if (!v.decals) return "v1";
-      if (!Array.isArray(v.decals))
-        throwString(`decals is not an array, but ${JSON.stringify(v.decals)}`);
-      for (const it of v.decals) {
-        if (it == null || it.type != "rect") continue;
-        it.size = [it.size.width || 0, it.size.height || 0];
-      }
-      return "v1";
-    },
-  };
+const converters: Record<string, (parsed: SimpleRecord) => string> = {
+  devicesAsObj: (v) => {
+    const devices = v.devices;
+    if (devices && typeof devices == "object" && !Array.isArray(devices)) {
+      v.devices = Object.values(devices) as unknown[];
+    }
+    return "v0";
+  },
+  v0: (v) => {
+    if (!v.decals) return "v1";
+    if (!Array.isArray(v.decals))
+      throwString(`decals is not an array, but ${JSON.stringify(v.decals)}`);
+    for (const it of v.decals) {
+      if (it == null || it.type != "rect") continue;
+      it.size = [it.size.width || 0, it.size.height || 0];
+    }
+    return "v1";
+  },
+};

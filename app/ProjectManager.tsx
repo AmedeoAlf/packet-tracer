@@ -379,7 +379,7 @@ export class ProjectManager {
     this.mutatedDecals.push(id, target);
     return target;
   }
-  exportProject(): object {
+  exportProject(): SimpleRecord {
     return {
       ...this.project,
       devices: this.project.devices
