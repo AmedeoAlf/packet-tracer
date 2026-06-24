@@ -1,4 +1,4 @@
-import { memo, ReactNode } from "react";
+import { memo, ReactNode, useEffect } from "react";
 import { TOOL_LIST, TOOLS } from "../tools/Tool";
 import { WrapToolIcon } from "../tools/TOOL_ICONS";
 import { SelectableCard } from "./reusable/SelectableCard";
@@ -16,6 +16,16 @@ export const ToolSelector = memo(
     anchor: keyof typeof TOOLS;
     setAnchor: (t: keyof typeof TOOLS) => void;
   }): ReactNode {
+    useEffect(() => {
+      const cb = (ev: KeyboardEvent) => {
+        if (ev.key == "Escape") {
+          setToolTo("select");
+          setAnchor("select");
+        }
+      };
+      window.addEventListener("keyup", cb);
+      return () => window.removeEventListener("keyup", cb);
+    }, [setAnchor, setToolTo]);
     return (
       <div className="fixed bottom-1 w-full flex justify-center pointer-events-none">
         <div className="bg-topbar w-max h-min flex flex-wrap justify-center gap-1 p-2 rounded-2xl pointer-events-auto">
