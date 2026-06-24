@@ -4,27 +4,30 @@ import { makeRectTool } from "../RectTool";
 import { SelectTool } from "../SelectTool";
 import { AnyTool, CanvasEvent, ToolConstructor, ToolCtx } from "../Tool";
 import duplicateSelection from "./duplicateSelection";
+import { makeConnectTool } from "../ConnectTool";
+import { makeHandTool } from "../HandTool";
+import { makeAddTool } from "../AddTool";
 
 export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
   const originalDevices = new Set(ctx.toolRef.current.selected);
   const originalDecals = new Set(ctx.toolRef.current.selectedDecals);
 
   const self = ctx.toolRef.current;
+
+  const setTool = (constructor: ToolConstructor<AnyTool>) => {
+    ctx.toolRef.current = constructor(
+      self,
+      ctx.projectRef.current,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ) as any;
+    ctx.updateTool();
+  };
   switch (ev.type) {
     case "doubleclick":
       if (self.selected.size != 0) return;
       if (self.selectedDecals.size != 1) return;
       const decalIdx = self.selectedDecals.values().next().value!;
       const decal = ctx.projectRef.current.immutableDecals[decalIdx]!;
-
-      const setTool = (constructor: ToolConstructor<AnyTool>) => {
-        ctx.toolRef.current = constructor(
-          self,
-          ctx.projectRef.current,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ) as any;
-        ctx.updateTool();
-      };
 
       switch (decal.type) {
         case "text":
@@ -153,6 +156,21 @@ export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
           ctx.updateProject(true);
           return;
         }
+        case "a":
+          setTool(makeAddTool);
+          return;
+        case "c":
+          setTool(makeConnectTool);
+          return;
+        case "h":
+          setTool(makeHandTool);
+          return;
+        case "l":
+          setTool(makeLabelTool);
+          return;
+        case "r":
+          setTool(makeRectTool);
+          return;
         default:
           ev.consumed = false;
       }
