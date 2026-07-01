@@ -1,5 +1,5 @@
 import { RefObject, useEffect, useLayoutEffect, useState } from "react";
-import { ToolCtx } from "../tools/Tool";
+import { CanvasEvent, ToolCtx } from "../tools/Tool";
 import { ProjectManager } from "../ProjectManager";
 
 export function useCanvasSize(
@@ -110,4 +110,39 @@ export function useHistory<T>(
     setHistory(arr);
     setLookBack(-1);
   };
+}
+
+// buildEventHandler per eventi "keydown" e "keyup"
+function buildKeyboardEventHandler(
+  ctx: ToolCtx,
+  type: Extract<CanvasEvent["type"], "keydown" | "keyup">,
+) {
+  return (ev: globalThis.KeyboardEvent) => {
+    if (
+      ev.target instanceof HTMLTextAreaElement ||
+      ev.target instanceof HTMLInputElement
+    )
+      return;
+    const evObj = {
+      type,
+      key: ev.key,
+      ctrl: ev.ctrlKey,
+      shift: ev.shiftKey,
+      consumed: false,
+    };
+    ctx.tool.onEvent(ctx, evObj);
+    if (evObj.consumed) ev.preventDefault();
+  };
+}
+export function useKeyboardEventHandlers(ctx: ToolCtx) {
+  useEffect(() => {
+    const keydown = buildKeyboardEventHandler(ctx, "keydown");
+    const keyup = buildKeyboardEventHandler(ctx, "keyup");
+    window.addEventListener("keydown", keydown);
+    window.addEventListener("keyup", keyup);
+    return () => {
+      window.removeEventListener("keydown", keydown);
+      window.removeEventListener("keyup", keyup);
+    };
+  }, [ctx]);
 }

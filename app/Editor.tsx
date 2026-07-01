@@ -4,7 +4,6 @@ import {
   MouseEvent,
   ReactNode,
   useMemo,
-  KeyboardEvent,
   WheelEventHandler,
   RefObject,
   useCallback,
@@ -24,6 +23,7 @@ import {
   useAutoSave,
   useCanvasSize,
   useHistory,
+  useKeyboardEventHandlers,
   useNoPinchToZoom,
   useSimulation,
 } from "./editorComponents/hooks";
@@ -133,12 +133,10 @@ export function Editor({
     toolCtx,
   );
 
+  useKeyboardEventHandlers(toolCtx);
+
   return (
-    <div
-      onKeyDown={buildKeyboardEventHandler(toolCtx, "keydown")}
-      onKeyUp={buildKeyboardEventHandler(toolCtx, "keyup")}
-      tabIndex={0}
-    >
+    <div>
       <div className="bg-topbar fixed top-0 w-full h-12 indent-1.5em flex items-center px-1 border-b-2 border-topbar-border">
         <TopBarBtns ctx={toolCtx} tickRef={tickRef} />
 
@@ -185,29 +183,6 @@ export function Editor({
       </svg>
     </div>
   );
-}
-
-// buildEventHandler per eventi "keydown" e "keyup"
-function buildKeyboardEventHandler(
-  ctx: ToolCtx,
-  type: Extract<CanvasEvent["type"], "keydown" | "keyup">,
-) {
-  return (ev: KeyboardEvent<HTMLDivElement>) => {
-    if (
-      ev.target instanceof HTMLTextAreaElement ||
-      ev.target instanceof HTMLInputElement
-    )
-      return;
-    const evObj = {
-      type,
-      key: ev.key,
-      ctrl: ev.ctrlKey,
-      shift: ev.shiftKey,
-      consumed: false,
-    };
-    ctx.tool.onEvent(ctx, evObj);
-    if (evObj.consumed) ev.preventDefault();
-  };
 }
 
 // Ritorna una funzione che chiama `tool.onEvent(event)` con un oggetto
