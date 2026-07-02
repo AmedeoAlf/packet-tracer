@@ -2,16 +2,14 @@
 import { RefObject } from "react";
 import {
   clamp,
-  Coords,
   deepCopy,
   arraySwap,
   trustMeBroCast,
   filterObject,
   SimpleRecord,
-  capitalize,
   isRecord,
 } from "../common";
-import { Device, makeDevice } from "../devices/Device";
+import { Device } from "../devices/Device";
 import { DeviceType, deviceTypesDB } from "../devices/deviceTypesDB";
 import {
   AnyEmulatorContext,
@@ -30,6 +28,17 @@ import {
   toInterfaceId,
 } from "../Project";
 import { ToolCtx } from "../tools/Tool";
+import { createDevice, deleteDevice, duplicateDevice } from "./devices";
+import {
+  computeCables,
+  connect,
+  disconnect,
+  getAllConnections,
+  getCables,
+  getConnectedTo,
+  getInterface,
+  getInterfaceFromId,
+} from "./connections";
 
 function emptyProject(): Project {
   return {
@@ -55,7 +64,7 @@ type Callback = {
  * È l'unico oggetto da serializzare per salvare un progetto.
  */
 export class ProjectManager {
-  private project: Project;
+  _project: Project;
 
   // Flag che definisce se riciclare `devices` e `connections`
   viewBoxChange: boolean = false;
@@ -81,162 +90,60 @@ export class ProjectManager {
 
   deviceFromTag(tag: HTMLOrSVGElement): Device | undefined {
     if (tag.dataset.id) {
-      return this.project.devices.get(+tag.dataset.id);
+      return this._project.devices.get(+tag.dataset.id);
     }
   }
   mutDevice(id: number): Device | undefined {
-    if (!this.project.devices.has(id)) return;
+    if (!this._project.devices.has(id)) return;
 
     this.mutatedDevices ??= [];
 
     if (!this.mutatedDevices.includes(id)) {
-      this.project.devices.set(id, cloneDevice(this.project.devices.get(id)!));
+      this._project.devices.set(
+        id,
+        cloneDevice(this._project.devices.get(id)!),
+      );
       this.mutatedDevices.push(id);
     }
-    return this.project.devices.get(id);
+    return this._project.devices.get(id);
   }
   get immutableDevices(): Project["devices"] {
-    return this.project.devices;
+    return this._project.devices;
   }
   get immutableDecals(): Project["decals"] {
-    return this.project.decals;
+    return this._project.decals;
   }
   mutDecal(id: number): Decal | undefined {
-    const dec = this.project.decals.at(id);
+    const dec = this._project.decals.at(id);
     if (!dec) return;
     this.mutatedDecals ??= [];
     if (!this.mutatedDecals.includes(id)) {
-      this.project.decals[id] = deepCopy(dec);
+      this._project.decals[id] = deepCopy(dec);
       this.mutatedDecals.push(id);
     }
-    return this.project.decals.at(id) ?? undefined;
+    return this._project.decals.at(id) ?? undefined;
   }
   decalFromTag(tag: HTMLOrSVGElement): Decal | undefined {
     if (tag.dataset.decalid) {
-      return this.project.decals[+tag.dataset.decalid] ?? undefined;
+      return this._project.decals[+tag.dataset.decalid] ?? undefined;
     }
   }
-  createDevice(type: DeviceType, pos: Coords, name?: string) {
-    this.mutatedDevices ??= [];
 
-    ++this.project.lastId;
-    this.project.devices.set(
-      this.project.lastId,
-      makeDevice(
-        deviceTypesDB[type],
-        this.project.lastId,
-        pos,
-        name ?? `${capitalize(type)} ${this.project.lastId}`,
-      ),
-    );
-    const initFn = deviceTypesDB[type].proto.emulator.init as (
-      ctx: AnyEmulatorContext,
-    ) => void | undefined;
-    if (initFn) {
-      const id = this.project.lastId;
-      this.beginSimulation();
-      this.setTimeout(initFn, id, 1);
-    }
-    return this.project.lastId;
-  }
-  duplicateDevice(id: number): number | undefined {
-    const old = this.project.devices.get(id);
-    if (old === undefined) return;
+  // device related methods
+  createDevice = createDevice.bind(this);
+  duplicateDevice = duplicateDevice.bind(this);
+  deleteDevice = deleteDevice.bind(this);
 
-    const newId = this.createDevice(old.deviceType, [...old.pos], old.name);
-    if (newId === undefined) return;
+  // connection related methods
+  getInterface = getInterface.bind(this);
+  getInterfaceFromId = getInterfaceFromId.bind(this);
+  connect = connect.bind(this);
+  disconnect = disconnect.bind(this);
+  getCables = getCables.bind(this);
+  computeCables = computeCables.bind(this);
+  getConnectedTo = getConnectedTo.bind(this);
+  getAllConnections = getAllConnections.bind(this);
 
-    const dup = this.project.devices.get(newId)!;
-    // FIXME: ho poca fiducia in una deep copy dell'internalState
-    // Però adesso ho anche poca fiducia nelle performance
-    dup.internalState = deepCopy(removeTempFields(old.internalState));
-    return newId;
-  }
-  deleteDevice(id: number) {
-    const dev = this.project.devices.get(id);
-    if (dev === undefined) return;
-    dev.internalState.netInterfaces.forEach((_, idx) =>
-      this.disconnect(id, idx),
-    );
-    this.project.devices.delete(id);
-    this.mutatedDevices ??= [];
-  }
-  getInterface(devId: number, ifId: number): NetworkInterface | undefined {
-    return this.project.devices
-      .get(devId)
-      ?.internalState.netInterfaces.at(ifId);
-  }
-  getInterfaceFromId(intf: InterfaceId): NetworkInterface | undefined {
-    return this.getInterface(deviceOfIntf(intf), idxOfIntf(intf));
-  }
-  connect(devIdA: number, ifIdA: number, devIdB: number, ifIdB: number) {
-    {
-      const a = this.getInterface(devIdA, ifIdA);
-      const b = this.getInterface(devIdB, ifIdB);
-      if (!a || !b) return "Interfacce non trovate";
-      if (a.type == "localhost")
-        return "Impossibile collegare interfacce virtuali (type: 'localhost')";
-      if (a.type != b.type) return "Interfacce non compatibili";
-    }
-    const intfA = toInterfaceId(devIdA, ifIdA);
-    const intfB = toInterfaceId(devIdB, ifIdB);
-    this.project.connections.delete(this.project.connections.get(intfA) || -1);
-    this.project.connections.delete(this.project.connections.get(intfB) || -1);
-    this.project.connections.set(intfA, intfB);
-    this.project.connections.set(intfB, intfA);
-    this.cableCache = undefined;
-    return;
-  }
-  disconnect(devId: number, ifId: number) {
-    const intf = toInterfaceId(devId, ifId);
-    if (!this.project.connections.has(intf)) return;
-    this.project.connections.delete(this.project.connections.get(intf)!);
-    this.project.connections.delete(intf);
-    this.cableCache = undefined;
-  }
-  getCables(): NonNullable<typeof this.cableCache> {
-    if (!this.cableCache) {
-      this.computeCables();
-      console.log(
-        "cables were not computed properly, computeCables() should've been called in newInstance()",
-      );
-    }
-    return this.cableCache!;
-  }
-  // Maps two deviceIds to the amount of connections between them
-  computeCables() {
-    const cabled = new Set<number>();
-    this.cableCache = new Map();
-    for (const conn of this.project.connections) {
-      if (cabled.has(conn[0])) continue;
-      cabled.add(conn[1]);
-
-      const reversed = deviceOfIntf(conn[0]) > deviceOfIntf(conn[1]);
-      if (reversed) conn.reverse();
-      const key = [deviceOfIntf(conn[0]), deviceOfIntf(conn[1])].reduce(
-        (acc, val) => (acc << 16) | val,
-      );
-      if (!this.cableCache.has(key)) this.cableCache.set(key, []);
-
-      const ifA = this.getInterfaceFromId(conn[0])!;
-      const ifB = this.getInterfaceFromId(conn[1])!;
-      this.cableCache.get(key)!.push({
-        type: ifA.type as PhysicalInterfaceType,
-        maxMbps: Math.min(
-          ifA.maxMbps,
-          ifB.maxMbps,
-        ) as NetworkInterface["maxMbps"],
-        intf: conn.map((it) => idxOfIntf(it)) as [number, number],
-      });
-    }
-  }
-  getConnectedTo(intf: InterfaceId): InterfaceId | undefined {
-    if (this.getInterfaceFromId(intf)?.type == "localhost") return intf;
-    return this.project.connections.get(intf);
-  }
-  getAllConnections(): IteratorObject<[InterfaceId, InterfaceId]> {
-    return this.project.connections.entries();
-  }
   setTimeout(
     fn: (t: AnyEmulatorContext) => void,
     device: number,
@@ -263,7 +170,7 @@ export class ProjectManager {
   sendOn(intf: InterfaceId, data: Buffer, toSelf = false) {
     const target = toSelf ? intf : this.getConnectedTo(intf);
     if (typeof target == "undefined") return;
-    const dev = this.project.devices.get(deviceOfIntf(target));
+    const dev = this._project.devices.get(deviceOfIntf(target));
     if (!dev) return;
     const ifIdx = idxOfIntf(target);
     console.assert(dev.internalState.netInterfaces.length > ifIdx);
@@ -342,18 +249,18 @@ export class ProjectManager {
   }
   addDecal(d: DecalData): number {
     this.mutatedDecals ??= [];
-    this.project.decals.push({ ...d, id: this.project.decals.length });
-    return this.project.decals.length - 1;
+    this._project.decals.push({ ...d, id: this._project.decals.length });
+    return this._project.decals.length - 1;
   }
   duplicateDecal(id: number): number | undefined {
-    const old = this.project.decals.at(id) ?? null;
+    const old = this._project.decals.at(id) ?? null;
     if (old === null) return;
 
     return this.addDecal(deepCopy(old));
   }
   removeDecal(id: number) {
     this.mutatedDecals ??= [];
-    this.project.decals[id] = null;
+    this._project.decals[id] = null;
   }
   moveDecalIdx(id: number, offset: number): number {
     const step = Math.sign(offset);
@@ -372,18 +279,18 @@ export class ProjectManager {
     }
     if (!this.immutableDecals.at(target)) return -1;
 
-    arraySwap(this.project.decals, id, target);
-    if (this.project.decals[id]) this.project.decals[id].id = id;
+    arraySwap(this._project.decals, id, target);
+    if (this._project.decals[id]) this._project.decals[id].id = id;
     // IDK perché c'è bisogno del ! qui
-    if (this.project.decals[target]) this.project.decals[target]!.id = target;
+    if (this._project.decals[target]) this._project.decals[target]!.id = target;
     this.mutatedDecals ??= [];
     this.mutatedDecals.push(id, target);
     return target;
   }
   exportProject(): SimpleRecord {
     return {
-      ...this.project,
-      devices: this.project.devices
+      ...this._project,
+      devices: this._project.devices
         .values()
         .map((dev) => ({
           ...dev,
@@ -392,7 +299,7 @@ export class ProjectManager {
             dev.serializeState?.() ?? removeTempFields(dev.internalState),
         }))
         .toArray(),
-      connections: Object.fromEntries(this.project.connections.entries()),
+      connections: Object.fromEntries(this._project.connections.entries()),
     };
   }
   static fromSerialized(
@@ -400,15 +307,15 @@ export class ProjectManager {
     tickRef: ProjectManager["tickRef"],
   ) {
     const pm = ProjectManager.make(tickRef);
-    function setIfPresent<P extends keyof typeof pm.project>(
+    function setIfPresent<P extends keyof typeof pm._project>(
       prop: P,
-      transform: (t: unknown) => (typeof pm.project)[P] | undefined,
+      transform: (t: unknown) => (typeof pm._project)[P] | undefined,
     ) {
       if (prop in serialized)
-        pm.project[prop] = transform(serialized[prop]) ?? pm.project[prop];
+        pm._project[prop] = transform(serialized[prop]) ?? pm._project[prop];
     }
-    pm.project = {
-      ...pm.project,
+    pm._project = {
+      ...pm._project,
       ...serialized,
     };
     setIfPresent("devices", (d) => {
@@ -487,41 +394,41 @@ export class ProjectManager {
       //     cloneWithProto(this.project.devices.get(id)!),
       //   );
       // }
-      this.project.devices = new Map(this.project.devices);
+      this._project.devices = new Map(this._project.devices);
       this.mutatedDevices = undefined;
     }
     if (this.mutatedDecals) {
       // for (const id of this.mutatedDecals) {
       //   this.project.decals[id] = { ...this.project.decals[id]! };
       // }
-      this.project.decals = [...this.project.decals];
+      this._project.decals = [...this._project.decals];
       this.mutatedDecals = undefined;
     }
   }
 
   get lastId() {
-    return this.project.lastId;
+    return this._project.lastId;
   }
 
   get viewBoxX() {
-    return this.project.viewBoxX;
+    return this._project.viewBoxX;
   }
   set viewBoxX(val) {
-    this.project.viewBoxX = val;
+    this._project.viewBoxX = val;
   }
 
   get viewBoxY() {
-    return this.project.viewBoxY;
+    return this._project.viewBoxY;
   }
   set viewBoxY(val) {
-    this.project.viewBoxY = val;
+    this._project.viewBoxY = val;
   }
 
   get viewBoxZoom() {
-    return this.project.viewBoxZoom;
+    return this._project.viewBoxZoom;
   }
   set viewBoxZoom(val: number) {
-    this.project.viewBoxZoom = clamp(val, MIN_ZOOM_FACTOR, MAX_ZOOM_FACTOR);
+    this._project.viewBoxZoom = clamp(val, MIN_ZOOM_FACTOR, MAX_ZOOM_FACTOR);
   }
 
   get currTick() {
@@ -529,7 +436,7 @@ export class ProjectManager {
   }
 
   private constructor(project: Project, tickRef: ProjectManager["tickRef"]) {
-    this.project = project;
+    this._project = project;
     this.tickRef = tickRef;
     return;
   }
@@ -541,9 +448,9 @@ export class ProjectManager {
   // Costruttore che serve a creare copie identiche del progetto
   // per scatenare un rerender
   newInstance() {
-    const newProj = { ...this.project };
-    if (this.mutatedDevices) newProj.devices = new Map(this.project.devices);
-    if (this.mutatedDecals) newProj.decals = [...this.project.decals];
+    const newProj = { ...this._project };
+    if (this.mutatedDevices) newProj.devices = new Map(this._project.devices);
+    if (this.mutatedDecals) newProj.decals = [...this._project.decals];
     if (
       !this.cableCache ||
       (this.mutatedDevices &&
@@ -552,11 +459,11 @@ export class ProjectManager {
           this.immutableDevices
             .get(dev)!
             .internalState.netInterfaces.some((_, idx) =>
-              this.project.connections.has(toInterfaceId(dev, idx)),
+              this._project.connections.has(toInterfaceId(dev, idx)),
             ),
         ))
     ) {
-      newProj.connections = new Map(this.project.connections);
+      newProj.connections = new Map(this._project.connections);
       this.computeCables();
     }
 
