@@ -10,32 +10,37 @@ import {
   SimpleRecord,
   capitalize,
   isRecord,
-} from "./common";
-import { Device, makeDevice } from "./devices/Device";
-import { DeviceType, deviceTypesDB } from "./devices/deviceTypesDB";
+} from "../common";
+import { Device, makeDevice } from "../devices/Device";
+import { DeviceType, deviceTypesDB } from "../devices/deviceTypesDB";
 import {
   AnyEmulatorContext,
   buildEmulatorContext,
   NetworkInterface,
   PhysicalInterfaceType,
-} from "./emulators/DeviceEmulator";
-import { Decal, DecalData, emptyProject, Project } from "./Project";
-import { ToolCtx } from "./tools/Tool";
+} from "../emulators/DeviceEmulator";
+import {
+  Decal,
+  DecalData,
+  deviceOfIntf,
+  idxOfIntf,
+  InterfaceId,
+  PacketLogEntry,
+  Project,
+  toInterfaceId,
+} from "../Project";
+import { ToolCtx } from "../tools/Tool";
 
-export type InterfaceId = number;
-
-// TODO: increase device bits, maybe reduce interface bits
-export function toInterfaceId(device: number, intfIdx: number): InterfaceId {
-  console.assert(intfIdx < 1 << 8);
-  return (device << 8) | intfIdx;
-}
-
-export function deviceOfIntf(i: InterfaceId): number {
-  return i >> 8;
-}
-
-export function idxOfIntf(i: InterfaceId): number {
-  return i & 0xff;
+function emptyProject(): Project {
+  return {
+    devices: new Map(),
+    decals: [],
+    connections: new Map(),
+    viewBoxX: 0,
+    viewBoxY: 0,
+    viewBoxZoom: 1,
+    lastId: 0,
+  };
 }
 
 export const MAX_ZOOM_FACTOR = 3;
@@ -44,13 +49,6 @@ export const MIN_ZOOM_FACTOR = 0.2;
 type Callback = {
   onTick: number;
   fn: (t: ToolCtx) => void;
-};
-
-export type PacketLogEntry = {
-  bytes: Buffer;
-  tick: number;
-  from: InterfaceId;
-  to: InterfaceId;
 };
 /*
  * La classe che contiene tutti i dati del progetto attuale.

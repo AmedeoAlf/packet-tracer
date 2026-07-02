@@ -1,12 +1,12 @@
 import { memo, useState } from "react";
 import { quickAnalysis, unpacket } from "../emulators/utils/unpacker";
+import { SideBar } from "./reusable/SideBar";
 import {
   deviceOfIntf,
+  InterfaceId,
   PacketLogEntry,
   ProjectManager,
-} from "../ProjectManager";
-import { SideBar } from "./reusable/SideBar";
-import { InterfaceId } from "../Project";
+} from "../Project";
 import { Button } from "./reusable/RoundBtn";
 
 export const PacketLog = memo(

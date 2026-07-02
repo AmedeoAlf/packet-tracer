@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Device } from "../devices/Device";
 import { ToolCtx } from "../tools/Tool";
 import { MacAddress } from "../protocols/802_3";
-import { toInterfaceId } from "../ProjectManager";
+import { toInterfaceId } from "../Project";
 import { isSelectTool } from "../tools/SelectTool";
 
 export interface NetworkInterface {

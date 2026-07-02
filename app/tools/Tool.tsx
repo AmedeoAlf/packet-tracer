@@ -1,14 +1,13 @@
 "use client";
 import { Device } from "../devices/Device";
 import { Coords } from "../common";
-import { Decal } from "../Project";
+import { Decal, ProjectManager } from "../Project";
 import { ReactNode, RefObject } from "react";
 import { makeSelectTool } from "./SelectTool";
 import { makeAddTool } from "./AddTool";
 import { makeHandTool } from "./HandTool";
 import { makeConnectTool } from "./ConnectTool";
 import { makeLabelTool } from "./LabelTool";
-import { ProjectManager } from "../ProjectManager";
 import { makeRectTool } from "./RectTool";
 
 export type CanvasEvent =

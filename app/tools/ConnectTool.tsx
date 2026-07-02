@@ -2,11 +2,11 @@ import { Device } from "../devices/Device";
 import { Tool, ToolConstructor, ToolCtx } from "./Tool";
 import { Coords } from "../common";
 import { intfColor } from "../editorComponents/Cables";
-import { ProjectManager, toInterfaceId } from "../ProjectManager";
 import { NetworkInterface } from "../emulators/DeviceEmulator";
 import { Button } from "../editorComponents/reusable/RoundBtn";
 import { memo } from "react";
 import { isSelectTool, SelectTool } from "./SelectTool";
+import { ProjectManager, toInterfaceId } from "../Project";
 
 type PhysicalInterfaceType = Exclude<NetworkInterface["type"], "localhost">;
 

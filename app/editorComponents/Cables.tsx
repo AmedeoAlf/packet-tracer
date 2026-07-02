@@ -1,6 +1,5 @@
 import { memo, ReactNode } from "react";
-import { Project } from "../Project";
-import { ProjectManager } from "../ProjectManager";
+import { Project, ProjectManager } from "../Project";
 import { Device } from "../devices/Device";
 import { MapRecord } from "../common";
 import { PhysicalInterfaceType } from "../emulators/DeviceEmulator";

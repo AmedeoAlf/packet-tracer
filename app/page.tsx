@@ -2,7 +2,7 @@
 import { RefObject, useMemo, useState } from "react";
 import { RouterInternalState } from "./devices/list/Router";
 import { parseIpv4 } from "./protocols/rfc_760";
-import { ProjectManager } from "./ProjectManager";
+import { ProjectManager } from "./Project";
 import dynamic from "next/dynamic";
 import { save, load } from "./projectLoader";
 const Editor = dynamic(() => import("./Editor").then((m) => m.Editor), {

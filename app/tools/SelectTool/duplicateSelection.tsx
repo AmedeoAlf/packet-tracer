@@ -1,4 +1,4 @@
-import { ProjectManager, deviceOfIntf, idxOfIntf } from "@/app/ProjectManager";
+import { ProjectManager, deviceOfIntf, idxOfIntf } from "@/app/Project";
 import { SelectTool } from "../SelectTool";
 
 // Must update tool and project after call

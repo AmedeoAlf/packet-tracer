@@ -14,7 +14,7 @@ import { ICONS } from "./devices/ICONS";
 import { Cables } from "./editorComponents/Cables";
 import { ToolSelector } from "./editorComponents/ToolSelector";
 import { Devices } from "./editorComponents/Devices";
-import { ProjectManager } from "./ProjectManager";
+import { ProjectManager } from "./Project";
 import { TopBarBtns } from "./editorComponents/TopBarBtns";
 import { Coords, Rect } from "./common";
 import { Decals } from "./editorComponents/Decals";

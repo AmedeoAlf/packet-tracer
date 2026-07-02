@@ -1,6 +1,6 @@
 import { RefObject, useEffect, useLayoutEffect, useState } from "react";
 import { CanvasEvent, ToolCtx } from "../tools/Tool";
-import { ProjectManager } from "../ProjectManager";
+import { ProjectManager } from "../Project";
 
 export function useCanvasSize(
   svgCanvas: RefObject<SVGSVGElement | null>,
