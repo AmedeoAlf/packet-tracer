@@ -4,41 +4,21 @@ import {
   clamp,
   deepCopy,
   arraySwap,
-  trustMeBroCast,
   filterObject,
   SimpleRecord,
-  isRecord,
 } from "../common";
 import { Device } from "../devices/Device";
-import { DeviceType, deviceTypesDB } from "../devices/deviceTypesDB";
 import {
-  AnyEmulatorContext,
-  buildEmulatorContext,
   NetworkInterface,
   PhysicalInterfaceType,
 } from "../emulators/DeviceEmulator";
-import {
-  Decal,
-  DecalData,
-  deviceOfIntf,
-  idxOfIntf,
-  InterfaceId,
-  PacketLogEntry,
-  Project,
-  toInterfaceId,
-} from "../Project";
+import { Decal, DecalData, PacketLogEntry, Project } from "../Project";
 import { ToolCtx } from "../tools/Tool";
-import { createDevice, deleteDevice, duplicateDevice } from "./devices";
-import {
-  computeCables,
-  connect,
-  disconnect,
-  getAllConnections,
-  getCables,
-  getConnectedTo,
-  getInterface,
-  getInterfaceFromId,
-} from "./connections";
+import * as devs from "./devices";
+import * as conn from "./connections";
+import fromSerialized from "./fromSerialized";
+import * as sim from "./simulation";
+import newInstance from "./newInstance";
 
 function emptyProject(): Project {
   return {
@@ -52,10 +32,10 @@ function emptyProject(): Project {
   };
 }
 
-export const MAX_ZOOM_FACTOR = 3;
-export const MIN_ZOOM_FACTOR = 0.2;
+const MAX_ZOOM_FACTOR = 3;
+const MIN_ZOOM_FACTOR = 0.2;
 
-type Callback = {
+export type Callback = {
   onTick: number;
   fn: (t: ToolCtx) => void;
 };
@@ -79,14 +59,14 @@ export class ProjectManager {
     })[]
   >;
 
-  private callbacks: Callback[] = [];
+  _callbacks: Callback[] = [];
 
   packetLog: PacketLogEntry[] = [];
 
   // Il tick processato in questo momento
-  private emulatorTick: number = -1;
+  _emulatorTick: number = -1;
   // Il tick mostrato sul cronometro (per programmarne di nuovi)
-  private tickRef: RefObject<number>;
+  _tickRef: RefObject<number>;
 
   deviceFromTag(tag: HTMLOrSVGElement): Device | undefined {
     if (tag.dataset.id) {
@@ -130,123 +110,37 @@ export class ProjectManager {
   }
 
   // device related methods
-  createDevice = createDevice.bind(this);
-  duplicateDevice = duplicateDevice.bind(this);
-  deleteDevice = deleteDevice.bind(this);
+  createDevice = devs.createDevice.bind(this);
+  duplicateDevice = devs.duplicateDevice.bind(this);
+  deleteDevice = devs.deleteDevice.bind(this);
 
   // connection related methods
-  getInterface = getInterface.bind(this);
-  getInterfaceFromId = getInterfaceFromId.bind(this);
-  connect = connect.bind(this);
-  disconnect = disconnect.bind(this);
-  getCables = getCables.bind(this);
-  computeCables = computeCables.bind(this);
-  getConnectedTo = getConnectedTo.bind(this);
-  getAllConnections = getAllConnections.bind(this);
+  getInterface = conn.getInterface.bind(this);
+  getInterfaceFromId = conn.getInterfaceFromId.bind(this);
+  connect = conn.connect.bind(this);
+  disconnect = conn.disconnect.bind(this);
+  getCables = conn.getCables.bind(this);
+  computeCables = conn.computeCables.bind(this);
+  getConnectedTo = conn.getConnectedTo.bind(this);
+  getAllConnections = conn.getAllConnections.bind(this);
 
-  setTimeout(
-    fn: (t: AnyEmulatorContext) => void,
-    device: number,
-    delay: number,
-  ): object {
-    if (delay < 1) throw `setTimeout delay must be >0 (was ${delay})`;
-    return this.delay((toolCtx) => {
-      if (this.immutableDevices.has(device))
-        fn(buildEmulatorContext(this.immutableDevices.get(device)!, toolCtx));
-    }, delay);
-  }
-  removeTimeout(timeout: object) {
-    const idx = this.callbacks.indexOf(timeout as Callback);
-    if (idx == -1) return;
-    this.callbacks.splice(idx, 1);
-  }
-  private delay(fn: (ctx: ToolCtx) => void, delay: number): object {
-    this.callbacks.push({
-      fn,
-      onTick: this.currTick + delay,
-    });
-    return this.callbacks.at(-1)!;
-  }
-  sendOn(intf: InterfaceId, data: Buffer, toSelf = false) {
-    const target = toSelf ? intf : this.getConnectedTo(intf);
-    if (typeof target == "undefined") return;
-    const dev = this._project.devices.get(deviceOfIntf(target));
-    if (!dev) return;
-    const ifIdx = idxOfIntf(target);
-    console.assert(dev.internalState.netInterfaces.length > ifIdx);
-
-    this.packetLog = [
-      ...this.packetLog,
-      {
-        bytes: data,
-        from: intf,
-        to: target,
-        tick: this.currTick,
-      },
-    ];
-
-    this.delay(
-      (toolCtx: ToolCtx) =>
-        dev.emulator.packetHandler(
-          buildEmulatorContext(dev, toolCtx),
-          data,
-          ifIdx,
-        ),
-      toSelf ? 0 : 1,
-    );
-  }
+  // simulation methods
+  setTimeout = sim.setEmulatorTimeout.bind(this);
+  removeTimeout = sim.removeTimeout.bind(this);
+  sendOn = sim.sendOn.bind(this);
   areTicksPending() {
-    return this.callbacks.length != 0;
+    return this._callbacks.length != 0;
   }
-  runSimulation(toolCtx: ToolCtx) {
-    const now = this.tickRef.current;
-    while (true) {
-      const newTick = this.nextCallback();
-      if (typeof newTick == "undefined" || newTick > now) break;
-      this.emulatorTick = newTick;
-      this.processTick(toolCtx);
-    }
-    this.endSimulation();
-  }
+  runSimulation = sim.runSimulation.bind(this);
   // Can be called multiple times without problems
   beginSimulation() {
-    this.emulatorTick = this.currTick;
+    this._emulatorTick = this.currTick;
   }
   // A bit more dangerous
   endSimulation() {
-    this.emulatorTick = -1;
+    this._emulatorTick = -1;
   }
-  nextCallback() {
-    if (this.callbacks.length == 0) return;
 
-    const nextCallback = this.callbacks.reduce(
-      (acc, val) => Math.min(acc, val.onTick),
-      Infinity,
-    );
-    // // could implement checks to prevent ticks from the past...
-    // if (nextCallback <= this.currTick)
-    //   throw `There are callbacks in the past, currTick=${this.currTick}, callbacks=${this.callbacks.map((it) => it.onTick).join()}`;
-    return nextCallback;
-  }
-  processTick(toolCtx: ToolCtx) {
-    const toClear: Callback[] = [];
-    for (const cb of this.callbacks.values()) {
-      if (cb.onTick != this.currTick) continue;
-      try {
-        cb.fn(toolCtx);
-      } catch (e) {
-        console.log("A callback shouldn't throw errors, but it threw");
-        console.log(e);
-      }
-      toClear.push(cb);
-    }
-    if (toClear.length == 0) return;
-    this.callbacks = this.callbacks.filter((cb) => !toClear.includes(cb));
-    // NOTE: 100% not sure this is safe to comment
-    // likely have to rewrite all packetHandlers
-    //
-    // toolCtx.updateProject();
-  }
   addDecal(d: DecalData): number {
     this.mutatedDecals ??= [];
     this._project.decals.push({ ...d, id: this._project.decals.length });
@@ -302,81 +196,7 @@ export class ProjectManager {
       connections: Object.fromEntries(this._project.connections.entries()),
     };
   }
-  static fromSerialized(
-    serialized: Record<string, unknown>,
-    tickRef: ProjectManager["tickRef"],
-  ) {
-    const pm = ProjectManager.make(tickRef);
-    function setIfPresent<P extends keyof typeof pm._project>(
-      prop: P,
-      transform: (t: unknown) => (typeof pm._project)[P] | undefined,
-    ) {
-      if (prop in serialized)
-        pm._project[prop] = transform(serialized[prop]) ?? pm._project[prop];
-    }
-    pm._project = {
-      ...pm._project,
-      ...serialized,
-    };
-    setIfPresent("devices", (d) => {
-      if (!Array.isArray(d)) return;
-
-      type Validated = {
-        type: DeviceType;
-        id: number;
-        internalState: SimpleRecord;
-      };
-      const mustHaveProps = [
-        ["type", "string"],
-        ["id", "number"],
-        ["internalState", "object"],
-      ] as const satisfies [keyof Validated, string][];
-      return new Map(
-        d
-          .filter(
-            (dev) =>
-              isRecord(dev) &&
-              mustHaveProps.every(
-                ([prop, type]) => prop in dev && typeof dev[prop] == type,
-              ) &&
-              (dev as Validated).type in deviceTypesDB,
-          )
-          .map((parsed) => {
-            trustMeBroCast<Validated>(parsed);
-            const { type, id, ...props } = parsed;
-            const factory = deviceTypesDB[type];
-            const dev: Device = Object.create(factory.proto, {
-              id: { value: +id, enumerable: true, writable: false },
-            });
-            dev.name = "invalid name";
-            dev.pos = [0, 0];
-            Object.assign(dev, props);
-            dev.internalState = factory.proto.deserializeState?.(
-              props.internalState,
-            ) ?? {
-              ...factory.defaultState(),
-              ...props.internalState,
-            };
-
-            return [dev.id, dev];
-          }),
-      );
-    });
-    setIfPresent("connections", (d) => {
-      if (typeof d !== "object" || d == null) return;
-      return new Map(
-        Object.entries(d).map(([from, to]) => [+from, to as number]),
-      );
-    });
-    pm.beginSimulation();
-    for (const d of pm.immutableDevices.values()) {
-      const initFn = d.emulator.init;
-      if (initFn) {
-        pm.setTimeout(initFn, d.id, 1);
-      }
-    }
-    return pm;
-  }
+  static fromSerialized = fromSerialized;
   recyclable(): boolean {
     return (
       !this.cantRecycle &&
@@ -432,52 +252,24 @@ export class ProjectManager {
   }
 
   get currTick() {
-    return this.emulatorTick != -1 ? this.emulatorTick : this.tickRef.current;
+    return this._emulatorTick != -1
+      ? this._emulatorTick
+      : this._tickRef.current;
   }
 
-  private constructor(project: Project, tickRef: ProjectManager["tickRef"]) {
+  constructor(project: Project, tickRef: ProjectManager["_tickRef"]) {
     this._project = project;
-    this.tickRef = tickRef;
+    this._tickRef = tickRef;
     return;
   }
 
-  static make(tickRef: ProjectManager["tickRef"]) {
+  static make(tickRef: ProjectManager["_tickRef"]) {
     return new ProjectManager(emptyProject(), tickRef);
   }
 
   // Costruttore che serve a creare copie identiche del progetto
   // per scatenare un rerender
-  newInstance() {
-    const newProj = { ...this._project };
-    if (this.mutatedDevices) newProj.devices = new Map(this._project.devices);
-    if (this.mutatedDecals) newProj.decals = [...this._project.decals];
-    if (
-      !this.cableCache ||
-      (this.mutatedDevices &&
-        this.mutatedDevices.length != 0 &&
-        this.mutatedDevices.some((dev) =>
-          this.immutableDevices
-            .get(dev)!
-            .internalState.netInterfaces.some((_, idx) =>
-              this._project.connections.has(toInterfaceId(dev, idx)),
-            ),
-        ))
-    ) {
-      newProj.connections = new Map(this._project.connections);
-      this.computeCables();
-    }
-
-    const next = new ProjectManager(newProj, this.tickRef);
-    next.packetLog = this.packetLog;
-    next.emulatorTick = this.emulatorTick;
-
-    next.cableCache = this.cableCache;
-
-    next.callbacks = [...this.callbacks];
-
-    this.applyMutations();
-    return next;
-  }
+  newInstance = newInstance.bind(this);
 }
 
 export function removeTempFields<T extends object>(obj: T): T {

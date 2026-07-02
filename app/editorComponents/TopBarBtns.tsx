@@ -8,7 +8,7 @@ export const TopBarBtns = memo(function TopBarBtns({
   tickRef,
 }: {
   ctx: ToolCtx;
-  tickRef: ProjectManager["tickRef"];
+  tickRef: ProjectManager["_tickRef"];
 }) {
   const CLASSNAME = "bg-ontopbar";
   return (

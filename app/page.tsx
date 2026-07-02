@@ -49,7 +49,7 @@ export default function Home() {
 }
 
 function loadSavedProject(
-  tickRef: ProjectManager["tickRef"],
+  tickRef: ProjectManager["_tickRef"],
 ): ProjectManager | undefined {
   try {
     const json = load();
@@ -60,7 +60,7 @@ function loadSavedProject(
   }
 }
 
-function defaultProject(tickRef: ProjectManager["tickRef"]): ProjectManager {
+function defaultProject(tickRef: ProjectManager["_tickRef"]): ProjectManager {
   const p = ProjectManager.make(tickRef);
   p.addDecal({
     type: "text",
