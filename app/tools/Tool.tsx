@@ -43,6 +43,7 @@ export interface Tool<TSelf extends Tool<TSelf>> {
   onEvent: (ctx: ToolCtx<TSelf>, ev: CanvasEvent) => void;
   panel: (ctx: ToolCtx<TSelf>) => ReactNode | undefined;
   svgElements: (ctx: ToolCtx<TSelf>) => ReactNode;
+  initialTooltip?: (ctx: ToolCtx<TSelf>) => ReactNode;
 }
 
 export type ToolCtx<T extends Tool<T> = AnyTool> = {
@@ -59,6 +60,10 @@ export type ToolCtx<T extends Tool<T> = AnyTool> = {
 
   // Revert to last tool (should be called on completed actions)
   revertTool: () => void;
+
+  setTooltip: (s: ReactNode) => void;
+  // SHOULD IMMEDIATELY RETURN
+  setTool: (t: keyof typeof TOOLS, withAnchor?: boolean) => void;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

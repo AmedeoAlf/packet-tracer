@@ -1,12 +1,7 @@
 import { doRectsOverlap, pointInRect, rectBetween } from "@/app/common";
-import { makeLabelTool } from "../LabelTool";
-import { makeRectTool } from "../RectTool";
 import { SelectTool } from "../SelectTool";
-import { AnyTool, CanvasEvent, ToolConstructor, ToolCtx } from "../Tool";
+import { CanvasEvent, ToolCtx } from "../Tool";
 import duplicateSelection from "./duplicateSelection";
-import { makeConnectTool } from "../ConnectTool";
-import { makeHandTool } from "../HandTool";
-import { makeAddTool } from "../AddTool";
 
 export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
   const originalDevices = new Set(ctx.toolRef.current.selected);
@@ -14,14 +9,6 @@ export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
 
   const self = ctx.toolRef.current;
 
-  const setTool = (constructor: ToolConstructor<AnyTool>) => {
-    ctx.toolRef.current = constructor(
-      self,
-      ctx.projectRef.current,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ) as any;
-    ctx.updateTool();
-  };
   switch (ev.type) {
     case "doubleclick":
       if (self.selected.size != 0) return;
@@ -31,10 +18,10 @@ export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
 
       switch (decal.type) {
         case "text":
-          setTool(makeLabelTool);
+          ctx.setTool("label");
           return;
         case "rect":
-          setTool(makeRectTool);
+          ctx.setTool("rect");
           return;
         default:
           return;
@@ -157,19 +144,19 @@ export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
           return;
         }
         case "a":
-          setTool(makeAddTool);
+          ctx.setTool("add");
           return;
         case "c":
-          setTool(makeConnectTool);
+          ctx.setTool("connect");
           return;
         case "h":
-          setTool(makeHandTool);
+          ctx.setTool("hand");
           return;
         case "l":
-          setTool(makeLabelTool);
+          ctx.setTool("label");
           return;
         case "r":
-          setTool(makeRectTool);
+          ctx.setTool("rect");
           return;
         default:
           ev.consumed = false;

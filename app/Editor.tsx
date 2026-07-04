@@ -55,6 +55,7 @@ export function Editor({
   const canvasSize = useCanvasSize(svgCanvas);
   const svgPt = svgCanvas.current?.createSVGPoint();
   const [isSaveQueued, queueSave] = useAutoSave(project, save);
+  const [tooltip, setTooltip] = useState<ReactNode>(undefined);
 
   const updateTool = useCallback(
     () => setTool({ ...toolRef.current }),
@@ -86,6 +87,13 @@ export function Editor({
       project,
       toolRef,
       projectRef,
+      setTooltip,
+      setTool(t, withAnchor) {
+        if (withAnchor) setLastTool(t);
+        toolRef.current = TOOLS[t](toolRef.current, projectRef.current);
+        setTooltip(toolRef.current.initialTooltip?.call(null, toolCtx));
+        toolCtx.updateTool();
+      },
       updateProject(save) {
         const inst = projectRef.current.newInstance();
         setProject(inst);
@@ -99,7 +107,7 @@ export function Editor({
         this.updateTool();
       },
     }),
-    [lastTool, updateTool, project, addToHistory, tool, queueSave],
+    [lastTool, updateTool, project, addToHistory, tool, queueSave, setTooltip],
   );
 
   useNoPinchToZoom();
@@ -151,12 +159,9 @@ export function Editor({
 
       <ToolSelector
         toolname={tool.toolname}
-        setToolTo={(t) => {
-          toolRef.current = TOOLS[t](toolRef.current, projectRef.current);
-          toolCtx.updateTool();
-        }}
+        setTool={toolCtx.setTool}
         anchor={lastTool}
-        setAnchor={setLastTool}
+        tooltip={tooltip}
       />
 
       <svg

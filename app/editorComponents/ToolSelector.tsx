@@ -1,4 +1,4 @@
-import { memo, ReactNode, useEffect } from "react";
+import { memo, ReactNode, useEffect, useState } from "react";
 import { TOOL_LIST, TOOLS } from "../tools/Tool";
 import { WrapToolIcon } from "../tools/TOOL_ICONS";
 import { SelectableCard } from "./reusable/SelectableCard";
@@ -6,38 +6,42 @@ import { SelectableCard } from "./reusable/SelectableCard";
 // Il selettore del tool in uso
 export const ToolSelector = memo(
   function ToolSelector({
+    tooltip,
     toolname,
-    setToolTo,
+    setTool,
     anchor,
-    setAnchor,
   }: {
+    tooltip: ReactNode;
     toolname: keyof typeof TOOLS;
-    setToolTo: (t: keyof typeof TOOLS) => void;
+    setTool: (t: keyof typeof TOOLS, withAnchor?: boolean) => void;
     anchor: keyof typeof TOOLS;
-    setAnchor: (t: keyof typeof TOOLS) => void;
   }): ReactNode {
+    const [hoverTooltip, setHoverTooltip] = useState<string | undefined>(
+      undefined,
+    );
+
     useEffect(() => {
       const cb = (ev: KeyboardEvent) => {
         if (ev.key == "Escape") {
-          setToolTo("select");
-          setAnchor("select");
+          setTool("select", true);
         }
       };
       window.addEventListener("keyup", cb);
       return () => window.removeEventListener("keyup", cb);
-    }, [setAnchor, setToolTo]);
+    }, [setTool]);
+
     return (
-      <div className="fixed bottom-1 w-full flex justify-center pointer-events-none">
+      <div className="fixed bottom-1 w-full flex justify-center items-center pointer-events-none flex-col gap-2">
+        <div className="text-sm">{hoverTooltip ?? tooltip}</div>
         <div className="bg-topbar w-max h-min flex flex-wrap justify-center gap-1 p-2 rounded-2xl pointer-events-auto">
           {TOOL_LIST.map((it) => (
             <SelectableCard
               key={it}
-              onClick={(ev) => {
-                if (!ev.shiftKey) setAnchor(it);
-                setToolTo(it);
-              }}
+              onClick={(ev) => setTool(it, !ev.shiftKey)}
               isSelected={it == toolname}
               unselectedStyle="bg-topbar"
+              onMouseEnter={() => setHoverTooltip(it)}
+              onMouseLeave={() => setHoverTooltip(undefined)}
               className={
                 "h-min p-2 rounded-xl" +
                 (it == toolname
@@ -54,5 +58,5 @@ export const ToolSelector = memo(
       </div>
     );
   },
-  (o, n) => o.toolname === n.toolname,
+  (o, n) => o.toolname === n.toolname && o.tooltip === n.tooltip,
 );

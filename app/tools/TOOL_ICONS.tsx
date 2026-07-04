@@ -1,7 +1,11 @@
-import { JSX } from "react";
+import { JSX, memo } from "react";
 import { TOOLS } from "./Tool";
 
-export function WrapToolIcon({ icon }: { icon: keyof typeof TOOL_ICONS }) {
+export const WrapToolIcon = memo(function WrapToolIcon({
+  icon,
+}: {
+  icon: keyof typeof TOOL_ICONS;
+}) {
   return (
     <svg
       width="32"
@@ -13,7 +17,7 @@ export function WrapToolIcon({ icon }: { icon: keyof typeof TOOL_ICONS }) {
       {TOOL_ICONS[icon]}
     </svg>
   );
-}
+});
 
 export const TOOL_ICONS = {
   select: (

@@ -7,12 +7,16 @@ export function SelectableCard({
   onClick,
   className,
   children,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   isSelected: boolean;
   onClick: MouseEventHandler;
   className?: string;
   selectedStyle?: string;
   unselectedStyle?: string;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
   children: ReactNode;
 }): ReactNode {
   className =
@@ -21,7 +25,12 @@ export function SelectableCard({
     " " +
     className;
   return (
-    <button className={className} onClick={onClick}>
+    <button
+      className={className}
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       {children}
     </button>
   );
