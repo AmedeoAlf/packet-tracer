@@ -109,5 +109,6 @@ export const makeLabelTool: ToolConstructor<LabelTool> = (
         );
       }
     },
+    initialTooltip: undefined,
   };
 };

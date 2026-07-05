@@ -76,5 +76,6 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
     },
     panel: SelectToolPanel,
     onEvent,
+    initialTooltip: <>click per selezionare, trascina per selezione multipla</>,
   };
 };

@@ -53,5 +53,6 @@ export const makeHandTool: ToolConstructor<HandTool> = (
     svgElements() {
       return <></>;
     },
+    initialTooltip: undefined,
   };
 };

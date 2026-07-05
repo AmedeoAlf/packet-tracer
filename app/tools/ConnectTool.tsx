@@ -214,6 +214,7 @@ export const makeConnectTool: ToolConstructor<ConnectTool> = (
       }
       return <></>;
     },
+    initialTooltip: undefined,
   };
 };
 

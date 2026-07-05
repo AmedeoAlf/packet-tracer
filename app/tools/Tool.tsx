@@ -43,7 +43,7 @@ export interface Tool<TSelf extends Tool<TSelf>> {
   onEvent: (ctx: ToolCtx<TSelf>, ev: CanvasEvent) => void;
   panel: (ctx: ToolCtx<TSelf>) => ReactNode | undefined;
   svgElements: (ctx: ToolCtx<TSelf>) => ReactNode;
-  initialTooltip?: (ctx: ToolCtx<TSelf>) => ReactNode;
+  initialTooltip: ReactNode | ((ctx: ToolCtx<TSelf>) => ReactNode);
 }
 
 export type ToolCtx<T extends Tool<T> = AnyTool> = {

@@ -210,6 +210,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
         );
       }
     },
+    initialTooltip: undefined,
   };
 };
 

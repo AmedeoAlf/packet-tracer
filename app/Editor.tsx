@@ -7,6 +7,7 @@ import {
   WheelEventHandler,
   RefObject,
   useCallback,
+  useEffect,
 } from "react";
 import { AnyTool, CanvasEvent, ToolCtx, TOOLS } from "./tools/Tool";
 import { makeSelectTool } from "./tools/SelectTool";
@@ -91,7 +92,11 @@ export function Editor({
       setTool(t, withAnchor) {
         if (withAnchor) setLastTool(t);
         toolRef.current = TOOLS[t](toolRef.current, projectRef.current);
-        setTooltip(toolRef.current.initialTooltip?.call(null, toolCtx));
+        setTooltip(
+          toolRef.current.initialTooltip instanceof Function
+            ? toolRef.current.initialTooltip(toolCtx)
+            : toolRef.current.initialTooltip,
+        );
         toolCtx.updateTool();
       },
       updateProject(save) {
@@ -108,6 +113,18 @@ export function Editor({
       },
     }),
     [lastTool, updateTool, project, addToHistory, tool, queueSave, setTooltip],
+  );
+
+  // gets the first tooltip to be shown to the ui
+  useEffect(
+    () =>
+      setTooltip(
+        toolRef.current.initialTooltip instanceof Function
+          ? toolRef.current.initialTooltip(toolCtx)
+          : toolRef.current.initialTooltip,
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   useNoPinchToZoom();

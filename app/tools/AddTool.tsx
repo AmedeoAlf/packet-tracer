@@ -54,6 +54,7 @@ export const makeAddTool: ToolConstructor<AddTool> = (
         />
       );
     },
+    initialTooltip: undefined,
   };
 };
 
