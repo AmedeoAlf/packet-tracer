@@ -5,6 +5,7 @@ import { ExampleDevice } from "./list/ExampleDevice";
 import { Switch } from "./list/Switch";
 import { Router } from "./list/Router";
 import { Server } from "./list/Server";
+import HomeRouter from "./list/HomeRouter";
 
 /*
  * Quest'oggetto contiene la lista di tutti `DeviceFactory` esistenti,
@@ -12,6 +13,7 @@ import { Server } from "./list/Server";
  */
 export const deviceTypesDB = {
   router: Router,
+  "Router di casa": HomeRouter,
   switch: Switch,
   server: Server,
   computer: Computer,
