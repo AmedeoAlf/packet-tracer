@@ -9,6 +9,14 @@ import { ipv4ToString, parseIpv4 } from "../protocols/rfc_760";
 
 export const routing = {
   desc: "Change routing settings",
+  run(ctx) {
+    if (ctx.state.routingTables.length == 0) ctx.write("Routing table empty");
+    for (const entry of ctx.state.routingTables) {
+      ctx.write(
+        `${ipv4ToString(entry.netAddr)}/${countLeadingOnes(entry.mask)} -> ${ipv4ToString(entry.to)}`,
+      );
+    }
+  },
   subcommands: {
     add: {
       desc: "Add a new entry to the routing table",
