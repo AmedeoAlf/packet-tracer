@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/immutability */
+// TODO: is there really no way to fix all these warnings?
+// is it possible that ctx is the wrong kind of parameter to be passed to this component?
 import { pluralize } from "@/app/common";
 import { DropDown } from "@/app/editorComponents/reusable/DropDown";
 import { TextInput } from "@/app/editorComponents/reusable/TextInput";
