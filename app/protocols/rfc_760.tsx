@@ -41,6 +41,7 @@ import {
 
 // NOTE: Implementazione parziale, ad esempio IHL è sempre uguale a 5
 export type IPv4Address = number;
+export type IPv4AndMask = [ip: IPv4Address, mask: IPv4Address];
 export const IPV4_BROADCAST: IPv4Address = 0xffffffff;
 export const IPV4_MAX_PAYLOAD = 65535 - 20;
 export const IPV4_LOCALHOST = parseIpv4("127.0.0.1")!;
@@ -97,9 +98,9 @@ export function defaultL3InternalState<
 }
 
 export enum ProtocolCode {
-  "icmp" = 1,
-  "tcp" = 6,
-  "udp" = 17,
+  icmp = 1,
+  tcp = 6,
+  udp = 17,
 }
 
 export const MORE_FRAGMENTS_BIT = 1 << 13;
