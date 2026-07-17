@@ -25,6 +25,7 @@ export interface ACLInternalState<
   TSelf extends ACLInternalState<TSelf>,
 > extends L3InternalState<TSelf> {
   aclRules: Rule[][];
+  assignedACLs: number[];
 }
 
 function ruleToString(rule: Rule): string {
