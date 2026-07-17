@@ -26,6 +26,7 @@
  * simulatore)
  */
 
+import { countLeadingOnes } from "../common";
 import { RouterInternalState } from "../devices/list/Router";
 import { EmulatorContext, InternalState } from "../emulators/DeviceEmulator";
 import { MacAddress } from "./802_3";
@@ -55,12 +56,25 @@ export function ipv4ToString(ip: IPv4Address): string {
   ].join(".");
 }
 
+export function cidrFromIpv4AndMask([ip, mask]: IPv4AndMask): string {
+  return ipv4ToString(ip) + "/" + countLeadingOnes(mask);
+}
+
 export function parseIpv4(s: string): IPv4Address | undefined {
   const octects = s.split(".");
   if (octects.length != 4) return;
   const numbers = octects.map((it) => +it);
   if (!numbers.every((it) => 0 <= it && it < 256)) return;
   return numbers.reduce((acc, val) => acc * 256 + val);
+}
+
+export function cidrToIpv4AndMask(cidr: string): IPv4AndMask | undefined {
+  const [addrStr, maskStr] = cidr.split("/");
+  const addr = parseIpv4(addrStr);
+  if (typeof addr == "undefined") return;
+  const mask = +(maskStr ?? "32");
+  if (isNaN(mask) || mask < 0 || mask > 32) return;
+  return [addr, mask];
 }
 
 export type L3Interface = { ip: IPv4Address; mask: IPv4Address };

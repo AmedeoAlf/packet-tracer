@@ -9,6 +9,7 @@ import {
 } from "../../protocols/rfc_760";
 import { DeviceFactory } from "../Device";
 import { DHCPSettings, DHCPState } from "@/app/emulators/utils/dhcpServer";
+import { ACLInternalState } from "@/app/virtualPrograms/acl";
 
 export type RoutingTableEntry = {
   netAddr: IPv4Address;
@@ -16,23 +17,24 @@ export type RoutingTableEntry = {
   to: IPv4Address;
 };
 
-export type RouterInternalState = L3InternalState<RouterInternalState> & {
-  routingTables: RoutingTableEntry[];
-  udpSocket_t?: (packet: UDPPacket, from: IPv4Address) => void;
+export type RouterInternalState = L3InternalState<RouterInternalState> &
+  ACLInternalState<RouterInternalState> & {
+    routingTables: RoutingTableEntry[];
+    udpSocket_t?: (packet: UDPPacket, from: IPv4Address) => void;
 
-  // when undefined service is disabled
-  dhcpSettings?: DHCPSettings;
-  dhcpState_t?: DHCPState;
+    // when undefined service is disabled
+    dhcpSettings?: DHCPSettings;
+    dhcpState_t?: DHCPState;
 
-  // UI for adding new routing tables
-  rtNetworkInput_t?: string;
-  rtDestinationInput_t?: string;
+    // UI for adding new routing tables
+    rtNetworkInput_t?: string;
+    rtDestinationInput_t?: string;
 
-  ifSelected_t?: number;
-  ifOpenDropDown_t?: boolean;
-  ifIpInput_t?: string;
-  ifSubnetInput_t?: string;
-};
+    ifSelected_t?: number;
+    ifOpenDropDown_t?: boolean;
+    ifIpInput_t?: string;
+    ifSubnetInput_t?: string;
+  };
 
 export const Router: DeviceFactory<RouterInternalState> = {
   proto: {
@@ -50,6 +52,7 @@ export const Router: DeviceFactory<RouterInternalState> = {
         { name: "se1", maxMbps: 100, type: "serial", mac: randomMAC() },
       ],
       routingTables: [],
+      aclRules: [],
     };
   },
 };
