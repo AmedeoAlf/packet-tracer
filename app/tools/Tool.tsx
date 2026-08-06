@@ -46,25 +46,62 @@ export interface Tool<TSelf extends Tool<TSelf>> {
   initialTooltip: ReactNode | ((ctx: ToolCtx<TSelf>) => ReactNode);
 }
 
-export type ToolCtx<T extends Tool<T> = AnyTool> = {
-  project: ProjectManager;
-  projectRef: RefObject<ProjectManager>;
+export class ToolCtx<T extends Tool<T> = AnyTool> {
+  constructor(
+    public project: ProjectManager,
+    public projectRef: RefObject<ProjectManager>,
+    private setProject: (p: ProjectManager) => void,
+    private queueSave: () => void,
+    private addToHistory: (p: ProjectManager) => void,
+
+    public tool: T,
+    public toolRef: RefObject<T>,
+    private setToolTo: (t: AnyTool) => void,
+
+    private lastTool: keyof typeof TOOLS,
+    private setLastTool: (t: keyof typeof TOOLS) => void,
+    public setTooltip: (s: ReactNode) => void,
+  ) {}
 
   // Triggers a React rerender with changes applied to project
-  updateProject: (save?: boolean) => void;
+  updateProject(save?: boolean) {
+    const inst = this.projectRef.current.newInstance();
+    this.setProject(inst);
+    this.queueSave();
+    if (save) this.addToHistory(inst);
+  }
 
-  tool: T;
-  toolRef: RefObject<T>;
   // Triggers a React rerender with changes applied to the ctx, any further edit won't be applied
-  updateTool: () => void;
+  updateTool() {
+    this.setToolTo({ ...this.toolRef.current });
+  }
 
-  // Revert to last tool (should be called on completed actions)
-  revertTool: () => void;
+  // Revert to last tool
+  // invalidates type parameter T
+  revertTool() {
+    if (this.lastTool == this.tool.toolname) return;
+    (this.toolRef.current as AnyTool) = TOOLS[this.lastTool](
+      this.toolRef.current,
+      this.projectRef.current,
+    );
+    this.updateTool();
+  }
 
-  setTooltip: (s: ReactNode) => void;
-  // SHOULD IMMEDIATELY RETURN
-  setTool: (t: keyof typeof TOOLS, withAnchor?: boolean) => void;
-};
+  // invalidates type parameter T
+  setTool(t: keyof typeof TOOLS, withAnchor?: boolean) {
+    if (withAnchor) this.setLastTool(t);
+    (this.toolRef.current as AnyTool) = TOOLS[t](
+      this.toolRef.current,
+      this.projectRef.current,
+    );
+    this.setTooltip(
+      this.toolRef.current.initialTooltip instanceof Function
+        ? this.toolRef.current.initialTooltip(this)
+        : this.toolRef.current.initialTooltip,
+    );
+    this.updateTool();
+  }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyTool = Tool<any>;

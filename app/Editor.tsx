@@ -58,10 +58,7 @@ export function Editor({
   const [isSaveQueued, queueSave] = useAutoSave(project, save);
   const [tooltip, setTooltip] = useState<ReactNode>(undefined);
 
-  const updateTool = useCallback(
-    () => setTool({ ...toolRef.current }),
-    [setTool, toolRef],
-  );
+  const updateTool = useCallback(() => setTool({ ...toolRef.current }), []);
 
   const addToHistory = useHistory(
     useCallback(
@@ -82,6 +79,7 @@ export function Editor({
     useCallback(() => projectRef.current.newInstance(), []),
   );
 
+  /*
   const updateProject = useCallback(
     (save?: boolean) => {
       const inst = projectRef.current.newInstance();
@@ -127,6 +125,20 @@ export function Editor({
     updateTool,
     revertTool,
   };
+  */
+  const toolCtx = new ToolCtx(
+    project,
+    projectRef,
+    setProject,
+    queueSave,
+    addToHistory,
+    tool,
+    toolRef,
+    setTool,
+    lastTool,
+    setLastTool,
+    setTooltip,
+  );
 
   // gets the first tooltip to be shown to the ui
   useEffect(
