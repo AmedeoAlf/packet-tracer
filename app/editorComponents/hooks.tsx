@@ -1,16 +1,16 @@
-import { RefObject, useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { CanvasEvent, ToolCtx } from "../tools/Tool";
 import { ProjectManager } from "../Project";
 
 export function useCanvasSize(
-  svgCanvas: RefObject<SVGSVGElement | null>,
+  svgCanvas: SVGSVGElement | null,
 ): [number, number] | undefined {
   const [canvasSize, setCanvasSize] = useState<[number, number] | undefined>(
     undefined,
   );
   const computeSize = () => {
-    if (!svgCanvas.current) return;
-    const rect = svgCanvas.current.getBoundingClientRect();
+    if (!svgCanvas) return;
+    const rect = svgCanvas.getBoundingClientRect();
     if (
       !canvasSize ||
       rect.width != canvasSize[0] ||

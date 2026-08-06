@@ -52,9 +52,9 @@ export function Editor({
   const [lastTool, setLastTool] = useState<keyof typeof TOOLS>("select");
   const toolRef = useRef(tool);
   const projectRef = useRef(project);
-  const svgCanvas = useRef<SVGSVGElement>(null);
+  const [svgCanvas, setSvgCanvas] = useState<SVGSVGElement | null>(null);
   const canvasSize = useCanvasSize(svgCanvas);
-  const svgPt = svgCanvas.current?.createSVGPoint();
+  const svgPt = svgCanvas?.createSVGPoint();
   const [isSaveQueued, queueSave] = useAutoSave(project, save);
   const [tooltip, setTooltip] = useState<ReactNode>(undefined);
 
@@ -82,38 +82,51 @@ export function Editor({
     useCallback(() => projectRef.current.newInstance(), []),
   );
 
-  const toolCtx: ToolCtx = useMemo(
-    () => ({
-      tool,
-      project,
-      toolRef,
-      projectRef,
-      setTooltip,
-      setTool(t, withAnchor) {
-        if (withAnchor) setLastTool(t);
-        toolRef.current = TOOLS[t](toolRef.current, projectRef.current);
-        setTooltip(
-          toolRef.current.initialTooltip instanceof Function
-            ? toolRef.current.initialTooltip(toolCtx)
-            : toolRef.current.initialTooltip,
-        );
-        toolCtx.updateTool();
-      },
-      updateProject(save) {
-        const inst = projectRef.current.newInstance();
-        setProject(inst);
-        queueSave();
-        if (save) addToHistory(inst);
-      },
-      updateTool,
-      revertTool() {
-        if (lastTool == toolCtx.tool.toolname) return;
-        toolRef.current = TOOLS[lastTool](toolRef.current, projectRef.current);
-        this.updateTool();
-      },
-    }),
-    [lastTool, updateTool, project, addToHistory, tool, queueSave, setTooltip],
+  const updateProject = useCallback(
+    (save?: boolean) => {
+      const inst = projectRef.current.newInstance();
+      setProject(inst);
+      queueSave();
+      if (save) addToHistory(inst);
+    },
+    [addToHistory, queueSave],
   );
+
+  const setToolTo = useCallback(function (
+    this: ToolCtx,
+    t: keyof typeof TOOLS,
+    withAnchor?: boolean,
+  ) {
+    if (withAnchor) setLastTool(t);
+    toolRef.current = TOOLS[t](toolRef.current, projectRef.current);
+    setTooltip(
+      toolRef.current.initialTooltip instanceof Function
+        ? toolRef.current.initialTooltip(this)
+        : toolRef.current.initialTooltip,
+    );
+    this.updateTool();
+  }, []);
+
+  const revertTool = useCallback(
+    function (this: ToolCtx) {
+      if (lastTool == this.tool.toolname) return;
+      toolRef.current = TOOLS[lastTool](toolRef.current, projectRef.current);
+      this.updateTool();
+    },
+    [lastTool],
+  );
+
+  const toolCtx: ToolCtx = {
+    tool,
+    project,
+    toolRef,
+    projectRef,
+    setTooltip,
+    setTool: setToolTo,
+    updateProject,
+    updateTool,
+    revertTool,
+  };
 
   // gets the first tooltip to be shown to the ui
   useEffect(
@@ -146,9 +159,7 @@ export function Editor({
     ? (x: number, y: number): DOMPoint => {
         svgPt.x = x;
         svgPt.y = y;
-        return svgPt.matrixTransform(
-          svgCanvas.current!.getScreenCTM()!.inverse(),
-        );
+        return svgPt.matrixTransform(svgCanvas!.getScreenCTM()!.inverse());
       }
     : undefined;
 
@@ -189,19 +200,27 @@ export function Editor({
         onMouseMove={mouseHandler("mousemove")}
         onMouseEnter={mouseHandler("mouseenter")}
         onMouseLeave={mouseHandler("mouseleave")}
-        onWheel={canvasWheelEventHandler(toolCtx, svgToDOMPoint, canvasSize)}
-        className={`${svgCanvas.current ? "bg-background" : "bg-selectable-border"} -z-1 w-full h-screen transition-colors select-none`}
+        onWheel={canvasWheelEventHandler(
+          projectRef,
+          () => {
+            if (toolRef.current.toolname == "hand") toolCtx.updateTool();
+            toolCtx.updateProject();
+          },
+          svgToDOMPoint,
+          canvasSize,
+        )}
+        className={`${svgCanvas ? "bg-background" : "bg-selectable-border"} -z-1 w-full h-screen transition-colors select-none`}
         viewBox={svgViewBox}
-        ref={svgCanvas}
+        ref={setSvgCanvas}
       >
         <defs> {Object.values(ICONS)} </defs>
-        <Decals decals={toolCtx.project.immutableDecals} tool={tool} />
+        <Decals decals={project.immutableDecals} tool={tool} />
         <Cables
           devices={project.immutableDevices}
           cables={project.getCables()}
         />
-        {toolCtx.tool.svgElements(toolCtx)}
-        <Devices devices={project.immutableDevices} tool={toolCtx.tool} />
+        {tool.svgElements(toolCtx)}
+        <Devices devices={project.immutableDevices} tool={tool} />
       </svg>
     </div>
   );
@@ -262,12 +281,13 @@ function buildMouseEventHandler(
 }
 
 function canvasWheelEventHandler(
-  ctx: ToolCtx,
+  projectRef: RefObject<ProjectManager>,
+  updateProject: () => void,
   toDOMPoint: ((x: number, y: number) => DOMPoint) | undefined,
   canvasSize: Coords | undefined,
 ): WheelEventHandler {
   return (ev) => {
-    const currProject = ctx.projectRef.current;
+    const currProject = projectRef.current;
     if (ev.ctrlKey) {
       const from = currProject.viewBoxZoom;
 
@@ -288,12 +308,11 @@ function canvasWheelEventHandler(
         currProject.viewBoxY += (cursor.y - center.y) * (1 - factor);
       }
     } else if (ev.shiftKey) {
-      currProject.viewBoxX += ev.deltaY / ctx.project.viewBoxZoom;
+      currProject.viewBoxX += ev.deltaY / currProject.viewBoxZoom;
     } else {
-      currProject.viewBoxX += ev.deltaX / ctx.project.viewBoxZoom;
-      currProject.viewBoxY += ev.deltaY / ctx.project.viewBoxZoom;
+      currProject.viewBoxX += ev.deltaX / currProject.viewBoxZoom;
+      currProject.viewBoxY += ev.deltaY / currProject.viewBoxZoom;
     }
-    if (ctx.toolRef.current.toolname == "hand") ctx.updateTool();
-    ctx.updateProject();
+    updateProject();
   };
 }
