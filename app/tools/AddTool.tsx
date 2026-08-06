@@ -27,7 +27,7 @@ export const makeAddTool: ToolConstructor<AddTool> = (
         </div>
         <p className="mt-2">Dispositivo selezionato:</p>
         <div className="flex-wrap flex w-max max-w-full gap-1">
-          <DeviceTypeSelector {...ctx} />
+          <DeviceTypeSelector ctx={ctx} />
         </div>
       </div>
     ),
@@ -82,7 +82,7 @@ function DeviceTypeComponent({
 }
 
 const DeviceTypeSelector = memo(
-  function DeviceTypeSelector(ctx: ToolCtx<AddTool>) {
+  function DeviceTypeSelector({ ctx }: { ctx: ToolCtx<AddTool> }) {
     return Object.keys(deviceTypesDB).map((it) => {
       trustMeBroCast<keyof typeof deviceTypesDB>(it);
       return (
@@ -112,5 +112,5 @@ const DeviceTypeSelector = memo(
       );
     });
   },
-  (p, n) => p.tool.deviceType == n.tool.deviceType,
+  (p, n) => p.ctx.tool.deviceType == n.ctx.tool.deviceType,
 );
