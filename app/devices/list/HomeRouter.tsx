@@ -22,6 +22,8 @@ export const HomeRouter: DeviceFactory<RouterInternalState> = {
         dns: 0x0,
         excluded: [],
       },
+      aclRules: [],
+      assignedACLs: [],
     };
   },
 };
