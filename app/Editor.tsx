@@ -152,7 +152,7 @@ export function Editor({
 
       <ToolSelector
         toolname={tool.toolname}
-        setTool={toolCtx.setTool}
+        setTool={toolCtx.setTool.bind(toolCtx)}
         anchor={lastTool}
         tooltip={tooltip}
       />
