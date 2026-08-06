@@ -79,53 +79,6 @@ export function Editor({
     useCallback(() => projectRef.current.newInstance(), []),
   );
 
-  /*
-  const updateProject = useCallback(
-    (save?: boolean) => {
-      const inst = projectRef.current.newInstance();
-      setProject(inst);
-      queueSave();
-      if (save) addToHistory(inst);
-    },
-    [addToHistory, queueSave],
-  );
-
-  const setToolTo = useCallback(function (
-    this: ToolCtx,
-    t: keyof typeof TOOLS,
-    withAnchor?: boolean,
-  ) {
-    if (withAnchor) setLastTool(t);
-    toolRef.current = TOOLS[t](toolRef.current, projectRef.current);
-    setTooltip(
-      toolRef.current.initialTooltip instanceof Function
-        ? toolRef.current.initialTooltip(this)
-        : toolRef.current.initialTooltip,
-    );
-    this.updateTool();
-  }, []);
-
-  const revertTool = useCallback(
-    function (this: ToolCtx) {
-      if (lastTool == this.tool.toolname) return;
-      toolRef.current = TOOLS[lastTool](toolRef.current, projectRef.current);
-      this.updateTool();
-    },
-    [lastTool],
-  );
-
-  const toolCtx: ToolCtx = {
-    tool,
-    project,
-    toolRef,
-    projectRef,
-    setTooltip,
-    setTool: setToolTo,
-    updateProject,
-    updateTool,
-    revertTool,
-  };
-  */
   const toolCtx = new ToolCtx(
     project,
     projectRef,
