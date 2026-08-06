@@ -16,7 +16,6 @@ import {
   ProtocolCode,
 } from "../../protocols/rfc_760";
 import hello from "../../virtualPrograms/hello";
-import interfacesL3 from "../../virtualPrograms/interfacesl3";
 import l2send from "../../virtualPrograms/l2send";
 import ping from "../../virtualPrograms/ping";
 import { DeviceEmulator, runOnInterpreter } from "../DeviceEmulator";
