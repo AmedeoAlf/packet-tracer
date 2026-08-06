@@ -65,9 +65,59 @@ export const routerInterfaces = <
         desc: "sets applied acl",
         run: (ctx) =>
           ctx.write(
-            ctx.state.assignedACLs.at(+ctx.args![3])?.toString() ?? "no acl",
+            ctx.state.assignedACLs.at(+ctx.args![2])?.toString() ?? "no acl",
           ),
-        validate(state, past) {},
+        validate: (state, past) =>
+          state.netInterfaces.some((it) => it.name == past[2]),
+        autocomplete: (state) =>
+          state.netInterfaces.flatMap((it, idx) => {
+            if (it.type == "localhost") return [];
+            const ipv4 = state.l3Ifs.at(idx)?.ip;
+            return [
+              {
+                desc: `${it.type} ${it.maxMbps} Mbps ${ipv4 ? ipv4ToString(ipv4) : "No ip"}`,
+                option: it.name,
+              },
+            ];
+          }),
+        paramDesc: "interface",
+        then: {
+          paramDesc: "acl to use/-1",
+          validate(_, past) {
+            const idx = parseInt(past[3]);
+            return idx >= -1;
+          },
+          autocomplete(state, past) {
+            const intf = state.netInterfaces.findIndex(
+              (it) => it.name == past[2],
+            );
+            const acl = state.assignedACLs.at(intf);
+            return acl == null
+              ? [{ desc: "remove acl", option: "-1" }]
+              : state.aclRules.map((v, idx) => ({
+                  desc: `${v.length} rules`,
+                  option: idx.toString(),
+                }));
+          },
+          then: {
+            run(ctx) {
+              const intf = ctx.state.netInterfaces.findIndex(
+                (it) => it.name == ctx.args![2],
+              );
+              const acl = parseInt(ctx.args![3]);
+              if (acl == -1) {
+                delete ctx.state.assignedACLs[intf];
+                ctx.state.assignedACLs.length =
+                  ctx.state.assignedACLs.findLastIndex(
+                    (it) => typeof it == "number",
+                  ) + 1;
+              } else {
+                ctx.state.assignedACLs[intf] = acl;
+              }
+            },
+            done: true,
+          },
+        },
       },
     },
   );

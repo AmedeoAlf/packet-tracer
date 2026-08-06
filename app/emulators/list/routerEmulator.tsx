@@ -36,6 +36,7 @@ import { NetworkField } from "../panels/impostazioniDiRete";
 import { dhcpPanel } from "../panels/dhcpServerUI";
 import autoMan from "@/app/virtualPrograms/man";
 import acl from "@/app/virtualPrograms/acl";
+import routerInterfaces from "@/app/virtualPrograms/routerInterfaces";
 
 export const routerEmulator: DeviceEmulator<RouterInternalState> = {
   configPanel: {
@@ -340,7 +341,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
       subcommands: {
         acl: acl(),
         hello: hello(),
-        interfaces: interfacesL3(),
+        interfaces: routerInterfaces(),
         l2send: l2send(),
         ping: ping(),
         arptable: arptable(),
