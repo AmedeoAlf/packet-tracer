@@ -19,13 +19,13 @@ export type ConnectTool = Tool<ConnectTool> & {
   cursorPos?: Coords;
 };
 
-function clearSelection({ toolRef, updateTool }: ToolCtx<ConnectTool>) {
-  toolRef.current.deviceA = undefined;
-  toolRef.current.idxA = undefined;
-  toolRef.current.deviceB = undefined;
-  toolRef.current.idxB = undefined;
-  toolRef.current.errorMsg = undefined;
-  updateTool();
+function clearSelection(ctx: ToolCtx<ConnectTool>) {
+  ctx.toolRef.current.deviceA = undefined;
+  ctx.toolRef.current.idxA = undefined;
+  ctx.toolRef.current.deviceB = undefined;
+  ctx.toolRef.current.idxB = undefined;
+  ctx.toolRef.current.errorMsg = undefined;
+  ctx.updateTool();
 }
 
 function canConnect(
