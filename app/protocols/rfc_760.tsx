@@ -77,6 +77,13 @@ export function cidrToIpv4AndMask(cidr: string): IPv4AndMask | undefined {
   return [addr, mask];
 }
 
+export function ipv4InNetwork(
+  ip: IPv4Address,
+  [net, mask]: IPv4AndMask,
+): boolean {
+  return (ip & mask) == (net & mask);
+}
+
 export type L3Interface = { ip: IPv4Address; mask: IPv4Address };
 
 // -1 on no interface
