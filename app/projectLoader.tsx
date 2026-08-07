@@ -1,6 +1,7 @@
 import { isRecord, SimpleRecord, throwString } from "./common";
 import { jsonReplacer } from "./Project";
-export const currVersion = "v1";
+import { Device } from "./devices/Device";
+export const currVersion = "v2";
 
 export function save(exported: SimpleRecord) {
   localStorage.setItem(
@@ -31,6 +32,7 @@ export function load() {
 
   while (version != currVersion) {
     if (!(version in converters)) return;
+    console.log("migrating", version);
     version = converters[version](json);
   }
 
@@ -54,5 +56,16 @@ const converters: Record<string, (parsed: SimpleRecord) => string> = {
       it.size = [it.size.width || 0, it.size.height || 0];
     }
     return "v1";
+  },
+  v1: (v) => {
+    for (const d of v.devices as Device[]) {
+      if (!("l3Ifs" in d.internalState)) continue;
+      if (!Array.isArray(d.internalState.l3Ifs)) continue;
+      d.internalState.l3Ifs = d.internalState.l3Ifs.map((it) => [
+        it.ip,
+        it.mask,
+      ]);
+    }
+    return "v2";
   },
 };
