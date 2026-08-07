@@ -16,6 +16,7 @@ export type L3Rule = {
 
 export type L4Rule = Omit<L3Rule, "type"> & {
   type: "udp" | "tcp";
+  // destination port or -1
   port: number;
 };
 
