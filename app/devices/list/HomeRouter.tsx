@@ -24,6 +24,7 @@ export const HomeRouter: DeviceFactory<RouterInternalState> = {
       },
       aclRules: [],
       assignedACLs: [],
+      assignedACLsOut: [],
     };
   },
 };

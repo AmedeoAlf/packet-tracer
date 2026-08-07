@@ -54,6 +54,7 @@ export const Router: DeviceFactory<RouterInternalState> = {
       routingTables: [],
       aclRules: [],
       assignedACLs: [],
+      assignedACLsOut: [],
     };
   },
 };

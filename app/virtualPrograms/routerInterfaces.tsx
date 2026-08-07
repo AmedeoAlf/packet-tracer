@@ -1,6 +1,10 @@
 import { SubCommand } from "../emulators/DeviceEmulator";
 import { MACToString } from "../protocols/802_3";
-import { ipv4ToString, parseIpv4 } from "../protocols/rfc_760";
+import {
+  cidrFromIpv4AndMask,
+  ipv4ToString,
+  parseIpv4,
+} from "../protocols/rfc_760";
 import { ACLInternalState } from "./acl";
 import { interfaces } from "./interfaces";
 
@@ -12,10 +16,17 @@ export const routerInterfaces = <
       const l2Intf = state.netInterfaces[idx];
       const l3Intf = state.l3Ifs.at(idx);
       const ip = l3Intf
-        ? `${ipv4ToString(l3Intf.ip)} ${ipv4ToString(l3Intf.mask)}`
+        ? `${cidrFromIpv4AndMask([l3Intf.ip, l3Intf.mask])}`
         : "No ip";
-      const acl = state.assignedACLs.at(idx);
-      const aclStr = typeof acl == "undefined" ? "" : ` acl ${acl}`;
+
+      let aclStr = "";
+      {
+        const aclIn = state.assignedACLs.at(idx);
+        const aclOut = state.assignedACLsOut.at(idx);
+        if (typeof aclIn == "number") aclStr += ` acl-in=${aclIn}`;
+        if (typeof aclOut == "number") aclStr += ` acl-out=${aclOut}`;
+      }
+
       return `${l2Intf.name} ${l2Intf.type} ${l2Intf.maxMbps}Mbps ${MACToString(l2Intf.mac)} ${ip}${aclStr}`;
     },
     {
@@ -63,10 +74,6 @@ export const routerInterfaces = <
       },
       acl: {
         desc: "sets applied acl",
-        run: (ctx) =>
-          ctx.write(
-            ctx.state.assignedACLs.at(+ctx.args![2])?.toString() ?? "no acl",
-          ),
         validate: (state, past) =>
           state.netInterfaces.some((it) => it.name == past[2]),
         autocomplete: (state) =>
@@ -87,35 +94,56 @@ export const routerInterfaces = <
             const idx = parseInt(past[3]);
             return idx >= -1;
           },
-          autocomplete(state, past) {
-            const intf = state.netInterfaces.findIndex(
-              (it) => it.name == past[2],
-            );
-            const acl = state.assignedACLs.at(intf);
-            return acl == null
-              ? [{ desc: "remove acl", option: "-1" }]
-              : state.aclRules.map((v, idx) => ({
-                  desc: `${v.length} rules`,
-                  option: idx.toString(),
-                }));
+          autocomplete(state) {
+            return [
+              ...state.aclRules.map((v, idx) => ({
+                desc: `${v.length} rules`,
+                option: idx.toString(),
+              })),
+              { desc: "remove acl", option: "-1" },
+            ];
           },
           then: {
-            run(ctx) {
-              const intf = ctx.state.netInterfaces.findIndex(
-                (it) => it.name == ctx.args![2],
-              );
-              const acl = parseInt(ctx.args![3]);
-              if (acl == -1) {
-                delete ctx.state.assignedACLs[intf];
-                ctx.state.assignedACLs.length =
-                  ctx.state.assignedACLs.findLastIndex(
-                    (it) => typeof it == "number",
-                  ) + 1;
-              } else {
-                ctx.state.assignedACLs[intf] = acl;
-              }
+            subcommands: {
+              in: {
+                desc: "run on entering packets",
+                run(ctx) {
+                  const intf = ctx.state.netInterfaces.findIndex(
+                    (it) => it.name == ctx.args![2],
+                  );
+                  const acl = parseInt(ctx.args![3]);
+                  if (acl == -1) {
+                    delete ctx.state.assignedACLs[intf];
+                    ctx.state.assignedACLs.length =
+                      ctx.state.assignedACLs.findLastIndex(
+                        (it) => typeof it == "number",
+                      ) + 1;
+                  } else {
+                    ctx.state.assignedACLs[intf] = acl;
+                  }
+                },
+                done: true,
+              },
+              out: {
+                desc: "run on exiting packets",
+                run(ctx) {
+                  const intf = ctx.state.netInterfaces.findIndex(
+                    (it) => it.name == ctx.args![2],
+                  );
+                  const acl = parseInt(ctx.args![3]);
+                  if (acl == -1) {
+                    delete ctx.state.assignedACLsOut[intf];
+                    ctx.state.assignedACLsOut.length =
+                      ctx.state.assignedACLsOut.findLastIndex(
+                        (it) => typeof it == "number",
+                      ) + 1;
+                  } else {
+                    ctx.state.assignedACLsOut[intf] = acl;
+                  }
+                },
+                done: true,
+              },
             },
-            done: true,
           },
         },
       },
