@@ -69,6 +69,7 @@ export function parseIpv4(s: string): IPv4Address | undefined {
 }
 
 export function cidrToIpv4AndMask(cidr: string): IPv4AndMask | undefined {
+  if (cidr == "any") return [0, 0];
   const [addrStr, maskStr] = cidr.split("/");
   const addr = parseIpv4(addrStr);
   if (typeof addr == "undefined") return;
