@@ -17,7 +17,7 @@ export function handleArpPacket<State extends L3InternalState<State>>(
   if (packet.operation == Operation.reply) {
     if (
       packet.targetMAC != ctx.state.netInterfaces[intf].mac ||
-      packet.targetIP != ctx.state.l3Ifs[intf]!.ip
+      packet.targetIP != ctx.state.l3Ifs[intf]![0]
     )
       return;
     ctx.state.macTable_t.set(packet.senderIP, packet.senderMAC);
@@ -33,7 +33,7 @@ export function handleArpPacket<State extends L3InternalState<State>>(
     return;
   }
 
-  if (!ctx.state.l3Ifs[intf] || ctx.state.l3Ifs[intf].ip != packet.targetIP)
+  if (!ctx.state.l3Ifs[intf] || ctx.state.l3Ifs[intf][0] != packet.targetIP)
     return;
 
   ctx.state.macTable_t.set(packet.senderIP, packet.senderMAC);

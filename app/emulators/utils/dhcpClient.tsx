@@ -90,10 +90,7 @@ export function handleDHCPPacket<State extends DhcpInternalState<State>>(
       const mask = field("subnet").readUInt32BE();
       const gateway = field("router").readUInt32BE();
       const dns = runCatching(() => field("domainServer").readUInt32BE());
-      ctx.state.l3Ifs[intfId] = {
-        ip: dhcpPkt.yIAddr!,
-        mask,
-      };
+      ctx.state.l3Ifs[intfId] = [dhcpPkt.yIAddr!, mask];
       ctx.state.gateway = gateway;
       if (typeof dns != "undefined") setDns(dns);
       ctx.updateState();

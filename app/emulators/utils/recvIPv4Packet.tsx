@@ -36,7 +36,7 @@ export function recvIPv4Packet<State extends L3InternalState<State>>(
     const destination = getDestinationOf(l2Packet.payload);
     const isDestinedInterface =
       ctx.state.netInterfaces[intf].type == "localhost" ||
-      ctx.state.l3Ifs.findIndex((v) => v && v.ip == destination) != -1;
+      ctx.state.l3Ifs.findIndex((v) => v && v[0] == destination) != -1;
 
     // Non è indirizzato a me?
     if (!isDestinedInterface) {

@@ -85,14 +85,14 @@ export function ipv4InNetwork(
   return (ip & mask) == (net & mask);
 }
 
-export type L3Interface = { ip: IPv4Address; mask: IPv4Address };
+export type L3Interface = IPv4AndMask;
 
 // -1 on no interface
 export function getMatchingInterface(
   interfaces: (L3Interface | null)[],
   ip: IPv4Address,
 ): number {
-  return interfaces.findIndex((v) => v && (v.ip & v.mask) == (ip & v.mask));
+  return interfaces.findIndex((v) => v && (v[0] & v[1]) == (ip & v[1]));
 }
 
 export interface L3InternalState<

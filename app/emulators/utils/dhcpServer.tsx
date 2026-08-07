@@ -115,10 +115,10 @@ export function handleDHCPPacket<State extends L3InternalState<State>>(
 ) {
   {
     if (!ctx.state.l3Ifs[fromIntf]) return;
-    const { ip, mask } = ctx.state.l3Ifs[fromIntf];
+    const [ip, mask] = ctx.state.l3Ifs[fromIntf];
     if ((ip & mask) != (settings.network & settings.mask)) return;
   }
-  const serverAddr = ctx.state.l3Ifs[fromIntf].ip;
+  const serverAddr = ctx.state.l3Ifs[fromIntf][0];
 
   const dhcpPkt = DHCPSerializer.fromBytes(dhcpData);
   const messageType: MessageType = (
@@ -196,7 +196,7 @@ function dhcpAnswer<State extends L3InternalState<State>>(
       destination: 68,
       source: 67,
     }),
-    source: ctx.state.l3Ifs[fromIntf]!.ip,
+    source: ctx.state.l3Ifs[fromIntf]![0],
     destination: packet.yIAddr!,
     ttl: 128,
   });

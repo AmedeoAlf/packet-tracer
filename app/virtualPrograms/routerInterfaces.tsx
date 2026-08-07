@@ -15,9 +15,7 @@ export const routerInterfaces = <
     (state, idx) => {
       const l2Intf = state.netInterfaces[idx];
       const l3Intf = state.l3Ifs.at(idx);
-      const ip = l3Intf
-        ? `${cidrFromIpv4AndMask([l3Intf.ip, l3Intf.mask])}`
-        : "No ip";
+      const ip = l3Intf ? cidrFromIpv4AndMask(l3Intf) : "No ip";
 
       let aclStr = "";
       {
@@ -36,7 +34,7 @@ export const routerInterfaces = <
         autocomplete: (state) =>
           state.netInterfaces.flatMap((it, idx) => {
             if (it.type == "localhost") return [];
-            const ipv4 = state.l3Ifs.at(idx)?.ip;
+            const ipv4 = state.l3Ifs.at(idx)?.at(0);
             return [
               {
                 desc: `${it.type} ${it.maxMbps} Mbps ${ipv4 ? ipv4ToString(ipv4) : "No ip"}`,
@@ -64,7 +62,7 @@ export const routerInterfaces = <
                 );
                 const ip = parseIpv4(ctx.args![3])!;
                 const mask = parseIpv4(ctx.args![4])!;
-                ctx.state.l3Ifs[intfId] = { ip: ip, mask: mask };
+                ctx.state.l3Ifs[intfId] = [ip, mask];
                 ctx.updateState();
               },
               done: true,
@@ -79,7 +77,7 @@ export const routerInterfaces = <
         autocomplete: (state) =>
           state.netInterfaces.flatMap((it, idx) => {
             if (it.type == "localhost") return [];
-            const ipv4 = state.l3Ifs.at(idx)?.ip;
+            const ipv4 = state.l3Ifs.at(idx)?.at(0);
             return [
               {
                 desc: `${it.type} ${it.maxMbps} Mbps ${ipv4 ? ipv4ToString(ipv4) : "No ip"}`,

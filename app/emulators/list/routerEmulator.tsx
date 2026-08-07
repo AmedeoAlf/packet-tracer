@@ -87,10 +87,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
                   parseIpv4(subnet) ??
                   throwString("Invalid subnet mask " + subnet);
 
-                ctx.state.l3Ifs[selectedIntfIdx] = {
-                  ip: parsedIp,
-                  mask: parsedSubnet,
-                };
+                ctx.state.l3Ifs[selectedIntfIdx] = [parsedIp, parsedSubnet];
                 ctx.state.ifIpInput_t = undefined;
                 ctx.state.ifSubnetInput_t = undefined;
                 ctx.updateState();
@@ -103,13 +100,13 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
             <NetworkField
               ctx={ctx}
               prop={"ifIpInput_t"}
-              ifUnset={l3if ? ipv4ToString(l3if.ip) : ""}
+              ifUnset={l3if ? ipv4ToString(l3if[0]) : ""}
               label="Indirizzo ip"
             />
             <NetworkField
               ctx={ctx}
               prop={"ifSubnetInput_t"}
-              ifUnset={l3if ? ipv4ToString(l3if.mask) : "255.255.255.0"}
+              ifUnset={l3if ? ipv4ToString(l3if[1]) : "255.255.255.0"}
               label="Subnet mask"
             />
             <Button
@@ -275,7 +272,7 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
     try {
       const destination = getDestinationOf(l2Packet.payload);
       const isDestinedInterface = ctx.state.l3Ifs.findIndex(
-        (v) => v && v.ip == destination,
+        (v) => v && v[0] == destination,
       );
 
       let packet = Ipv4Serializer.fromBytes(l2Packet.payload);

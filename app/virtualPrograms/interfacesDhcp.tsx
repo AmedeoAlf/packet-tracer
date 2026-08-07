@@ -1,7 +1,11 @@
 import { DhcpInternalState } from "../devices/list/Computer";
 import { runOnInterpreter, SubCommand } from "../emulators/DeviceEmulator";
 import { MACToString } from "../protocols/802_3";
-import { ipv4ToString, parseIpv4 } from "../protocols/rfc_760";
+import {
+  cidrFromIpv4AndMask,
+  ipv4ToString,
+  parseIpv4,
+} from "../protocols/rfc_760";
 import { interfaces } from "./interfaces";
 
 export const interfacesDhcp = <
@@ -12,9 +16,7 @@ export const interfacesDhcp = <
       const l2Intf = state.netInterfaces[idx];
       const l3Intf = state.l3Ifs.at(idx);
       const dhcpEnabled = state.dhcpEnabled[idx];
-      const ip = l3Intf
-        ? `${ipv4ToString(l3Intf.ip)} ${ipv4ToString(l3Intf.mask)}`
-        : "No ip";
+      const ip = l3Intf ? cidrFromIpv4AndMask(l3Intf) : "No ip";
       return `${l2Intf.name} ${l2Intf.type} ${l2Intf.maxMbps}Mbps ${MACToString(l2Intf.mac)} ${ip} ${dhcpEnabled ? "(dhcp)" : ""}`;
     },
     {
@@ -24,7 +26,7 @@ export const interfacesDhcp = <
         autocomplete: (state) =>
           state.netInterfaces.flatMap((it, idx) => {
             if (it.type == "localhost") return [];
-            const ipv4 = state.l3Ifs.at(idx)?.ip;
+            const ipv4 = state.l3Ifs.at(idx)?.at(0);
             return [
               {
                 desc: `${it.type} ${it.maxMbps} Mbps ${ipv4 ? ipv4ToString(ipv4) : "No ip"}`,
@@ -81,7 +83,7 @@ export const interfacesDhcp = <
                   ctx.state.dhcpEnabled[intfId] = false;
                   ctx.write("dhcp disabled");
                 }
-                ctx.state.l3Ifs[intfId] = { ip: ip, mask: mask };
+                ctx.state.l3Ifs[intfId] = [ip, mask];
                 ctx.updateState();
               },
               done: true,

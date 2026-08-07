@@ -14,7 +14,7 @@ export const HomeRouter: DeviceFactory<RouterInternalState> = {
         { name: "se0", maxMbps: 1000, type: "serial", mac: randomMAC() },
       ],
       routingTables: [],
-      l3Ifs: [{ ip: lanIp, mask: 0xffffff00 }],
+      l3Ifs: [[lanIp, 0xffffff00]],
       dhcpSettings: {
         gateway: lanIp,
         network: lanIp,

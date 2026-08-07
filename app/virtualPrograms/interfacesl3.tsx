@@ -1,6 +1,11 @@
 import { SubCommand } from "../emulators/DeviceEmulator";
 import { MACToString } from "../protocols/802_3";
-import { ipv4ToString, L3InternalState, parseIpv4 } from "../protocols/rfc_760";
+import {
+  cidrFromIpv4AndMask,
+  ipv4ToString,
+  L3InternalState,
+  parseIpv4,
+} from "../protocols/rfc_760";
 import { interfaces } from "./interfaces";
 
 export const interfacesL3 = <
@@ -10,9 +15,7 @@ export const interfacesL3 = <
     (state, idx) => {
       const l2Intf = state.netInterfaces[idx];
       const l3Intf = state.l3Ifs.at(idx);
-      const ip = l3Intf
-        ? `${ipv4ToString(l3Intf.ip)} ${ipv4ToString(l3Intf.mask)}`
-        : "No ip";
+      const ip = l3Intf ? cidrFromIpv4AndMask(l3Intf) : "No ip";
       return `${l2Intf.name} ${l2Intf.type} ${l2Intf.maxMbps}Mbps ${MACToString(l2Intf.mac)} ${ip}`;
     },
     {
@@ -22,7 +25,7 @@ export const interfacesL3 = <
         autocomplete: (state) =>
           state.netInterfaces.flatMap((it, idx) => {
             if (it.type == "localhost") return [];
-            const ipv4 = state.l3Ifs.at(idx)?.ip;
+            const ipv4 = state.l3Ifs.at(idx)?.at(0);
             return [
               {
                 desc: `${it.type} ${it.maxMbps} Mbps ${ipv4 ? ipv4ToString(ipv4) : "No ip"}`,
@@ -50,7 +53,7 @@ export const interfacesL3 = <
                 );
                 const ip = parseIpv4(ctx.args![3])!;
                 const mask = parseIpv4(ctx.args![4])!;
-                ctx.state.l3Ifs[intfId] = { ip: ip, mask: mask };
+                ctx.state.l3Ifs[intfId] = [ip, mask];
                 ctx.updateState();
               },
               done: true,

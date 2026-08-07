@@ -35,7 +35,7 @@ export const Server: DeviceFactory<ServerInternalState> = {
         { name: "lo", maxMbps: 10000, type: "localhost", mac: 0 },
         { name: "if0", maxMbps: 100, type: "copper", mac: randomMAC() },
       ],
-      l3Ifs: [{ ip: IPV4_LOCALHOST, mask: 0xff000000 }],
+      l3Ifs: [[IPV4_LOCALHOST, 0xff000000]],
       filesystem: deepCopy(defaultServerFS),
       udpSockets_t: new Map(),
       tcpSockets_t: new Map(),

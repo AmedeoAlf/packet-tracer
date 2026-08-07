@@ -1,7 +1,7 @@
 "use client";
 import { RefObject, useMemo, useState } from "react";
 import { RouterInternalState } from "./devices/list/Router";
-import { parseIpv4 } from "./protocols/rfc_760";
+import { cidrToIpv4AndMask } from "./protocols/rfc_760";
 import { ProjectManager } from "./Project";
 import dynamic from "next/dynamic";
 import { save, load } from "./projectLoader";
@@ -72,10 +72,8 @@ function defaultProject(tickRef: ProjectManager["_tickRef"]): ProjectManager {
   p.createDevice("router", [-150, -100], "Router A");
 
   p.createDevice("router", [-50, -200], "Internet A");
-  (p.mutDevice(p.lastId)?.internalState as RouterInternalState).l3Ifs[3] = {
-    ip: parseIpv4("1.1.1.1")!,
-    mask: parseIpv4("255.255.255.0")!,
-  };
+  (p.mutDevice(p.lastId)?.internalState as RouterInternalState).l3Ifs[3] =
+    cidrToIpv4AndMask("1.1.1.1/24")!;
 
   p.createDevice("router", [-50, -100], "Internet B");
   p.mutDevice(p.lastId)?.internalState.netInterfaces.push({
@@ -84,10 +82,8 @@ function defaultProject(tickRef: ProjectManager["_tickRef"]): ProjectManager {
     type: "serial",
     mac: 0x102030405060,
   });
-  (p.mutDevice(p.lastId)?.internalState as RouterInternalState).l3Ifs[3] = {
-    ip: parseIpv4("1.1.1.2")!,
-    mask: parseIpv4("255.255.255.0")!,
-  };
+  (p.mutDevice(p.lastId)?.internalState as RouterInternalState).l3Ifs[3] =
+    cidrToIpv4AndMask("1.1.1.2/24")!;
 
   p.createDevice("router", [-50, 0], "Internet C");
   p.createDevice("router", [50, 0], "Router B");

@@ -111,7 +111,7 @@ export default function impostazioniDiRete(
                 const mask =
                   parseIpv4(ctx.state.fieldSubnet_t) ??
                   throwString("Subnet mask non valida");
-                ctx.state.l3Ifs[intf] = { ip, mask };
+                ctx.state.l3Ifs[intf] = [ip, mask];
               } else if (
                 ctx.state.fieldIp_t === "" &&
                 ctx.state.fieldSubnet_t === ""
@@ -122,7 +122,7 @@ export default function impostazioniDiRete(
                   typeof ctx.state.fieldIp_t != "undefined" &&
                   ctx.state.fieldIp_t !== ""
                 ) {
-                  ctx.state.l3Ifs[intf].ip =
+                  ctx.state.l3Ifs[intf][0] =
                     parseIpv4(ctx.state.fieldIp_t) ??
                     throwString("Indirizzo IP non valido");
                   delete ctx.state.fieldIp_t; // early delete to handle right ip with wrong subnet
@@ -131,7 +131,7 @@ export default function impostazioniDiRete(
                   typeof ctx.state.fieldSubnet_t != "undefined" &&
                   ctx.state.fieldSubnet_t !== ""
                 ) {
-                  ctx.state.l3Ifs[intf].mask =
+                  ctx.state.l3Ifs[intf][1] =
                     parseIpv4(ctx.state.fieldSubnet_t) ??
                     throwString("Subnet mask non valida");
                 }
@@ -177,7 +177,7 @@ export default function impostazioniDiRete(
           label="Indirizzo IP"
           prop="fieldIp_t"
           ifUnset={
-            ctx.state.l3Ifs[intf] ? ipv4ToString(ctx.state.l3Ifs[intf].ip) : ""
+            ctx.state.l3Ifs[intf] ? ipv4ToString(ctx.state.l3Ifs[intf][0]) : ""
           }
         />
         <NetworkField
@@ -185,9 +185,7 @@ export default function impostazioniDiRete(
           label="Subnet mask"
           prop="fieldSubnet_t"
           ifUnset={
-            ctx.state.l3Ifs[intf]
-              ? ipv4ToString(ctx.state.l3Ifs[intf].mask)
-              : ""
+            ctx.state.l3Ifs[intf] ? ipv4ToString(ctx.state.l3Ifs[intf][1]) : ""
           }
         />
         <NetworkField

@@ -23,7 +23,7 @@ export function sendIPv4Packet<State extends L3InternalState<State>>(
   return forwardIPv4Packet(
     ctx,
     {
-      source: ctx.state.l3Ifs[intf]!.ip,
+      source: ctx.state.l3Ifs[intf]![0],
       payload,
       protocol,
       destination,
@@ -41,7 +41,7 @@ export function forwardIPv4Packet<State extends L3InternalState<State>>(
   const [ok, intf, destIp] = targetIP(ctx.state, destinationMACFrom);
   if (!ok) return false;
 
-  const ownIntf = destinationMACFrom === ctx.state.l3Ifs[intf]?.ip;
+  const ownIntf = destinationMACFrom === ctx.state.l3Ifs[intf]?.at(0);
 
   const dst = ownIntf
     ? ctx.state.netInterfaces[intf].mac
@@ -54,7 +54,7 @@ export function forwardIPv4Packet<State extends L3InternalState<State>>(
       intf,
       EthernetFrameSerializer.toBuffer(
         arpToL2({
-          senderIP: ctx.state.l3Ifs[intf]!.ip,
+          senderIP: ctx.state.l3Ifs[intf]![0],
           targetIP: destIp,
           senderMAC: ctx.state.netInterfaces[intf].mac,
           targetMAC: 0,

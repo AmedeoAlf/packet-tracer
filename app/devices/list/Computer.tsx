@@ -69,7 +69,7 @@ export const Computer: DeviceFactory<ComputerInternalState> = {
         { name: "if0", maxMbps: 100, type: "copper", mac: randomMAC() },
       ],
       dhcpEnabled: [false, true],
-      l3Ifs: [{ ip: IPV4_LOCALHOST, mask: 0xff000000 }],
+      l3Ifs: [[IPV4_LOCALHOST, 0xff000000]],
       filesystem: {},
       udpSockets_t: new Map(),
       tcpSockets_t: new Map(),
