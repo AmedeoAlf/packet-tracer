@@ -1,15 +1,18 @@
 import { memo, ReactNode } from "react";
-import { Project, ProjectManager } from "../Project";
+import { Project } from "../Project";
 import { Device } from "../devices/Device";
 import { MapRecord } from "../common";
 import { PhysicalInterfaceType } from "../emulators/DeviceEmulator";
+import ConnectionManager from "../ProjectManager/ConnectionManager";
+
+type ComputedCables = ReturnType<ConnectionManager["getComputed"]>;
 
 export const Cables = memo(
   function Cables({
     cables,
     devices,
   }: {
-    cables: ReturnType<ProjectManager["getCables"]>;
+    cables: ComputedCables;
     devices: Project["devices"];
   }): ReactNode {
     return (
@@ -108,7 +111,7 @@ const Label = memo(
     device: Device;
     idxOfIntfOfCable: number;
     shared: {
-      cables: MapRecord<ReturnType<ProjectManager["getCables"]>>;
+      cables: MapRecord<ComputedCables>;
       cableLen: number;
       dx: number;
       dy: number;

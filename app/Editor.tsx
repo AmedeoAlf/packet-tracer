@@ -185,7 +185,7 @@ export function Editor({
         <Decals decals={project.immutableDecals} tool={tool} />
         <Cables
           devices={project.devices.asImmutable}
-          cables={project.getCables()}
+          cables={project.conn.getComputed()}
         />
         {tool.svgElements(toolCtx)}
         <Devices devices={project.devices.asImmutable} tool={tool} />

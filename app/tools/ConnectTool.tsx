@@ -41,7 +41,7 @@ function canConnect(
 function connect(c: ToolCtx<ConnectTool>) {
   if (!canConnect(c.tool))
     throw "ArgumentException: can't access ConnectTool.idxA/.idxB";
-  c.projectRef.current.connect(
+  c.projectRef.current.conn.connect(
     c.tool.deviceA!.id,
     c.tool.idxA!,
     c.tool.deviceB!.id,
@@ -248,7 +248,8 @@ const InterfaceSelector = memo(
     >;
   }) {
     const isConnected = (i: number) =>
-      ctx.project.getConnectedTo(toInterfaceId(device.id, i)) !== undefined;
+      ctx.project.conn.getConnectedTo(toInterfaceId(device.id, i)) !==
+      undefined;
     return (
       <div className="p-2 w-1/2">
         <div className="rounded-md font-bold p-1 text-center w-full mb-1">
@@ -263,7 +264,7 @@ const InterfaceSelector = memo(
             ) : isConnected(i) ? (
               <Button
                 onClick={() => {
-                  ctx.projectRef.current.disconnect(device.id, i);
+                  ctx.projectRef.current.conn.disconnect(device.id, i);
                   ctx.updateProject(true);
                   selectIntf(i);
                 }}
@@ -333,7 +334,9 @@ const firstEmptyInterface = (
 ): number => {
   let firstIf: number | undefined = undefined;
   const res = physicalInterfaces(device).find(([idx]) => {
-    if (project.getConnectedTo(toInterfaceId(device.id, idx)) === undefined) {
+    if (
+      project.conn.getConnectedTo(toInterfaceId(device.id, idx)) === undefined
+    ) {
       firstIf ??= idx;
       return (
         type === undefined ||

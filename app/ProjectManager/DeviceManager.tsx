@@ -52,7 +52,9 @@ export default class DeviceManager {
     const pm = this.pm;
     const dev = pm._project.devices.get(id);
     if (dev === undefined) return;
-    dev.internalState.netInterfaces.forEach((_, idx) => pm.disconnect(id, idx));
+    dev.internalState.netInterfaces.forEach((_, idx) =>
+      pm.conn.disconnect(id, idx),
+    );
     pm._project.devices.delete(id);
     pm.mutatedDevices ??= [];
   }

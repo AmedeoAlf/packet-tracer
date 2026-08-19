@@ -7,17 +7,13 @@ import {
   filterObject,
   SimpleRecord,
 } from "../common";
-import {
-  NetworkInterface,
-  PhysicalInterfaceType,
-} from "../emulators/DeviceEmulator";
 import { Decal, DecalData, PacketLogEntry, Project } from "../Project";
 import { ToolCtx } from "../tools/Tool";
 import DeviceManager from "./DeviceManager";
-import * as conn from "./connections";
 import fromSerialized from "./fromSerialized";
 import * as sim from "./simulation";
 import newInstance from "./newInstance";
+import ConnectionManager from "./ConnectionManager";
 
 function emptyProject(): Project {
   return {
@@ -47,13 +43,6 @@ export class ProjectManager {
 
   mutatedDevices?: number[];
   mutatedDecals?: number[];
-  cableCache?: Map<
-    number,
-    (Pick<NetworkInterface, "maxMbps"> & {
-      intf: [number, number];
-      type: PhysicalInterfaceType;
-    })[]
-  >;
 
   _callbacks: Callback[] = [];
 
@@ -86,15 +75,8 @@ export class ProjectManager {
   // device handler class
   devices = new DeviceManager(this);
 
-  // connection related methods
-  getInterface = conn.getInterface.bind(this);
-  getInterfaceFromId = conn.getInterfaceFromId.bind(this);
-  connect = conn.connect.bind(this);
-  disconnect = conn.disconnect.bind(this);
-  getCables = conn.getCables.bind(this);
-  computeCables = conn.computeCables.bind(this);
-  getConnectedTo = conn.getConnectedTo.bind(this);
-  getAllConnections = conn.getAllConnections.bind(this);
+  // connection handler class
+  conn = new ConnectionManager(this);
 
   // simulation methods
   setTimeout = sim.setEmulatorTimeout.bind(this);

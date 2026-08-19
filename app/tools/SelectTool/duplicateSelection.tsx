@@ -17,14 +17,14 @@ export default function duplicateSelection(
   const devIdToIdx = new Map(oldSelected.map((dev, idx) => [dev, idx]));
   // Copy device connections
   for (const [idx, dev] of oldSelected.entries()) {
-    const connections = project
-      .getAllConnections()
+    const connections = project.conn
+      .getAll()
       .filter(([a]) => deviceOfIntf(a) == dev);
     for (const pair of connections) {
       const connectedIdx = devIdToIdx.get(deviceOfIntf(pair[1]));
       if (connectedIdx == null) continue;
 
-      project.connect(
+      project.conn.connect(
         newSelected[idx],
         idxOfIntf(pair[0]),
         newSelected[connectedIdx],

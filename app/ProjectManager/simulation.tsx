@@ -48,7 +48,7 @@ export function sendOn(
   data: Buffer,
   toSelf = false,
 ) {
-  const target = toSelf ? intf : this.getConnectedTo(intf);
+  const target = toSelf ? intf : this.conn.getConnectedTo(intf);
   if (typeof target == "undefined") return;
   const dev = this._project.devices.get(deviceOfIntf(target));
   if (!dev) return;

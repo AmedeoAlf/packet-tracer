@@ -88,12 +88,12 @@ function defaultProject(tickRef: ProjectManager["_tickRef"]): ProjectManager {
   p.devices.create("router", [-50, 0], "Internet C");
   p.devices.create("router", [50, 0], "Router B");
   p.devices.create("switch", [200, -100], "Rete B");
-  console.assert(p.connect(1, 0, 2, 0) == undefined); // "Rete A" -> "Router A"
-  console.assert(p.connect(2, 2, 3, 2) == undefined); // "Router A" -> "Internet A"
-  console.assert(p.connect(2, 3, 4, 2) == undefined); // "Router A" -> "Internet B"
-  console.assert(p.connect(3, 3, 4, 3) == undefined); // "Internet A" -> "Internet B"
-  console.assert(p.connect(4, 4, 5, 2) == undefined); // "Internet B" -> "Internet C"
-  console.assert(p.connect(5, 3, 6, 2) == undefined); // "Internet C" -> "Router B"
-  console.assert(p.connect(6, 0, 7, 0) == undefined); // "Router B" -> "Rete B"
+  console.assert(p.conn.connect(1, 0, 2, 0) == undefined); // "Rete A" -> "Router A"
+  console.assert(p.conn.connect(2, 2, 3, 2) == undefined); // "Router A" -> "Internet A"
+  console.assert(p.conn.connect(2, 3, 4, 2) == undefined); // "Router A" -> "Internet B"
+  console.assert(p.conn.connect(3, 3, 4, 3) == undefined); // "Internet A" -> "Internet B"
+  console.assert(p.conn.connect(4, 4, 5, 2) == undefined); // "Internet B" -> "Internet C"
+  console.assert(p.conn.connect(5, 3, 6, 2) == undefined); // "Internet C" -> "Router B"
+  console.assert(p.conn.connect(6, 0, 7, 0) == undefined); // "Router B" -> "Rete B"
   return p.newInstance();
 }
