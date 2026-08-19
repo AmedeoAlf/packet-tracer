@@ -6,11 +6,12 @@ import { Project } from "../Project";
 import { ProjectManager } from "./ProjectManager";
 
 export default class DeviceManager {
+  _mutated?: number[];
   constructor(private pm: ProjectManager) {}
 
   create(type: DeviceType, pos: Coords, name?: string) {
     const pm = this.pm;
-    pm.mutatedDevices ??= [];
+    this._mutated ??= [];
 
     ++pm._project.lastId;
     pm._project.devices.set(
@@ -56,18 +57,18 @@ export default class DeviceManager {
       pm.conn.disconnect(id, idx),
     );
     pm._project.devices.delete(id);
-    pm.mutatedDevices ??= [];
+    this._mutated ??= [];
   }
 
   mutate(id: number): Device | undefined {
     const pm = this.pm;
     if (!pm._project.devices.has(id)) return;
 
-    pm.mutatedDevices ??= [];
+    this._mutated ??= [];
 
-    if (!pm.mutatedDevices.includes(id)) {
+    if (!this._mutated.includes(id)) {
       pm._project.devices.set(id, cloneDevice(pm._project.devices.get(id)!));
-      pm.mutatedDevices.push(id);
+      this._mutated.push(id);
     }
     return pm._project.devices.get(id);
   }

@@ -3,18 +3,17 @@ import { ProjectManager } from "./ProjectManager";
 
 export default function newInstance(this: ProjectManager) {
   const newProj = { ...this._project };
-  if (this.mutatedDevices) newProj.devices = new Map(this._project.devices);
+  if (this.devices._mutated) newProj.devices = new Map(this._project.devices);
   if (this.mutatedDecals) newProj.decals = [...this._project.decals];
   if (
     !this.conn.cableCache ||
-    (this.mutatedDevices &&
-      this.mutatedDevices.some((dev) =>
-        this.devices.asImmutable
-          .get(dev)!
-          .internalState.netInterfaces.some((_, idx) =>
-            this._project.connections.has(toInterfaceId(dev, idx)),
-          ),
-      ))
+    this.devices._mutated?.some((dev) =>
+      this.devices.asImmutable
+        .get(dev)!
+        .internalState.netInterfaces.some((_, idx) =>
+          this._project.connections.has(toInterfaceId(dev, idx)),
+        ),
+    )
   ) {
     newProj.connections = new Map(this._project.connections);
     this.conn.compute();
@@ -28,6 +27,5 @@ export default function newInstance(this: ProjectManager) {
 
   next._callbacks = [...this._callbacks];
 
-  this.applyMutations();
   return next;
 }

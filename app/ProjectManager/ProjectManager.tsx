@@ -41,7 +41,6 @@ export type Callback = {
 export class ProjectManager {
   _project: Project;
 
-  mutatedDevices?: number[];
   mutatedDecals?: number[];
 
   _callbacks: Callback[] = [];
@@ -151,26 +150,6 @@ export class ProjectManager {
     };
   }
   static fromSerialized = fromSerialized;
-  applyMutations() {
-    if (this.mutatedDevices) {
-      // TODO: check if needed
-      // for (const id of this.mutatedDevices) {
-      //   this.project.devices.set(
-      //     id,
-      //     cloneWithProto(this.project.devices.get(id)!),
-      //   );
-      // }
-      this._project.devices = new Map(this._project.devices);
-      this.mutatedDevices = undefined;
-    }
-    if (this.mutatedDecals) {
-      // for (const id of this.mutatedDecals) {
-      //   this.project.decals[id] = { ...this.project.decals[id]! };
-      // }
-      this._project.decals = [...this._project.decals];
-      this.mutatedDecals = undefined;
-    }
-  }
 
   get lastId() {
     return this._project.lastId;
