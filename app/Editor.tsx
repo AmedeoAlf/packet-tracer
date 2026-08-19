@@ -148,7 +148,10 @@ export function Editor({
       </div>
 
       <PropertiesBar toolCtx={toolCtx} />
-      <PacketLog log={project.packetLog} devices={project.immutableDevices} />
+      <PacketLog
+        log={project.packetLog}
+        devices={project.devices.asImmutable}
+      />
 
       <ToolSelector
         toolname={tool.toolname}
@@ -181,11 +184,11 @@ export function Editor({
         <defs> {Object.values(ICONS)} </defs>
         <Decals decals={project.immutableDecals} tool={tool} />
         <Cables
-          devices={project.immutableDevices}
+          devices={project.devices.asImmutable}
           cables={project.getCables()}
         />
         {tool.svgElements(toolCtx)}
-        <Devices devices={project.immutableDevices} tool={tool} />
+        <Devices devices={project.devices.asImmutable} tool={tool} />
       </svg>
     </div>
   );

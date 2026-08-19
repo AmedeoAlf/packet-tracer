@@ -23,7 +23,7 @@ export default function SelectToolPanel(ctx: ToolCtx<SelectTool>) {
       return;
     case 1:
       if (ctx.tool.selected.size === 1) {
-        const device = ctx.projectRef.current.immutableDevices.get(
+        const device = ctx.projectRef.current.devices.asImmutable.get(
           ctx.tool.selected.values().next().value!,
         )!;
         const emulator = device.emulator;
@@ -59,7 +59,7 @@ export default function SelectToolPanel(ctx: ToolCtx<SelectTool>) {
                 ctx.updateProject(true);
               }}
               del={() => {
-                ctx.projectRef.current.deleteDevice(device.id);
+                ctx.projectRef.current.devices.delete(device.id);
                 ctx.toolRef.current.selected.clear();
                 ctx.updateTool();
                 ctx.updateProject(true);
@@ -159,7 +159,7 @@ export default function SelectToolPanel(ctx: ToolCtx<SelectTool>) {
           }}
           del={() => {
             for (const id of ctx.toolRef.current.selected)
-              ctx.projectRef.current.deleteDevice(id);
+              ctx.projectRef.current.devices.delete(id);
             ctx.toolRef.current.selected.clear();
             ctx.updateTool();
             ctx.updateProject(true);

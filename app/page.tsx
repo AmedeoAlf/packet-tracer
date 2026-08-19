@@ -68,26 +68,26 @@ function defaultProject(tickRef: ProjectManager["_tickRef"]): ProjectManager {
     pos: [-300, -250],
     fg: 0,
   });
-  p.createDevice("switch", [-300, -100], "Rete A");
-  p.createDevice("router", [-150, -100], "Router A");
+  p.devices.create("switch", [-300, -100], "Rete A");
+  p.devices.create("router", [-150, -100], "Router A");
 
-  p.createDevice("router", [-50, -200], "Internet A");
-  (p.mutDevice(p.lastId)?.internalState as RouterInternalState).l3Ifs[3] =
+  p.devices.create("router", [-50, -200], "Internet A");
+  (p.devices.mutate(p.lastId)?.internalState as RouterInternalState).l3Ifs[3] =
     cidrToIpv4AndMask("1.1.1.1/24")!;
 
-  p.createDevice("router", [-50, -100], "Internet B");
-  p.mutDevice(p.lastId)?.internalState.netInterfaces.push({
+  p.devices.create("router", [-50, -100], "Internet B");
+  p.devices.mutate(p.lastId)?.internalState.netInterfaces.push({
     name: "se2",
     maxMbps: 100,
     type: "serial",
     mac: 0x102030405060,
   });
-  (p.mutDevice(p.lastId)?.internalState as RouterInternalState).l3Ifs[3] =
+  (p.devices.mutate(p.lastId)?.internalState as RouterInternalState).l3Ifs[3] =
     cidrToIpv4AndMask("1.1.1.2/24")!;
 
-  p.createDevice("router", [-50, 0], "Internet C");
-  p.createDevice("router", [50, 0], "Router B");
-  p.createDevice("switch", [200, -100], "Rete B");
+  p.devices.create("router", [-50, 0], "Internet C");
+  p.devices.create("router", [50, 0], "Router B");
+  p.devices.create("switch", [200, -100], "Rete B");
   console.assert(p.connect(1, 0, 2, 0) == undefined); // "Rete A" -> "Router A"
   console.assert(p.connect(2, 2, 3, 2) == undefined); // "Router A" -> "Internet A"
   console.assert(p.connect(2, 3, 4, 2) == undefined); // "Router A" -> "Internet B"

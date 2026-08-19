@@ -55,9 +55,9 @@ export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
       if (self.lastCursorPos) {
         if (!self.selectionRectangle) {
           for (const dev of self.selected) {
-            ctx.projectRef.current.mutDevice(dev)!.pos[0] +=
+            ctx.projectRef.current.devices.mutate(dev)!.pos[0] +=
               ev.pos[0] - self.lastCursorPos[0];
-            ctx.projectRef.current.mutDevice(dev)!.pos[1] +=
+            ctx.projectRef.current.devices.mutate(dev)!.pos[1] +=
               ev.pos[1] - self.lastCursorPos[1];
           }
           for (const dec of self.selectedDecals) {
@@ -84,7 +84,7 @@ export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
           self.lastCursorPos = undefined;
           self.selectionRectangle = undefined;
           if (selection[2] == 0 || selection[3] == 0) return;
-          ctx.projectRef.current.immutableDevices
+          ctx.projectRef.current.devices.asImmutable
             .values()
             .filter((it) => pointInRect(it.pos, selection))
             .forEach((it) => self.selected.add(it.id));
@@ -106,8 +106,8 @@ export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
           if (diffX || diffY) {
             self.movedSelection = true;
             for (const dev of self.selected) {
-              ctx.projectRef.current.mutDevice(dev)!.pos[0] += diffX;
-              ctx.projectRef.current.mutDevice(dev)!.pos[1] += diffY;
+              ctx.projectRef.current.devices.mutate(dev)!.pos[0] += diffX;
+              ctx.projectRef.current.devices.mutate(dev)!.pos[1] += diffY;
             }
             for (const dec of self.selectedDecals) {
               ctx.projectRef.current.mutDecal(dec)!.pos[0] += diffX;
@@ -126,7 +126,7 @@ export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
         case "Delete": {
           if (!self.selected.size && !self.selectedDecals.size) return;
           for (const s of self.selected) {
-            ctx.projectRef.current.deleteDevice(s);
+            ctx.projectRef.current.devices.delete(s);
           }
           for (const s of self.selectedDecals) {
             ctx.projectRef.current.removeDecal(s);

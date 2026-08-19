@@ -8,9 +8,9 @@ export default function duplicateSelection(
 ) {
   const oldSelected = [...self.selected];
   const newSelected = oldSelected.map((dev) => {
-    const newId = project.duplicateDevice(dev)!;
-    project.mutDevice(newId)!.pos[0] += 10;
-    project.mutDevice(newId)!.pos[1] += 10;
+    const newId = project.devices.duplicate(dev)!;
+    project.devices.mutate(newId)!.pos[0] += 10;
+    project.devices.mutate(newId)!.pos[1] += 10;
     return newId;
   });
 

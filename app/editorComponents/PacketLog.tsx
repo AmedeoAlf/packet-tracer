@@ -1,12 +1,7 @@
 import { memo, useState } from "react";
 import { quickAnalysis, unpacket } from "../emulators/utils/unpacker";
 import { SideBar } from "./reusable/SideBar";
-import {
-  deviceOfIntf,
-  InterfaceId,
-  PacketLogEntry,
-  ProjectManager,
-} from "../Project";
+import { deviceOfIntf, InterfaceId, PacketLogEntry, Project } from "../Project";
 import { Button } from "./reusable/RoundBtn";
 
 export const PacketLog = memo(
@@ -15,7 +10,7 @@ export const PacketLog = memo(
     devices,
   }: {
     log: PacketLogEntry[];
-    devices: ProjectManager["immutableDevices"];
+    devices: Project["devices"];
   }) {
     const [selected, setSelected] = useState<PacketLogEntry | null>(null);
     const nameOf = intfIdToString.bind(null, devices);
@@ -132,10 +127,7 @@ function EntryDisplay({
 const pad = (n: number, len: number = 2) =>
   Math.floor(n).toString().padStart(len, "0");
 
-function intfIdToString(
-  devices: ProjectManager["immutableDevices"],
-  intf: InterfaceId,
-) {
+function intfIdToString(devices: Project["devices"], intf: InterfaceId) {
   const devId = deviceOfIntf(intf);
   const dev = devices.get(deviceOfIntf(intf));
   return dev?.name ?? `<eliminato (${devId})>`;

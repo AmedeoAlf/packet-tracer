@@ -14,7 +14,7 @@ import {
 } from "../emulators/DeviceEmulator";
 import { Decal, DecalData, PacketLogEntry, Project } from "../Project";
 import { ToolCtx } from "../tools/Tool";
-import * as devs from "./devices";
+import DeviceManager from "./DeviceManager";
 import * as conn from "./connections";
 import fromSerialized from "./fromSerialized";
 import * as sim from "./simulation";
@@ -70,23 +70,6 @@ export class ProjectManager {
       return this._project.devices.get(+tag.dataset.id);
     }
   }
-  mutDevice(id: number): Device | undefined {
-    if (!this._project.devices.has(id)) return;
-
-    this.mutatedDevices ??= [];
-
-    if (!this.mutatedDevices.includes(id)) {
-      this._project.devices.set(
-        id,
-        cloneDevice(this._project.devices.get(id)!),
-      );
-      this.mutatedDevices.push(id);
-    }
-    return this._project.devices.get(id);
-  }
-  get immutableDevices(): Project["devices"] {
-    return this._project.devices;
-  }
   get immutableDecals(): Project["decals"] {
     return this._project.decals;
   }
@@ -107,9 +90,7 @@ export class ProjectManager {
   }
 
   // device related methods
-  createDevice = devs.createDevice.bind(this);
-  duplicateDevice = devs.duplicateDevice.bind(this);
-  deleteDevice = devs.deleteDevice.bind(this);
+  devices = new DeviceManager(this);
 
   // connection related methods
   getInterface = conn.getInterface.bind(this);
@@ -264,6 +245,3 @@ export class ProjectManager {
 export function removeTempFields<T extends object>(obj: T): T {
   return filterObject(obj, ([k]) => !k.endsWith("_t")) as T;
 }
-
-const cloneDevice = (d: Device): Device =>
-  Object.setPrototypeOf({ ...d, pos: [...d.pos] }, Object.getPrototypeOf(d));

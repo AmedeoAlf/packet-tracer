@@ -65,7 +65,7 @@ function migrateSelectedDevices(
   const devices = prev.selected
     .values()
     .take(2)
-    .map((d) => project.immutableDevices.get(d)!)
+    .map((d) => project.devices.asImmutable.get(d)!)
     .toArray();
   return {
     deviceA: devices[0],

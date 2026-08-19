@@ -34,7 +34,7 @@ export const makeAddTool: ToolConstructor<AddTool> = (
     onEvent: (ctx, ev) => {
       switch (ev.type) {
         case "click":
-          ctx.projectRef.current.createDevice(ctx.tool.deviceType, ev.pos);
+          ctx.projectRef.current.devices.create(ctx.tool.deviceType, ev.pos);
           ctx.updateProject(true);
           ctx.revertTool();
           break;
@@ -94,7 +94,7 @@ const DeviceTypeSelector = memo(
               const baseX = ctx.projectRef.current.viewBoxX - 250;
               const baseY = ctx.projectRef.current.viewBoxY - 100;
               const counter = ctx.toolRef.current.quickAddCounter++;
-              ctx.projectRef.current.createDevice(
+              ctx.projectRef.current.devices.create(
                 deviceTypesDB[it].proto.deviceType,
                 [
                   (counter % 5) * 100 + baseX,

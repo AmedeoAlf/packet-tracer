@@ -70,7 +70,7 @@ export default function fromSerialized(
     );
   });
   pm.beginSimulation();
-  for (const d of pm.immutableDevices.values()) {
+  for (const d of pm.devices.asImmutable.values()) {
     const initFn = d.emulator.init;
     if (initFn) {
       pm.setTimeout(initFn, d.id, 1);

@@ -28,8 +28,10 @@ export function setEmulatorTimeout(
   return scheduleCb(
     this,
     (toolCtx) => {
-      if (this.immutableDevices.has(device))
-        fn(buildEmulatorContext(this.immutableDevices.get(device)!, toolCtx));
+      if (this.devices.asImmutable.has(device))
+        fn(
+          buildEmulatorContext(this.devices.asImmutable.get(device)!, toolCtx),
+        );
     },
     delay,
   );

@@ -10,7 +10,7 @@ export default function newInstance(this: ProjectManager) {
     (this.mutatedDevices &&
       this.mutatedDevices.length != 0 &&
       this.mutatedDevices.some((dev) =>
-        this.immutableDevices
+        this.devices.asImmutable
           .get(dev)!
           .internalState.netInterfaces.some((_, idx) =>
             this._project.connections.has(toInterfaceId(dev, idx)),

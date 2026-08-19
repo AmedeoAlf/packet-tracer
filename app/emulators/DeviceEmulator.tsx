@@ -205,7 +205,7 @@ export function buildEmulatorContext(
     interpreter: emulator.cmdInterpreter,
     updateState: () => {
       device.internalState = { ...device.internalState };
-      toolCtx.projectRef.current.mutDevice(device.id);
+      toolCtx.projectRef.current.devices.mutate(device.id);
       toolCtx.updateProject();
       toolCtx.updateTool();
     },
