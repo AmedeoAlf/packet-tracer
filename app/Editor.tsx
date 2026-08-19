@@ -221,7 +221,7 @@ function buildMouseEventHandler(
           type,
           movement: [ev.movementX, ev.movementY],
           pos: getPos(ev),
-          device: ctx.projectRef.current.deviceFromTag(
+          device: ctx.projectRef.current.devices.fromTag(
             ev.target as SVGUseElement,
           ),
           decal: ctx.projectRef.current.decalFromTag(
@@ -237,7 +237,7 @@ function buildMouseEventHandler(
       ctx.tool.onEvent(ctx, {
         type,
         pos: getPos(ev),
-        device: ctx.projectRef.current.deviceFromTag(
+        device: ctx.projectRef.current.devices.fromTag(
           ev.target as SVGUseElement,
         ),
         decal: ctx.projectRef.current.decalFromTag(ev.target as SVGUseElement),

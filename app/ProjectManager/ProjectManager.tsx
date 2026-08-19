@@ -7,7 +7,6 @@ import {
   filterObject,
   SimpleRecord,
 } from "../common";
-import { Device } from "../devices/Device";
 import {
   NetworkInterface,
   PhysicalInterfaceType,
@@ -65,11 +64,6 @@ export class ProjectManager {
   // Il tick mostrato sul cronometro (per programmarne di nuovi)
   _tickRef: RefObject<number>;
 
-  deviceFromTag(tag: HTMLOrSVGElement): Device | undefined {
-    if (tag.dataset.id) {
-      return this._project.devices.get(+tag.dataset.id);
-    }
-  }
   get immutableDecals(): Project["decals"] {
     return this._project.decals;
   }
@@ -89,7 +83,7 @@ export class ProjectManager {
     }
   }
 
-  // device related methods
+  // device handler class
   devices = new DeviceManager(this);
 
   // connection related methods

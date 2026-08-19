@@ -73,6 +73,12 @@ export default class DeviceManager {
   get asImmutable(): Project["devices"] {
     return this.pm._project.devices;
   }
+
+  fromTag(tag: HTMLOrSVGElement): Device | undefined {
+    if (tag.dataset.id) {
+      return this.asImmutable.get(+tag.dataset.id);
+    }
+  }
 }
 
 function removeTempFields<T extends object>(obj: T): T {
