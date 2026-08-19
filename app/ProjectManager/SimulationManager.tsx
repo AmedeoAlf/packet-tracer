@@ -61,12 +61,19 @@ export default class SimulationManager {
     ];
 
     this.scheduleCb(
-      (toolCtx: ToolCtx) =>
-        dev.emulator.packetHandler(
-          buildEmulatorContext(dev, toolCtx),
-          data,
-          ifIdx,
-        ),
+      (toolCtx: ToolCtx) => {
+        const emuCtx = buildEmulatorContext(dev, toolCtx);
+
+        const updateState = emuCtx.updateState;
+        let updatedState = false;
+        emuCtx.updateState = () => (updatedState = true);
+
+        dev.emulator.packetHandler(emuCtx, data, ifIdx);
+        // if the packetHandler tried to update, it'll be done at the end
+        // otherwise, we still need to updateProject() for the packetLog
+        if (updatedState) updateState();
+        else toolCtx.updateProject();
+      },
       toSelf ? 0 : 1,
     );
   }
