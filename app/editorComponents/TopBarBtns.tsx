@@ -2,13 +2,14 @@ import { memo, useCallback } from "react";
 import { ToolCtx } from "../tools/Tool";
 import { BtnArray, BtnArrEl } from "./reusable/BtnArray";
 import { ProjectManager } from "../Project";
+import SimulationManager from "../ProjectManager/SimulationManager";
 
 export const TopBarBtns = memo(function TopBarBtns({
   ctx: { projectRef, updateProject },
   tickRef,
 }: {
   ctx: ToolCtx;
-  tickRef: ProjectManager["_tickRef"];
+  tickRef: SimulationManager["_tickRef"];
 }) {
   const CLASSNAME = "bg-ontopbar";
   return (

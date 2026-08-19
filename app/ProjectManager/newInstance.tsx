@@ -19,13 +19,13 @@ export default function newInstance(this: ProjectManager) {
     this.conn.compute();
   }
 
-  const next = new ProjectManager(newProj, this._tickRef);
+  const next = new ProjectManager(newProj, this.sim._tickRef);
   next.packetLog = this.packetLog;
-  next._emulatorTick = this._emulatorTick;
+  next.sim._emulatorTick = this.sim._emulatorTick;
 
   next.conn.cableCache = this.conn.cableCache;
 
-  next._callbacks = [...this._callbacks];
+  next.sim._callbacks = [...this.sim._callbacks];
 
   return next;
 }

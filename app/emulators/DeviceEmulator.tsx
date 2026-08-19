@@ -210,19 +210,19 @@ export function buildEmulatorContext(
       toolCtx.updateTool();
     },
     sendOnIf(ifIdx, data, toSelf) {
-      toolCtx.projectRef.current.beginSimulation();
-      toolCtx.projectRef.current.sendOn(
+      toolCtx.projectRef.current.sim.begin();
+      toolCtx.projectRef.current.sim.sendOn(
         toInterfaceId(device.id, ifIdx),
         data,
         toSelf,
       );
     },
     schedule(after, fn): object {
-      toolCtx.projectRef.current.beginSimulation();
-      return toolCtx.projectRef.current.setTimeout(fn, device.id, after);
+      toolCtx.projectRef.current.sim.begin();
+      return toolCtx.projectRef.current.sim.setTimeout(fn, device.id, after);
     },
     cancelSchedule(schedule: object) {
-      return toolCtx.projectRef.current.removeTimeout(schedule);
+      return toolCtx.projectRef.current.sim.removeTimeout(schedule);
     },
     state: device.internalState,
     // NOTE: il print avviene anche con il terminale connesso ad un dispositivo diverso
@@ -237,8 +237,8 @@ export function buildEmulatorContext(
           console.log("Impossibile scrivere sul terminale", msg);
         },
     currTick: () => {
-      toolCtx.projectRef.current.beginSimulation();
-      return toolCtx.projectRef.current.currTick;
+      toolCtx.projectRef.current.sim.begin();
+      return toolCtx.projectRef.current.sim.currTick;
     },
   };
 }

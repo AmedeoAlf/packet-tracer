@@ -28,8 +28,8 @@ export default class DeviceManager {
     ) => void | undefined;
     if (initFn) {
       const id = pm._project.lastId;
-      pm.beginSimulation();
-      pm.setTimeout(initFn, id, 1);
+      pm.sim.begin();
+      pm.sim.setTimeout(initFn, id, 1);
     }
     return pm._project.lastId;
   }

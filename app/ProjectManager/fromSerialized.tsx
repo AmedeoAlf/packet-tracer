@@ -2,10 +2,11 @@ import { isRecord, SimpleRecord, trustMeBroCast } from "../common";
 import { Device } from "../devices/Device";
 import { DeviceType, deviceTypesDB } from "../devices/deviceTypesDB";
 import { ProjectManager } from "./ProjectManager";
+import SimulationManager from "./SimulationManager";
 
 export default function fromSerialized(
   serialized: Record<string, unknown>,
-  tickRef: ProjectManager["_tickRef"],
+  tickRef: SimulationManager["_tickRef"],
 ) {
   const pm = ProjectManager.make(tickRef);
   function setIfPresent<P extends keyof typeof pm._project>(
@@ -69,11 +70,11 @@ export default function fromSerialized(
       Object.entries(d).map(([from, to]) => [+from, to as number]),
     );
   });
-  pm.beginSimulation();
+  pm.sim.begin();
   for (const d of pm.devices.asImmutable.values()) {
     const initFn = d.emulator.init;
     if (initFn) {
-      pm.setTimeout(initFn, d.id, 1);
+      pm.sim.setTimeout(initFn, d.id, 1);
     }
   }
   return pm;

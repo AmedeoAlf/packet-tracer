@@ -31,7 +31,7 @@ export function useCanvasSize(
 export function useSimulation(toolCtx: ToolCtx, resolution_ms: number) {
   useEffect(() => {
     const timeout = setInterval(() => {
-      toolCtx.projectRef.current.runSimulation(toolCtx);
+      toolCtx.projectRef.current.sim.run(toolCtx);
     }, resolution_ms);
     return () => clearInterval(timeout);
   }, [toolCtx, resolution_ms]);

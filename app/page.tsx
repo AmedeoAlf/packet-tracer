@@ -5,6 +5,7 @@ import { cidrToIpv4AndMask } from "./protocols/rfc_760";
 import { ProjectManager } from "./Project";
 import dynamic from "next/dynamic";
 import { save, load } from "./projectLoader";
+import SimulationManager from "./ProjectManager/SimulationManager";
 const Editor = dynamic(() => import("./Editor").then((m) => m.Editor), {
   ssr: false,
 });
@@ -49,7 +50,7 @@ export default function Home() {
 }
 
 function loadSavedProject(
-  tickRef: ProjectManager["_tickRef"],
+  tickRef: SimulationManager["_tickRef"],
 ): ProjectManager | undefined {
   try {
     const json = load();
@@ -60,7 +61,9 @@ function loadSavedProject(
   }
 }
 
-function defaultProject(tickRef: ProjectManager["_tickRef"]): ProjectManager {
+function defaultProject(
+  tickRef: SimulationManager["_tickRef"],
+): ProjectManager {
   const p = ProjectManager.make(tickRef);
   p.addDecal({
     type: "text",

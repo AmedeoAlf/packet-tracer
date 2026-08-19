@@ -1,5 +1,4 @@
 "use client";
-import { RefObject } from "react";
 import {
   clamp,
   deepCopy,
@@ -11,7 +10,7 @@ import { Decal, DecalData, PacketLogEntry, Project } from "../Project";
 import { ToolCtx } from "../tools/Tool";
 import DeviceManager from "./DeviceManager";
 import fromSerialized from "./fromSerialized";
-import * as sim from "./simulation";
+import SimulationManager from "./SimulationManager";
 import newInstance from "./newInstance";
 import ConnectionManager from "./ConnectionManager";
 
@@ -43,14 +42,7 @@ export class ProjectManager {
 
   mutatedDecals?: number[];
 
-  _callbacks: Callback[] = [];
-
   packetLog: PacketLogEntry[] = [];
-
-  // Il tick processato in questo momento
-  _emulatorTick: number = -1;
-  // Il tick mostrato sul cronometro (per programmarne di nuovi)
-  _tickRef: RefObject<number>;
 
   get immutableDecals(): Project["decals"] {
     return this._project.decals;
@@ -77,22 +69,8 @@ export class ProjectManager {
   // connection handler class
   conn = new ConnectionManager(this);
 
-  // simulation methods
-  setTimeout = sim.setEmulatorTimeout.bind(this);
-  removeTimeout = sim.removeTimeout.bind(this);
-  sendOn = sim.sendOn.bind(this);
-  areTicksPending() {
-    return this._callbacks.length != 0;
-  }
-  runSimulation = sim.runSimulation.bind(this);
-  // Can be called multiple times without problems
-  beginSimulation() {
-    this._emulatorTick = this.currTick;
-  }
-  // A bit more dangerous
-  endSimulation() {
-    this._emulatorTick = -1;
-  }
+  // simulation handler class
+  sim: SimulationManager;
 
   addDecal(d: DecalData): number {
     this.mutatedDecals ??= [];
@@ -176,19 +154,13 @@ export class ProjectManager {
     this._project.viewBoxZoom = clamp(val, MIN_ZOOM_FACTOR, MAX_ZOOM_FACTOR);
   }
 
-  get currTick() {
-    return this._emulatorTick != -1
-      ? this._emulatorTick
-      : this._tickRef.current;
-  }
-
-  constructor(project: Project, tickRef: ProjectManager["_tickRef"]) {
+  constructor(project: Project, tickRef: SimulationManager["_tickRef"]) {
     this._project = project;
-    this._tickRef = tickRef;
+    this.sim = new SimulationManager(this, tickRef);
     return;
   }
 
-  static make(tickRef: ProjectManager["_tickRef"]) {
+  static make(tickRef: SimulationManager["_tickRef"]) {
     return new ProjectManager(emptyProject(), tickRef);
   }
 
