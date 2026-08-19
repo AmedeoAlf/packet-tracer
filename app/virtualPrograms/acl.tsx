@@ -3,8 +3,11 @@ import { SubCommand } from "../emulators/DeviceEmulator";
 import {
   cidrFromIpv4AndMask,
   cidrToIpv4AndMask,
+  IPv4Address,
   IPv4AndMask,
+  ipv4InNetwork,
   L3InternalState,
+  ProtocolCode,
 } from "../protocols/rfc_760";
 
 export type L3Rule = {
@@ -185,5 +188,31 @@ const l3FilterArgs = <S extends ACLInternalState<S>>(
     },
   },
 });
+
+export const shouldPermit = (
+  rules: Rule[],
+  source: IPv4Address,
+  destination: IPv4Address,
+  protocolCode?: ProtocolCode,
+  port?: number,
+): boolean | undefined =>
+  rules.find((it) => {
+    if (!(
+      ipv4InNetwork(source, it.source) && ipv4InNetwork(destination, it.dest)
+    ))
+      return false;
+    switch (it.type) {
+      case "ip":
+        return true;
+      case "icmp":
+        return protocolCode == ProtocolCode.icmp;
+      case "udp":
+        if (protocolCode != ProtocolCode.udp) return false;
+        return it.port == -1 || port == -1 || it.port == port;
+      case "tcp":
+        if (protocolCode != ProtocolCode.tcp) return false;
+        return it.port == -1 || port == -1 || it.port == port;
+    }
+  })?.permit;
 
 export default acl;

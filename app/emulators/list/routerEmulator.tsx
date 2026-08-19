@@ -9,7 +9,6 @@ import {
 import {
   getDestinationOf,
   getMatchingInterface,
-  ipv4InNetwork,
   IPv4PacketAssembler,
   Ipv4Serializer,
   ipv4ToString,
@@ -35,7 +34,7 @@ import dhcpCmd from "@/app/virtualPrograms/dhcpServer";
 import { NetworkField } from "../panels/impostazioniDiRete";
 import { dhcpPanel } from "../panels/dhcpServerUI";
 import autoMan from "@/app/virtualPrograms/man";
-import acl, { Rule } from "@/app/virtualPrograms/acl";
+import acl, { Rule, shouldPermit } from "@/app/virtualPrograms/acl";
 import routerInterfaces from "@/app/virtualPrograms/routerInterfaces";
 import { TcpSerializer } from "@/app/protocols/tcp";
 
@@ -259,13 +258,26 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
         if (!assembler.getOriginal())
           throw "DHCP packets defragmentation is not implemented :-(";
 
+        const udpPkt = UDPSerializer.fromBytes(ipPkt.payload);
+        if (
+          acl != null &&
+          !shouldPermit(
+            acl,
+            ipPkt.source,
+            ipPkt.destination,
+            ProtocolCode.udp,
+            udpPkt.destination,
+          )
+        )
+          return;
+
         ctx.state.dhcpState_t ??= { assigned: new Set(), pending: new Set() };
         handleDHCPPacket(
           ctx,
           ctx.state.dhcpSettings,
           ctx.state.dhcpState_t,
           intf,
-          UDPSerializer.fromBytes(ipPkt.payload).payload,
+          udpPkt.payload,
         );
         return;
     }
@@ -277,33 +289,24 @@ export const routerEmulator: DeviceEmulator<RouterInternalState> = {
 
       let packet = Ipv4Serializer.fromBytes(l2Packet.payload);
 
-      if (acl !== null) {
-        const firstRuleMatching = acl.find((it) => {
-          if (!(
-            ipv4InNetwork(packet.source, it.source) &&
-            ipv4InNetwork(packet.destination, it.dest)
-          ))
-            return false;
-          switch (it.type) {
-            case "ip":
-              return true;
-            case "icmp":
-              return packet.protocol == ProtocolCode.icmp;
-            case "udp":
-              if (packet.protocol != ProtocolCode.udp) return false;
-              // NOTE: might be useful to implement some peek function
-              const udp = UDPSerializer.fromBytes(packet.payload);
-              return it.port == -1 || it.port == udp.destination;
-            case "tcp":
-              if (packet.protocol != ProtocolCode.tcp) return false;
-              // NOTE: might be useful to implement some peek function
-              const tcp = TcpSerializer.fromBytes(packet.payload);
-              return it.port == -1 || it.port == tcp.destination;
-          }
-        });
+      const l4Port =
+        packet.protocol == ProtocolCode.udp
+          ? UDPSerializer.peek(packet.payload, "destination")!
+          : packet.protocol == ProtocolCode.tcp
+            ? TcpSerializer.peek(packet.payload, "destination")!
+            : -1;
 
-        if (!firstRuleMatching?.permit) return;
-      }
+      if (
+        acl != null &&
+        !shouldPermit(
+          acl,
+          packet.source,
+          packet.destination,
+          packet.protocol,
+          l4Port,
+        )
+      )
+        return;
 
       // Non è indirizzato a me?
       if (isDestinedInterface == -1) {
