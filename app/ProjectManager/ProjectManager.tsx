@@ -46,9 +46,6 @@ export type Callback = {
 export class ProjectManager {
   _project: Project;
 
-  // Flag che definisce se riciclare `devices` e `connections`
-  viewBoxChange: boolean = false;
-  cantRecycle: boolean = false;
   mutatedDevices?: number[];
   mutatedDecals?: number[];
   cableCache?: Map<
@@ -197,14 +194,6 @@ export class ProjectManager {
     };
   }
   static fromSerialized = fromSerialized;
-  recyclable(): boolean {
-    return (
-      !this.cantRecycle &&
-      this.viewBoxChange &&
-      !this.mutatedDevices &&
-      !this.mutatedDecals
-    );
-  }
   applyMutations() {
     if (this.mutatedDevices) {
       // TODO: check if needed
