@@ -24,6 +24,8 @@ export default function newInstance(this: ProjectManager) {
   next.sim._emulatorTick = this.sim._emulatorTick;
 
   next.conn.cableCache = this.conn.cableCache;
+  this.devices._mutated = undefined;
+  this.decal._mutated = undefined;
 
   next.sim._callbacks = [...this.sim._callbacks];
 
