@@ -168,8 +168,11 @@ export function Editor({
         onMouseMove={mouseHandler("mousemove")}
         onMouseEnter={mouseHandler("mouseenter")}
         onMouseLeave={mouseHandler("mouseleave")}
+        // these warnings can be ignored, since canvasWheelEventHandler returns a callback
         onWheel={canvasWheelEventHandler(
+          // eslint-disable-next-line react-hooks/refs
           projectRef,
+          // eslint-disable-next-line react-hooks/refs
           () => {
             if (toolRef.current.toolname == "hand") toolCtx.updateTool();
             toolCtx.updateProject();
