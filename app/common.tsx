@@ -28,6 +28,7 @@ export function intRange(from: number, to: number): number[] {
   return new Array(to - from).fill(1).map((_, i) => i + from);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function trustMeBroCast<T>(t: any): asserts t is T {
   return;
 }
