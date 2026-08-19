@@ -1,18 +1,13 @@
 "use client";
-import {
-  clamp,
-  deepCopy,
-  arraySwap,
-  filterObject,
-  SimpleRecord,
-} from "../common";
-import { Decal, DecalData, PacketLogEntry, Project } from "../Project";
+import { clamp, filterObject, SimpleRecord } from "../common";
+import { PacketLogEntry, Project } from "../Project";
 import { ToolCtx } from "../tools/Tool";
 import DeviceManager from "./DeviceManager";
 import fromSerialized from "./fromSerialized";
 import SimulationManager from "./SimulationManager";
 import newInstance from "./newInstance";
 import ConnectionManager from "./ConnectionManager";
+import DecalManager from "./DecalManager";
 
 function emptyProject(): Project {
   return {
@@ -40,31 +35,12 @@ export type Callback = {
 export class ProjectManager {
   _project: Project;
 
-  mutatedDecals?: number[];
-
   packetLog: PacketLogEntry[] = [];
-
-  get immutableDecals(): Project["decals"] {
-    return this._project.decals;
-  }
-  mutDecal(id: number): Decal | undefined {
-    const dec = this._project.decals.at(id);
-    if (!dec) return;
-    this.mutatedDecals ??= [];
-    if (!this.mutatedDecals.includes(id)) {
-      this._project.decals[id] = deepCopy(dec);
-      this.mutatedDecals.push(id);
-    }
-    return this._project.decals.at(id) ?? undefined;
-  }
-  decalFromTag(tag: HTMLOrSVGElement): Decal | undefined {
-    if (tag.dataset.decalid) {
-      return this._project.decals[+tag.dataset.decalid] ?? undefined;
-    }
-  }
 
   // device handler class
   devices = new DeviceManager(this);
+  // decal handler class
+  decal = new DecalManager(this);
 
   // connection handler class
   conn = new ConnectionManager(this);
@@ -72,46 +48,6 @@ export class ProjectManager {
   // simulation handler class
   sim: SimulationManager;
 
-  addDecal(d: DecalData): number {
-    this.mutatedDecals ??= [];
-    this._project.decals.push({ ...d, id: this._project.decals.length });
-    return this._project.decals.length - 1;
-  }
-  duplicateDecal(id: number): number | undefined {
-    const old = this._project.decals.at(id) ?? null;
-    if (old === null) return;
-
-    return this.addDecal(deepCopy(old));
-  }
-  removeDecal(id: number) {
-    this.mutatedDecals ??= [];
-    this._project.decals[id] = null;
-  }
-  moveDecalIdx(id: number, offset: number): number {
-    const step = Math.sign(offset);
-    let target = id;
-    while (offset != 0) {
-      target += step;
-      if (target < 0) return -1;
-      switch (this.immutableDecals.at(target)) {
-        case undefined:
-          return -1;
-        default:
-          offset -= step;
-        case null:
-          continue;
-      }
-    }
-    if (!this.immutableDecals.at(target)) return -1;
-
-    arraySwap(this._project.decals, id, target);
-    if (this._project.decals[id]) this._project.decals[id].id = id;
-    // IDK perché c'è bisogno del ! qui
-    if (this._project.decals[target]) this._project.decals[target]!.id = target;
-    this.mutatedDecals ??= [];
-    this.mutatedDecals.push(id, target);
-    return target;
-  }
   exportProject(): SimpleRecord {
     return {
       ...this._project,

@@ -13,7 +13,7 @@ export type LabelTool = Tool<LabelTool> & {
 };
 
 function finalizeCurrinput(ctx: ToolCtx<LabelTool>) {
-  ctx.projectRef.current.addDecal({
+  ctx.projectRef.current.decal.add({
     type: "text",
     ...ctx.tool.currInput!,
   });
@@ -30,10 +30,10 @@ export const makeLabelTool: ToolConstructor<LabelTool> = (
   let currInput = (prev as LabelTool).currInput;
   if (isSelectTool(prev) && prev.selectedDecals.size == 1) {
     const selectedDecalIdx = prev.selectedDecals.values().next().value!;
-    const selectedDecal = project.immutableDecals.at(selectedDecalIdx);
+    const selectedDecal = project.decal.asImmutable.at(selectedDecalIdx);
     if (selectedDecal?.type == "text") {
       currInput = { ...selectedDecal };
-      project.removeDecal(selectedDecalIdx);
+      project.decal.delete(selectedDecalIdx);
     }
   }
 
@@ -82,7 +82,7 @@ export const makeLabelTool: ToolConstructor<LabelTool> = (
             ctx.toolRef.current.currInput = {
               ...ev.decal,
             };
-            ctx.projectRef.current.removeDecal(ev.decal.id);
+            ctx.projectRef.current.decal.delete(ev.decal.id);
             ctx.updateProject(true);
           } else {
             ctx.toolRef.current.currInput = {

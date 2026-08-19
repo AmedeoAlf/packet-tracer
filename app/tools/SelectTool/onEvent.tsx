@@ -14,7 +14,7 @@ export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
       if (self.selected.size != 0) return;
       if (self.selectedDecals.size != 1) return;
       const decalIdx = self.selectedDecals.values().next().value!;
-      const decal = ctx.projectRef.current.immutableDecals[decalIdx]!;
+      const decal = ctx.projectRef.current.decal.asImmutable[decalIdx]!;
 
       switch (decal.type) {
         case "text":
@@ -61,9 +61,9 @@ export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
               ev.pos[1] - self.lastCursorPos[1];
           }
           for (const dec of self.selectedDecals) {
-            ctx.projectRef.current.mutDecal(dec)!.pos[0] +=
+            ctx.projectRef.current.decal.mut(dec)!.pos[0] +=
               ev.pos[0] - self.lastCursorPos[0];
-            ctx.projectRef.current.mutDecal(dec)!.pos[1] +=
+            ctx.projectRef.current.decal.mut(dec)!.pos[1] +=
               ev.pos[1] - self.lastCursorPos[1];
           }
           self.movedSelection = true;
@@ -89,7 +89,7 @@ export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
             .filter((it) => pointInRect(it.pos, selection))
             .forEach((it) => self.selected.add(it.id));
 
-          ctx.projectRef.current.immutableDecals
+          ctx.projectRef.current.decal.asImmutable
             .filter(
               (it) =>
                 it &&
@@ -110,8 +110,8 @@ export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
               ctx.projectRef.current.devices.mutate(dev)!.pos[1] += diffY;
             }
             for (const dec of self.selectedDecals) {
-              ctx.projectRef.current.mutDecal(dec)!.pos[0] += diffX;
-              ctx.projectRef.current.mutDecal(dec)!.pos[1] += diffY;
+              ctx.projectRef.current.decal.mut(dec)!.pos[0] += diffX;
+              ctx.projectRef.current.decal.mut(dec)!.pos[1] += diffY;
             }
           }
           if (self.movedSelection) ctx.updateProject(true);
@@ -129,7 +129,7 @@ export default function onEvent(ctx: ToolCtx<SelectTool>, ev: CanvasEvent) {
             ctx.projectRef.current.devices.delete(s);
           }
           for (const s of self.selectedDecals) {
-            ctx.projectRef.current.removeDecal(s);
+            ctx.projectRef.current.decal.delete(s);
           }
           self.selected.clear();
           self.selectedDecals.clear();

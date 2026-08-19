@@ -35,10 +35,10 @@ export default function duplicateSelection(
 
   const newDecals = new Set<number>();
   for (const s of self.selectedDecals) {
-    const newId = project.duplicateDecal(s)!;
+    const newId = project.decal.duplicate(s)!;
     newDecals.add(newId);
-    project.mutDecal(newId)!.pos[0] += 10;
-    project.mutDecal(newId)!.pos[1] += 10;
+    project.decal.mut(newId)!.pos[0] += 10;
+    project.decal.mut(newId)!.pos[1] += 10;
   }
   self.selected = new Set(newSelected);
   self.selectedDecals = newDecals;

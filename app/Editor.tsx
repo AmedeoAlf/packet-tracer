@@ -182,7 +182,7 @@ export function Editor({
         ref={setSvgCanvas}
       >
         <defs> {Object.values(ICONS)} </defs>
-        <Decals decals={project.immutableDecals} tool={tool} />
+        <Decals decals={project.decal.asImmutable} tool={tool} />
         <Cables
           devices={project.devices.asImmutable}
           cables={project.conn.getComputed()}
@@ -224,7 +224,7 @@ function buildMouseEventHandler(
           device: ctx.projectRef.current.devices.fromTag(
             ev.target as SVGUseElement,
           ),
-          decal: ctx.projectRef.current.decalFromTag(
+          decal: ctx.projectRef.current.decal.fromTag(
             ev.target as SVGUseElement,
           ),
           shiftKey: ev.shiftKey,
@@ -240,7 +240,7 @@ function buildMouseEventHandler(
         device: ctx.projectRef.current.devices.fromTag(
           ev.target as SVGUseElement,
         ),
-        decal: ctx.projectRef.current.decalFromTag(ev.target as SVGUseElement),
+        decal: ctx.projectRef.current.decal.fromTag(ev.target as SVGUseElement),
         shiftKey: ev.shiftKey,
       });
       return false;

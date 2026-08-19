@@ -65,7 +65,7 @@ function defaultProject(
   tickRef: SimulationManager["_tickRef"],
 ): ProjectManager {
   const p = ProjectManager.make(tickRef);
-  p.addDecal({
+  p.decal.add({
     type: "text",
     text: "This is an example project",
     pos: [-300, -250],

@@ -34,7 +34,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
       : undefined;
   const editing =
     typeof selectedDecal == "number" &&
-    project.immutableDecals.at(selectedDecal)?.type == "rect"
+    project.decal.asImmutable.at(selectedDecal)?.type == "rect"
       ? selectedDecal
       : undefined;
   return {
@@ -46,7 +46,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
     panel: (ctx) => {
       if (ctx.tool.startPos && ctx.tool.currPos) return;
       if (ctx.tool.editing !== undefined && !ctx.tool.startPos) {
-        const decal = ctx.project.immutableDecals[ctx.tool.editing]!;
+        const decal = ctx.project.decal.asImmutable[ctx.tool.editing]!;
         if (decal.type != "rect") throw "How did I select a non-rect decal???";
         return (
           <>
@@ -58,7 +58,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
                   name="Riempimento"
                   color={decal.fill}
                   setColor={(color) => {
-                    const d = ctx.projectRef.current.mutDecal(decal.id)!;
+                    const d = ctx.projectRef.current.decal.mut(decal.id)!;
                     if (d.type != "rect") return;
                     d.fill = color;
                     if (typeof color == "undefined") d.stroke ??= 0;
@@ -70,7 +70,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
                   name="Contorno"
                   color={decal.stroke}
                   setColor={(color) => {
-                    const d = ctx.projectRef.current.mutDecal(decal.id)!;
+                    const d = ctx.projectRef.current.decal.mut(decal.id)!;
                     if (d.type != "rect") return;
                     d.stroke = color;
                     if (typeof color == "undefined") d.fill ??= 0;
@@ -133,7 +133,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
           self.currPos = ev.pos;
           if (self.editing !== undefined) {
             const { x, y, width, height } = rectProps(self.startPos, ev.pos);
-            const decal = ctx.projectRef.current.mutDecal(self.editing);
+            const decal = ctx.projectRef.current.decal.mut(self.editing);
             if (decal?.type != "rect") throw "How did I get a non-rect decal";
             decal.pos = [x, y];
             decal.size = [width, height];
@@ -147,12 +147,12 @@ export const makeRectTool: ToolConstructor<RectTool> = (
           ctx.updateTool();
           if (ev.pos[0] || ev.pos[1]) {
             if (self.editing !== undefined) {
-              const decal = ctx.projectRef.current.mutDecal(self.editing);
+              const decal = ctx.projectRef.current.decal.mut(self.editing);
               if (decal?.type != "rect") throw "How did I get a non-rect decal";
               decal.pos = [x, y];
               decal.size = [width, height];
             } else {
-              ctx.projectRef.current.addDecal({
+              ctx.projectRef.current.decal.add({
                 type: "rect",
                 pos: [x, y],
                 size: [width, height],
@@ -171,7 +171,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
     },
     svgElements: (ctx) => {
       if (typeof ctx.tool.editing == "number" && !ctx.tool.startPos) {
-        const decal = project.immutableDecals[ctx.tool.editing]!;
+        const decal = project.decal.asImmutable[ctx.tool.editing]!;
         if (decal.type != "rect") throw "How did I get a non-rect decal";
         return (
           <rect
@@ -183,7 +183,7 @@ export const makeRectTool: ToolConstructor<RectTool> = (
             stroke="black"
             onMouseDown={() => {
               const rect =
-                ctx.projectRef.current.immutableDecals[
+                ctx.projectRef.current.decal.asImmutable[
                   ctx.toolRef.current.editing!
                 ];
               if (rect?.type != "rect") throw "Why am i not a rect?????";

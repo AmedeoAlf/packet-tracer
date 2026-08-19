@@ -94,7 +94,7 @@ export default function SelectToolPanel(ctx: ToolCtx<SelectTool>) {
       } else {
         const decal = ctx.toolRef.current.selectedDecals.values().next().value!;
         const offsetSelection = (of: number) => () => {
-          const newIdx = ctx.projectRef.current.moveDecalIdx(decal, of);
+          const newIdx = ctx.projectRef.current.decal.moveIdx(decal, of);
           if (newIdx != -1) {
             ctx.toolRef.current.selectedDecals = new Set([newIdx]);
             ctx.updateProject(true);
@@ -110,7 +110,7 @@ export default function SelectToolPanel(ctx: ToolCtx<SelectTool>) {
                 ctx.updateProject(true);
               }}
               del={() => {
-                ctx.projectRef.current.removeDecal(decal);
+                ctx.projectRef.current.decal.delete(decal);
                 ctx.toolRef.current.selectedDecals.clear();
                 ctx.updateTool();
                 ctx.updateProject(true);
