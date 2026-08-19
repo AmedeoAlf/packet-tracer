@@ -65,4 +65,13 @@ export class PacketSerializer<T extends Record<string, any>> {
     this.afterFromBytes(bytes, result);
     return result;
   }
+
+  peek<K extends keyof T>(bytes: Buffer, fieldName: K): T[K] | null {
+    for (const f of this.fields) {
+      const val = f.deserialize(bytes);
+      if (f.name == fieldName) return val;
+      bytes = bytes.subarray(f.getSizeFor(val));
+    }
+    return null;
+  }
 }
