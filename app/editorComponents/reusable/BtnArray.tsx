@@ -1,26 +1,26 @@
-import { memo, ReactNode } from "react";
+import { ButtonHTMLAttributes, DetailedHTMLProps, memo } from "react";
 
 export const BtnArrEl = memo(function BtnArrEl({
-  onClick,
   children,
   className,
-}: {
-  onClick: () => void;
-  children: ReactNode;
-  className?: string;
-}) {
+  ...props
+}: DetailedHTMLProps<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  HTMLButtonElement
+>) {
   return (
     <button
-      onClick={onClick}
       className={
         "px-4 h-9 hover:brightness-120 active:brightness-125 " +
         (className ?? "")
       }
+      {...props}
     >
       {children}
     </button>
   );
 });
+
 export function BtnArray({
   children,
   className,

@@ -30,13 +30,17 @@ export function load() {
   const json = JSON.parse(saved);
   if (!isRecord(json)) return;
 
+  return convert(version, json) ? json : undefined;
+}
+
+export function convert(version: string, json: SimpleRecord): boolean {
   while (version != currVersion) {
-    if (!(version in converters)) return;
+    if (!(version in converters)) return false;
     console.log("migrating", version);
     version = converters[version](json);
   }
 
-  return json;
+  return true;
 }
 
 const converters: Record<string, (parsed: SimpleRecord) => string> = {
