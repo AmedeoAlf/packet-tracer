@@ -21,9 +21,10 @@ export const Cables = memo(
           ...cables
             .entries()
             .flatMap(([fromTo, cables]) => {
-              // FIXME: undoing a delete of a connected device causes this issue
               if (!devices.has(fromTo >> 16) || !devices.has(fromTo & 0xffff)) {
-                debugger;
+                console.log(
+                  "I AM A BUG, I SHOULD BE FIXED, I SHOULD'VE BEEN TWICE",
+                );
                 return [];
               }
               const aPos = devices.get(fromTo >> 16)!.pos;

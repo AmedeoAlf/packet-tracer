@@ -75,7 +75,7 @@ export function useHistory<T>(
   // console.log(
   //   lookBack,
   //   ...history.map((it) =>
-  //     (it as ProjectManager).immutableDevices.keys().toArray(),
+  //     (it as ProjectManager).devices.asImmutable.keys().toArray(),
   //   ),
   // );
 

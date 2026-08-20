@@ -3,8 +3,11 @@ import { ProjectManager } from "./ProjectManager";
 
 export default function newInstance(this: ProjectManager) {
   const newProj = { ...this._project };
-  if (this.devices._mutated) newProj.devices = new Map(this._project.devices);
-  if (this.decal._mutated) newProj.decals = [...this._project.decals];
+  // we must alway copy the map, since previous snapshot's maps are considered immutable
+  // if (this.devices._mutated)
+  newProj.devices = new Map(this._project.devices);
+  // if (this.decal._mutated)
+  newProj.decals = [...this._project.decals];
   if (
     !this.conn.cableCache ||
     this.devices._mutated?.some((dev) =>
