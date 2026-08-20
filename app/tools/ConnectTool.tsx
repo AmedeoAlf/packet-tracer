@@ -260,7 +260,20 @@ const InterfaceSelector = memo(
           <div key={i} className="flex items-center justify-between m-1">
             <div className="w-17 rounded-md">{intf.name}</div>
             {i === intfIdx ? (
-              <Button className="bg-selected">Selezionata</Button>
+              <Button
+                onClick={() => {
+                  ctx.projectRef.current.conn.disconnect(device.id, i);
+                  ctx.updateProject(true);
+                  selectIntf(i);
+                }}
+                className="bg-selected"
+              >
+                {ctx.projectRef.current.conn.getConnectedTo(
+                  toInterfaceId(device.id, i),
+                ) == null
+                  ? "Selezionata"
+                  : "Disconnetti"}
+              </Button>
             ) : isConnected(i) ? (
               <Button
                 onClick={() => {
