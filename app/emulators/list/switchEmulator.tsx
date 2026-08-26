@@ -5,6 +5,7 @@ import l2send from "../../virtualPrograms/l2send";
 import { DeviceEmulator } from "../DeviceEmulator";
 import { SwitchInternalState } from "@/app/devices/list/Switch";
 import autoMan from "@/app/virtualPrograms/man";
+import macTable from "@/app/virtualPrograms/macTable";
 
 export const switchEmulator: DeviceEmulator<SwitchInternalState> = {
   configPanel: {
@@ -45,6 +46,7 @@ export const switchEmulator: DeviceEmulator<SwitchInternalState> = {
         hello: hello(),
         interfaces: interfaces(),
         l2send: l2send(),
+        macTable: macTable(),
       },
     }),
   },
@@ -53,13 +55,23 @@ export const switchEmulator: DeviceEmulator<SwitchInternalState> = {
     const myInterface = ctx.state.netInterfaces.findIndex(
       (v) => v.mac == l2Packet.dst,
     );
-    // Non facciamo nulla se il pacchetto era destinato all'interfaccia dello switch
 
-    if (myInterface == -1) {
+    if (ctx.state.macTable_t.get(l2Packet.src) != from_intf) {
+      ctx.state.macTable_t.set(l2Packet.src, from_intf);
+      ctx.updateState();
+    }
+
+    // Non facciamo nulla se il pacchetto era destinato all'interfaccia dello switch
+    if (myInterface != -1) return;
+
+    const destIntf = ctx.state.macTable_t.get(l2Packet.dst);
+    if (destIntf != null) {
+      if (destIntf == from_intf) return;
+      ctx.sendOnIf(destIntf, data);
+    } else
       for (const idx of ctx.state.netInterfaces.keys()) {
         if (idx == from_intf) continue;
         ctx.sendOnIf(idx, data);
       }
-    }
   },
 };

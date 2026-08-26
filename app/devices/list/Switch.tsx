@@ -1,9 +1,11 @@
 import { InternalState } from "../../emulators/DeviceEmulator";
 import { switchEmulator } from "../../emulators/list/switchEmulator";
-import { randomMAC } from "../../protocols/802_3";
+import { MacAddress, randomMAC } from "../../protocols/802_3";
 import { DeviceFactory } from "../Device";
 
-export type SwitchInternalState = InternalState<SwitchInternalState>;
+export type SwitchInternalState = InternalState<SwitchInternalState> & {
+  macTable_t: Map<MacAddress, number>;
+};
 
 export const Switch: DeviceFactory<SwitchInternalState> = {
   proto: {
@@ -13,6 +15,7 @@ export const Switch: DeviceFactory<SwitchInternalState> = {
   },
   defaultState() {
     return {
+      macTable_t: new Map(),
       netInterfaces: [
         { name: "if0", maxMbps: 100, type: "copper", mac: randomMAC() },
         { name: "if1", maxMbps: 100, type: "copper", mac: randomMAC() },
