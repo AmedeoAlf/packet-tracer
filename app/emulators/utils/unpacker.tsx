@@ -22,23 +22,26 @@ export function unpacket(packet: Buffer): Record<string, string>[] {
       );
       return layers;
   }
-  const l3Pkt = Ipv4Serializer.fromBytes(l2Pkt.payload);
-  layers.push(packetAsRecord(l3Pkt, Ipv4Serializer));
+  try {
+    const l3Pkt = Ipv4Serializer.fromBytes(l2Pkt.payload);
+    layers.push(packetAsRecord(l3Pkt, Ipv4Serializer));
 
-  const serializer = {
-    [ProtocolCode.icmp]: ICMPPacketSerializer,
-    [ProtocolCode.tcp]: TcpSerializer,
-    [ProtocolCode.udp]: UDPSerializer,
-  }[l3Pkt.protocol];
+    const serializer = {
+      [ProtocolCode.icmp]: ICMPPacketSerializer,
+      [ProtocolCode.tcp]: TcpSerializer,
+      [ProtocolCode.udp]: UDPSerializer,
+    }[l3Pkt.protocol];
 
-  layers.push(
-    packetAsRecord<typeof serializer>(
-      serializer.fromBytes(l3Pkt.payload),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      serializer as any,
-    ),
-  );
-
+    layers.push(
+      packetAsRecord<typeof serializer>(
+        serializer.fromBytes(l3Pkt.payload),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        serializer as any,
+      ),
+    );
+  } catch {
+    layers.push({ "unkown payload": "0x" + l2Pkt.payload.toString("hex") });
+  }
   return layers;
 }
 
@@ -66,17 +69,21 @@ export function quickAnalysis(packet: Buffer): string {
       return "dhcp";
   }
 
-  const l3Pkt = Ipv4Serializer.fromBytes(l2Pkt.payload);
-  switch (l3Pkt.protocol) {
-    case ProtocolCode.icmp:
-      return "icmp";
-    case ProtocolCode.tcp:
-      const tcpPkt = TcpSerializer.fromBytes(l3Pkt.payload);
-      return `tcp (${tcpPkt.source}->${tcpPkt.destination})`;
-    case ProtocolCode.udp:
-      const udpPkt = UDPSerializer.fromBytes(l3Pkt.payload);
-      return `udp (${udpPkt.source}->${udpPkt.destination})`;
-    default:
-      return `unknown ip (protocol ${l3Pkt.protocol})`;
+  try {
+    const l3Pkt = Ipv4Serializer.fromBytes(l2Pkt.payload);
+    switch (l3Pkt.protocol) {
+      case ProtocolCode.icmp:
+        return "icmp";
+      case ProtocolCode.tcp:
+        const tcpPkt = TcpSerializer.fromBytes(l3Pkt.payload);
+        return `tcp (${tcpPkt.source}->${tcpPkt.destination})`;
+      case ProtocolCode.udp:
+        const udpPkt = UDPSerializer.fromBytes(l3Pkt.payload);
+        return `udp (${udpPkt.source}->${udpPkt.destination})`;
+      default:
+        return `unknown ip (protocol ${l3Pkt.protocol})`;
+    }
+  } catch {
+    return `eth frame (unknown payload)`;
   }
 }
