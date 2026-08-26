@@ -30,12 +30,14 @@ export function SideBar({
           ),
         ),
       );
-    const mouseup = () => setResizing(false);
+    const mouseleave = () => setResizing(false);
     document.addEventListener("mousemove", mousemove);
-    document.addEventListener("mouseup", mouseup);
+    document.addEventListener("mouseup", mouseleave);
+    document.documentElement.addEventListener("mouseleave", mouseleave);
     return () => {
       document.removeEventListener("mousemove", mousemove);
-      document.removeEventListener("mouseup", mouseup);
+      document.removeEventListener("mouseup", mouseleave);
+      document.documentElement.removeEventListener("mouseleave", mouseleave);
     };
   }, [resizing, minWidth, rightSide, setResizing, setWidth]);
 
