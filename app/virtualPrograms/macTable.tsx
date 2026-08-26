@@ -13,7 +13,7 @@ export const macTable = (): SubCommand<SwitchInternalState> => ({
             `${MACToString(mac)} -> ${ctx.state.netInterfaces[intf].name}`,
         )
         .toArray()
-        .join("\n"),
+        .join("\n") || "Empty mactable",
     ),
   subcommands: {
     clear: {
