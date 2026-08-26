@@ -23,7 +23,7 @@ export default class DeviceManager {
         name ?? `${capitalize(type)} ${pm._project.lastId}`,
       ),
     );
-    const initFn = deviceTypesDB[type].proto.emulator.init as (
+    const initFn = deviceTypesDB[type].proto.emulator.init as unknown as (
       ctx: AnyEmulatorContext,
     ) => void | undefined;
     if (initFn) {
