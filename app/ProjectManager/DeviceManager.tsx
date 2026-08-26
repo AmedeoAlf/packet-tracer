@@ -45,7 +45,11 @@ export default class DeviceManager {
     const dup = pm._project.devices.get(newId)!;
     // FIXME: ho poca fiducia in una deep copy dell'internalState
     // Però adesso ho anche poca fiducia nelle performance
-    dup.internalState = deepCopy(removeTempFields(old.internalState));
+    dup.internalState = {
+      ...dup.internalState,
+      ...deepCopy(removeTempFields(old.internalState)),
+      netInterfaces: dup.internalState.netInterfaces,
+    };
     return newId;
   }
 
