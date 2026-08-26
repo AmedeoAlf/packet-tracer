@@ -9,14 +9,6 @@ import macTable from "@/app/virtualPrograms/macTable";
 
 export const switchEmulator: DeviceEmulator<SwitchInternalState> = {
   configPanel: {
-    "pannello meme"() {
-      return (
-        <p>
-          Questo pannello serve solo a dimostrare che gli switch hanno un
-          pannello differente dai router
-        </p>
-      );
-    },
     interfacce(ctx) {
       return (
         <table>
