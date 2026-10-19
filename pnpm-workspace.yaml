@@ -4,9 +4,12 @@ allowBuilds:
   unrs-resolver: true
 minimumReleaseAgeExclude:
   - flatted@3.4.2
-  - brace-expansion@1.1.13 || 5.0.5 || 5.0.6
+  - brace-expansion@1.1.13 || 1.1.19 || 1.1.20 || 1.1.21 || 5.0.5 || 5.0.6 || 5.0.10 || 5.0.11 || 5.0.12
   - picomatch@2.3.2 || 4.0.4
   - postcss@8.5.10
-  - next@16.2.5 || 16.2.6
+  - next@16.2.5 || 16.2.6 || 16.3.6 || 16.3.8
   - js-yaml@4.1.2
   - '@babel/core@7.29.1'
+  - braces@3.0.4
+  - source-map-js@1.2.2
+  - sharp@0.35.5
