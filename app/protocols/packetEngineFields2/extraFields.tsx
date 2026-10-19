@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { makeFieldConstructor } from "../packetEngine2";
 
 export const VLANTagField = makeFieldConstructor<number | undefined>({
@@ -17,50 +16,39 @@ export const VLANTagField = makeFieldConstructor<number | undefined>({
   stringify: (value) => JSON.stringify(value),
 });
 
-// export type DHCPTLVOption = [tag: number, value: Buffer];
-// export class DHCPTLVField extends Field<DHCPTLVOption[]> {
-//   constructor(
-//     public name: string,
-//     public stopTag: number = 0xff,
-//     public def?: DHCPTLVOption[],
-//   ) {
-//     super(name, def);
-//   }
-//
-//   serialize(into: Buffer, options: DHCPTLVOption[]): void {
-//     let cursor = 0;
-//     for (const [tag, value] of options) {
-//       into.writeUInt8(tag, cursor);
-//       into.writeUInt8(value.byteLength, cursor + 1);
-//       into.set(value, cursor + 2);
-//       cursor += 2 + value.byteLength;
-//     }
-//     into.writeUInt8(this.stopTag, cursor);
-//   }
-//   deserialize(bytes: Buffer): DHCPTLVOption[] {
-//     const options: DHCPTLVOption[] = [];
-//     let cursor = 0;
-//     while (
-//       cursor < bytes.byteLength &&
-//       bytes.readUInt8(cursor) != this.stopTag
-//     ) {
-//       const len = bytes.readUInt8(cursor + 1);
-//       options.push([
-//         bytes.readUInt8(cursor),
-//         bytes.subarray(cursor + 2, cursor + 2 + len),
-//       ]);
-//       cursor += 2 + len;
-//     }
-//     return options;
-//   }
-//   getSizeFor(value?: DHCPTLVOption[]): number {
-//     return (
-//       (value?.reduce((acc, val) => acc + 2 + val[1].byteLength, 0) ?? 0) +
-//       1 /* stop byte */
-//     );
-//   }
-// }
-//
+export type DHCPTLVOption = [tag: number, value: Buffer];
+const STOP_TAG = 0xff;
+export const DHCPTLVField = makeFieldConstructor<DHCPTLVOption[]>({
+  def: [],
+  serialize(into, options) {
+    let cursor = 0;
+    for (const [tag, value] of options) {
+      into.writeUInt8(tag, cursor);
+      into.writeUInt8(value.byteLength, cursor + 1);
+      into.set(value, cursor + 2);
+      cursor += 2 + value.byteLength;
+    }
+    into.writeUInt8(STOP_TAG, cursor);
+  },
+  deserialize(bytes) {
+    const options: DHCPTLVOption[] = [];
+    let cursor = 0;
+    while (cursor < bytes.byteLength && bytes.readUInt8(cursor) != STOP_TAG) {
+      const len = bytes.readUInt8(cursor + 1);
+      options.push([
+        bytes.readUInt8(cursor),
+        bytes.subarray(cursor + 2, cursor + 2 + len),
+      ]);
+      cursor += 2 + len;
+    }
+    return options;
+  },
+  getSizeFor: (value) =>
+    (value?.reduce((acc, val) => acc + 2 + val[1].byteLength, 0) ?? 0) +
+    1 /* stop byte */,
+  stringify: (value) => JSON.stringify(value),
+});
+
 // export class PacketField<T extends Record<string, any>> extends Field<T> {
 //   constructor(
 //     public name: string,

@@ -35,11 +35,20 @@
 
 import { bufferOfU32BE, bufferOfU8, randomU32, throwString } from "../common";
 import { MacAddress } from "./802_3";
-import { PacketSerializer } from "./packetEngine";
-import { FixedBufferField } from "./packetEngineFields/bufferFields";
-import { DHCPTLVOption, DHCPTLVField } from "./packetEngineFields/extraFields";
-import { IPv4Field } from "./packetEngineFields/IPv4Field";
-import { U8Field, U32Field, U16Field } from "./packetEngineFields/numberFields";
+import {
+  OptionalField2,
+  PacketSerializer2,
+  RequiredField2,
+  SerializerT,
+} from "./packetEngine2";
+import { FixedBufferField } from "./packetEngineFields2/bufferFields";
+import { DHCPTLVOption, DHCPTLVField } from "./packetEngineFields2/extraFields";
+import IPv4Field from "./packetEngineFields2/IPv4Field";
+import {
+  U16Field,
+  U32Field,
+  U8Field,
+} from "./packetEngineFields2/numberFields";
 import { IPv4Address } from "./rfc_760";
 
 export enum HType {
@@ -91,40 +100,25 @@ const TLVEntry = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } satisfies Record<keyof typeof TLVCode, (a: any) => DHCPTLVOption>;
 
-export const DHCPSerializer = new PacketSerializer<DHCPPacket>([
-  new U8Field("op"),
-  new U8Field("hType", HType.ethernet),
-  new U8Field("hLen", 6), // MAC length
-  new U8Field("hOps", 0),
-  new U32Field("xId", 0),
-  new U16Field("secs", 0),
-  new U16Field("flags", 0),
-  new IPv4Field("cIAddr", 0),
-  new IPv4Field("yIAddr", 0),
-  new IPv4Field("sIAddr", 0),
-  new IPv4Field("gIAddr", 0),
-  new FixedBufferField("cHAddr", 16),
-  new FixedBufferField("bootp", 192),
-  new U32Field("magic", 0x63825363),
-  new DHCPTLVField("options"),
+export const DHCPSerializer = new PacketSerializer2([
+  U8Field("op") as RequiredField2<DHCPOp, "op">,
+  U8Field("hType", true, HType.ethernet) as OptionalField2<HType, "hType">,
+  U8Field("hLen", true, 6), // MAC length
+  U8Field("hOps", true, 0),
+  U32Field("xId", true, 0),
+  U16Field("secs", true, 0),
+  U16Field("flags", true, 0),
+  IPv4Field("cIAddr", true),
+  IPv4Field("yIAddr", true),
+  IPv4Field("sIAddr", true),
+  IPv4Field("gIAddr", true),
+  FixedBufferField("cHAddr", 16, true),
+  FixedBufferField("bootp", 192, true),
+  U32Field("magic", true, 0x63825363),
+  DHCPTLVField("options", true),
 ]);
 
-export type DHCPPacket = {
-  op: DHCPOp;
-  hType?: HType;
-  hLen?: number;
-  hOps?: number;
-  xId?: number;
-  secs?: number;
-  flags?: number;
-  cIAddr?: number;
-  yIAddr?: number;
-  sIAddr?: number;
-  gIAddr?: number;
-  cHAddr?: Buffer;
-  bootp?: Buffer;
-  options?: DHCPTLVOption[];
-};
+export type DHCPPacket = SerializerT<typeof DHCPSerializer>;
 
 export function makeDHCPDiscover(
   mac: MacAddress,
@@ -226,6 +220,5 @@ export function tlvField(
   field: TLVCode,
 ): Buffer | undefined {
   return packet.options?.find((opt) => opt[0] == field)?.at(1) as
-    | Buffer
-    | undefined;
+    Buffer | undefined;
 }
