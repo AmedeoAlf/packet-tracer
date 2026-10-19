@@ -5,7 +5,7 @@ export type FieldVtable<T> = {
   serialize(into: Buffer, value: T): void;
   deserialize(bytes: Buffer): T;
   getSizeFor(value?: T): number;
-  stringify(value: T): string;
+  stringify(value?: T): string;
 };
 
 export type RequiredField2<T, Name extends string> = [
@@ -80,6 +80,13 @@ const set = <For extends FieldBuilder<[]>, T>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (self as any)[name(field)] = value;
 };
+
+export const {
+  name: fieldName,
+  vtable: fieldVtable,
+  get: fieldGet,
+  set: fieldSet,
+} = { name, vtable, get, set };
 
 export class PacketSerializer2<
   Fields extends readonly Field2<unknown, string>[],

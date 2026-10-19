@@ -1,6 +1,13 @@
 import { EthernetFrameSerializer, EtherType } from "@/app/protocols/802_3";
 import { ICMPPacketSerializer } from "@/app/protocols/icmp";
-import { PacketSerializer } from "@/app/protocols/packetEngine";
+import {
+  Field2,
+  fieldGet,
+  fieldName,
+  fieldVtable,
+  PacketSerializer2,
+  SerializerT,
+} from "@/app/protocols/packetEngine2";
 import {
   FixedBufferField,
   FillingBufferField,
@@ -10,12 +17,11 @@ import { ArpSerializer } from "@/app/protocols/rfc_826";
 import { TcpSerializer } from "@/app/protocols/tcp";
 import { UDPSerializer } from "@/app/protocols/udp";
 
-// TODO: reimplement with packetserializer2
 export function unpacket(packet: Buffer): Record<string, string>[] {
   const layers: Record<string, string>[] = [];
   const l2Pkt = EthernetFrameSerializer.fromBytes(packet);
 
-  // layers.push(packetAsRecord(l2Pkt, EthernetFrameSerializer));
+  layers.push(packetAsRecord(l2Pkt, EthernetFrameSerializer));
 
   switch (l2Pkt.lenOrEtherType) {
     case EtherType.arp:
@@ -26,20 +32,17 @@ export function unpacket(packet: Buffer): Record<string, string>[] {
   }
   try {
     const l3Pkt = Ipv4Serializer.fromBytes(l2Pkt.payload);
-    // layers.push(packetAsRecord(l3Pkt, Ipv4Serializer));
+    layers.push(packetAsRecord(l3Pkt, Ipv4Serializer));
 
     const serializer = {
       [ProtocolCode.icmp]: ICMPPacketSerializer,
       [ProtocolCode.tcp]: TcpSerializer,
       [ProtocolCode.udp]: UDPSerializer,
-    }[l3Pkt.protocol];
+    }[l3Pkt.protocol]!;
 
     layers.push(
-      packetAsRecord<typeof serializer>(
-        serializer.fromBytes(l3Pkt.payload),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        serializer as any,
-      ),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      packetAsRecord(serializer.fromBytes(l3Pkt.payload), serializer as any),
     );
   } catch {
     layers.push({ "unkown payload": "0x" + l2Pkt.payload.toString("hex") });
@@ -47,17 +50,18 @@ export function unpacket(packet: Buffer): Record<string, string>[] {
   return layers;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function packetAsRecord<T extends Record<string, any>>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  packet: Record<string, any>,
-  serializer: PacketSerializer<T>,
+function packetAsRecord<Fields extends readonly Field2<unknown, string>[]>(
+  packet: SerializerT<PacketSerializer2<Fields>>,
+  serializer: PacketSerializer2<Fields>,
 ): Record<string, string> {
   const out: Record<string, string> = {};
   for (const f of serializer.fields) {
     if (f instanceof FixedBufferField || f instanceof FillingBufferField)
       continue;
-    if (packet[f.name] != null) out[f.name] = f.stringify(packet[f.name]);
+    if (fieldGet(packet, f) == null)
+      out[fieldName(f)] = fieldVtable(f).stringify(
+        fieldGet(packet, f) ?? undefined,
+      );
   }
   return out;
 }
