@@ -32,7 +32,7 @@ const fieldConstructorFor = (
     def: 0,
     deserialize: (bytes) => bytes[read](),
     getSizeFor: () => bytesize,
-    stringify: (v) => numberStringify(bytesize, v),
+    stringify: (v) => numberStringify(bytesize, v ?? 0),
     serialize: (into, value) => into[write](value),
   });
 
@@ -46,7 +46,7 @@ export const U4MajorField = makeFieldConstructor({
     into.writeUInt8((value << 4) | (into.readUInt8() & 0xf)),
   deserialize: (bytes) => bytes.readUInt8() >> 4,
   getSizeFor: () => 0,
-  stringify: (value) => numberStringify(0.5, value),
+  stringify: (value) => numberStringify(0.5, value ?? 0),
 });
 
 export const U4MinorField = makeFieldConstructor({
@@ -55,5 +55,5 @@ export const U4MinorField = makeFieldConstructor({
     into.writeUInt8((value & 0xf) | (into.readUInt8() & 0xf0)),
   deserialize: (bytes) => bytes.readUInt8() & 0xf,
   getSizeFor: () => 1,
-  stringify: (value) => numberStringify(0.5, value),
+  stringify: (value) => numberStringify(0.5, value ?? 0),
 });
