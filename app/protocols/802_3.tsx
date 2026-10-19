@@ -11,11 +11,11 @@
  * simulatore)
  */
 
-import { PacketSerializer } from "./packetEngine";
-import { FillingBufferField } from "./packetEngineFields/bufferFields";
-import { VLANTagField } from "./packetEngineFields/extraFields";
-import { MACField } from "./packetEngineFields/MACField";
-import { U16Field, U32Field } from "./packetEngineFields/numberFields";
+import { FieldBuilder, PacketSerializer2, SerializerT } from "./packetEngine2";
+import { FillingBufferField } from "./packetEngineFields2/bufferFields";
+import { VLANTagField } from "./packetEngineFields2/extraFields";
+import MacField from "./packetEngineFields2/MacField";
+import { U16Field, U32Field } from "./packetEngineFields2/numberFields";
 
 export type MacAddress = number;
 
@@ -36,34 +36,23 @@ export enum EtherType {
   arp = 0x0806,
 }
 
-export type EthernetFrame = {
-  dst: MacAddress;
-  src: MacAddress;
-  vlanTag?: number;
-  lenOrEtherType?: number;
-  payload: Buffer;
-  crc?: number;
-};
+export type EthernetFrame = SerializerT<typeof EthernetFrameSerializer>;
 
-export const EthernetFrameSerializer =
-  new (class extends PacketSerializer<EthernetFrame> {
-    constructor() {
-      super([
-        new MACField("dst"),
-        new MACField("src"),
-        new VLANTagField("vlanTag"),
-        new U16Field("lenOrEtherType", 0),
-        new FillingBufferField("payload", 4),
-        new U32Field("crc", 0),
-      ]);
-    }
+const fields = [
+  MacField("dst"),
+  MacField("src"),
+  VLANTagField("vlanTag", true),
+  U16Field("lenOrEtherType", true),
+  FillingBufferField("payload", 4),
+  U32Field("crc", true),
+] as const;
 
-    protected beforeToBytes(value: EthernetFrame): void {
-      // If value under MTU/unset compute it
-      if (
-        typeof value.lenOrEtherType == "undefined" ||
-        value.lenOrEtherType <= 1500
-      )
-        value.lenOrEtherType = value.payload.byteLength;
-    }
-  })();
+export const EthernetFrameSerializer = new (class extends PacketSerializer2<
+  typeof fields
+> {
+  protected beforeToBytes(value: FieldBuilder<typeof fields>) {
+    // If value under MTU/unset compute it
+    if (value.lenOrEtherType == null || value.lenOrEtherType <= 1500)
+      value.lenOrEtherType = value.payload?.byteLength ?? 0;
+  }
+})(fields);

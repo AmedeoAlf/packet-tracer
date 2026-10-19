@@ -1,8 +1,9 @@
 import { makeFieldConstructor } from "../packetEngine2";
 
-export const FixedBufferField = <Name extends string>(
+export const FixedBufferField = <Name extends string, Optional extends boolean>(
   name: Name,
   size: number,
+  optional?: Optional,
 ) =>
   makeFieldConstructor<Buffer>({
     deserialize: (bytes) => bytes.subarray(0, size),
@@ -10,11 +11,15 @@ export const FixedBufferField = <Name extends string>(
     getSizeFor: () => size,
     // TODO: find better serializer
     stringify: (val) => JSON.stringify(val),
-  })(name, true);
+  })(name, optional);
 
-export const FillingBufferField = <Name extends string>(
+export const FillingBufferField = <
+  Name extends string,
+  Optional extends boolean,
+>(
   name: Name,
   leaveTrail: number = 0,
+  optional?: Optional,
 ) =>
   makeFieldConstructor<Buffer>({
     deserialize: (bytes) => bytes.subarray(0, bytes.length - leaveTrail),
@@ -22,4 +27,4 @@ export const FillingBufferField = <Name extends string>(
     getSizeFor: (value) => value?.byteLength ?? 0,
     // TODO: find better serializer
     stringify: (val) => JSON.stringify(val),
-  })(name, true);
+  })(name, optional);

@@ -13,7 +13,9 @@ import { UDPSerializer } from "@/app/protocols/udp";
 export function unpacket(packet: Buffer): Record<string, string>[] {
   const layers: Record<string, string>[] = [];
   const l2Pkt = EthernetFrameSerializer.fromBytes(packet);
-  layers.push(packetAsRecord(l2Pkt, EthernetFrameSerializer));
+  // TODO: reimplement
+
+  // layers.push(packetAsRecord(l2Pkt, EthernetFrameSerializer));
 
   switch (l2Pkt.lenOrEtherType) {
     case EtherType.arp:
