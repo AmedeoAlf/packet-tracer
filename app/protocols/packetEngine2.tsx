@@ -93,7 +93,7 @@ export class PacketSerializer2<
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected beforeFromBytes(_bytes: Buffer) {}
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected afterFromBytes(_bytes: Buffer, _value: T) {}
+  protected afterFromBytes(_bytes: Buffer, _value: Required<T>) {}
 
   constructor(public fields: Fields) {}
 
