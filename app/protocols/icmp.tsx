@@ -14,9 +14,9 @@
  * simulatore)
  */
 
-import { PacketSerializer } from "./packetEngine";
-import { FillingBufferField } from "./packetEngineFields/bufferFields";
-import { U16Field, U32Field } from "./packetEngineFields/numberFields";
+import { PacketSerializer2, SerializerT } from "./packetEngine2";
+import { FillingBufferField } from "./packetEngineFields2/bufferFields";
+import { U16Field, U32Field } from "./packetEngineFields2/numberFields";
 
 // https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages
 export enum ICMPType {
@@ -32,18 +32,13 @@ export enum ICMPType {
 }
 
 // https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Header
-export type ICMPPacket = {
-  type: ICMPType;
-  checksum?: number;
-  extraHeader: number;
-  payload?: Buffer;
-};
+export type ICMPPacket = SerializerT<typeof ICMPPacketSerializer>;
 
-export const ICMPPacketSerializer = new PacketSerializer<ICMPPacket>([
-  new U16Field("type"),
-  new U16Field("checksum"),
-  new U32Field("extraHeader"),
-  new FillingBufferField("payload"),
+export const ICMPPacketSerializer = new PacketSerializer2([
+  U16Field("type"),
+  U16Field("checksum", true),
+  U32Field("extraHeader", true),
+  FillingBufferField("payload"),
 ]);
 
 export function echoRequest(
@@ -66,7 +61,7 @@ export function echoResponse(echoRequest: ICMPPacket): ICMPPacket {
   };
 }
 
-export function echoResponseHeader(packet: ICMPPacket): {
+export function echoResponseHeader(packet: Required<ICMPPacket>): {
   id: number;
   seq: number;
 } {

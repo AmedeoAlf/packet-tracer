@@ -1,7 +1,7 @@
 import { trustMeBroCast } from "../common";
 
 export type FieldVtable<T> = {
-  def: T;
+  def?: T;
   serialize(into: Buffer, value: T): void;
   deserialize(bytes: Buffer): T;
   getSizeFor(value?: T): number;
@@ -140,3 +140,11 @@ export class PacketSerializer2<
     return null;
   }
 }
+
+export type SerializerT<Serializer> =
+  Serializer extends PacketSerializer2<
+    readonly Field2<unknown, string>[],
+    infer T
+  >
+    ? T
+    : never;
