@@ -11,7 +11,7 @@ import {
 import {
   FixedBufferField,
   FillingBufferField,
-} from "@/app/protocols/packetEngineFields/bufferFields";
+} from "@/app/protocols/packetEngineFields2/bufferFields";
 import { Ipv4Serializer, ProtocolCode } from "@/app/protocols/rfc_760";
 import { ArpSerializer } from "@/app/protocols/rfc_826";
 import { TcpSerializer } from "@/app/protocols/tcp";
