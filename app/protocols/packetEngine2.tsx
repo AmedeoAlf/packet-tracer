@@ -22,23 +22,20 @@ export type OptionalField2<T, Name extends string> = [
 export type Field2<T, Name extends string> =
   OptionalField2<T, Name> | RequiredField2<T, Name>;
 
-export type FieldConstructor<T> = <
-  Name extends string,
-  Optional extends boolean | undefined,
->(
-  fieldName: Name,
-  optional?: Optional,
-  def?: T,
-) => Optional extends true ? OptionalField2<T, Name> : Field2<T, Name>;
-
-export const makeFieldConstructor = <T,>(
-  vtable: FieldVtable<T>,
-): FieldConstructor<T> =>
-  ((name, optional, def) => [
-    name,
-    def != null && def === vtable.def ? vtable : { ...vtable, def },
-    optional,
-  ]) as FieldConstructor<T>;
+export const makeFieldConstructor =
+  <T,>(vtable: FieldVtable<T>) =>
+  <Name extends string, Optional extends boolean | undefined = false>(
+    name: Name,
+    optional?: Optional,
+    def?: T,
+  ) =>
+    [
+      name,
+      def != null && def === vtable.def ? vtable : { ...vtable, def },
+      optional,
+    ] as Optional extends true
+      ? OptionalField2<T, Name>
+      : RequiredField2<T, Name>;
 
 type _FieldValue<F> =
   F extends Field2<unknown, string>
