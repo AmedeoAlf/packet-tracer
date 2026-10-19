@@ -23,39 +23,35 @@
  */
 
 import { EtherType, EthernetFrame, MAC_BROADCAST, MacAddress } from "./802_3";
-import { PacketSerializer } from "./packetEngine";
-import { IPv4Field } from "./packetEngineFields/IPv4Field";
-import { MACField } from "./packetEngineFields/MACField";
-import { U16Field, U8Field } from "./packetEngineFields/numberFields";
-import { IPv4Address } from "./rfc_760";
+import {
+  OptionalField2,
+  PacketSerializer2,
+  SerializerT,
+} from "./packetEngine2";
+import IPv4Field from "./packetEngineFields2/IPv4Field";
+import MACField from "./packetEngineFields2/MacField";
+import { U16Field, U8Field } from "./packetEngineFields2/numberFields";
 
 export enum Operation {
   request = 1,
   reply = 2,
 }
 
-export type ARPPacket = {
-  hardwareType?: number;
-  protocolType?: number;
-  hwLen?: number;
-  protoLen?: number;
-  operation?: Operation;
-  senderMAC: MacAddress;
-  senderIP: IPv4Address;
-  targetMAC?: MacAddress;
-  targetIP: IPv4Address;
-};
+export type ARPPacket = SerializerT<typeof ArpSerializer>;
 
-export const ArpSerializer = new PacketSerializer<ARPPacket>([
-  new U16Field("hardwareType", 1),
-  new U16Field("protocolType", 0x800),
-  new U8Field("hwLen", 6),
-  new U8Field("protoLen", 4),
-  new U8Field("operation", Operation.request),
-  new MACField("senderMAC"),
-  new IPv4Field("senderIP"),
-  new MACField("targetMAC", 0),
-  new IPv4Field("targetIP"),
+export const ArpSerializer = new PacketSerializer2([
+  U16Field("hardwareType", true, 1),
+  U16Field("protocolType", true, 0x800),
+  U8Field("hwLen", true, 6),
+  U8Field("protoLen", true, 4),
+  U8Field("operation", true, Operation.request) as OptionalField2<
+    Operation,
+    "operation"
+  >,
+  MACField("senderMAC"),
+  IPv4Field("senderIP"),
+  MACField("targetMAC", true, 0),
+  IPv4Field("targetIP"),
 ]);
 
 export function arpToL2(packet: ARPPacket): EthernetFrame {

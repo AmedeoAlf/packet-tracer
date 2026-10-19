@@ -24,15 +24,15 @@
  * simulatore)
  */
 
-import { PacketSerializer } from "./packetEngine";
-import { FillingBufferField } from "./packetEngineFields/bufferFields";
+import { PacketSerializer2 } from "./packetEngine2";
+import { FillingBufferField } from "./packetEngineFields2/bufferFields";
 import {
   U16Field,
   U32Field,
   U4MajorField,
   U4MinorField,
   U8Field,
-} from "./packetEngineFields/numberFields";
+} from "./packetEngineFields2/numberFields";
 
 export type TCPPacket = {
   source: number;
@@ -49,18 +49,18 @@ export type TCPPacket = {
 };
 
 // NOTE: small regression, data is read without consideration for dataOffset
-export const TcpSerializer = new PacketSerializer<TCPPacket>([
-  new U16Field("source"),
-  new U16Field("destination"),
-  new U32Field("seq"),
-  new U32Field("ack", 0),
-  new U4MajorField("dataOffset", 0x5),
-  new U4MinorField("dataOffset"),
-  new U8Field("flags", 0),
-  new U16Field("window", 1),
-  new U16Field("checksum", 0),
-  new U16Field("urgent", 0),
-  new FillingBufferField("payload"),
+export const TcpSerializer = new PacketSerializer2([
+  U16Field("source"),
+  U16Field("destination"),
+  U32Field("seq", true),
+  U32Field("ack", true, 0),
+  U4MajorField("dataOffset", true, 0x5),
+  U4MinorField("reserved", true),
+  U8Field("flags", true, 0),
+  U16Field("window", true, 1),
+  U16Field("checksum", true, 0),
+  U16Field("urgent", true, 0),
+  FillingBufferField("payload"),
 ]);
 
 export enum TCPFlag {
