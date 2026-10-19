@@ -1,4 +1,4 @@
-import { FieldVtable, makeFieldConstructor } from "../packetEngine2";
+import { makeFieldConstructor } from "../packetEngine2";
 
 function numberStringify(size: number, value: number) {
   return `0x${value.toString(16).padStart(size * 2, "0")} (${value})`;
@@ -27,25 +27,14 @@ const fieldConstructorFor = (
   bytesize: number,
   write: WriteMethods,
   read: ReadMethods,
-) => {
-  const vtable = {
+) =>
+  makeFieldConstructor({
     def: 0,
     deserialize: (bytes) => bytes[read](),
     getSizeFor: () => bytesize,
     stringify: (v) => numberStringify(bytesize, v),
     serialize: (into, value) => into[write](value),
-  } satisfies FieldVtable<number>;
-  const constr = makeFieldConstructor(vtable);
-
-  return <Name extends string, Option extends boolean | undefined>(
-    name: Name,
-    optional?: Option,
-    def: number = vtable.def,
-  ) =>
-    def == vtable.def
-      ? constr(name, optional)
-      : makeFieldConstructor({ ...vtable, def })(name, optional);
-};
+  });
 
 export const U32Field = fieldConstructorFor(4, "writeUInt32BE", "readUInt32BE");
 export const U16Field = fieldConstructorFor(2, "writeUInt16BE", "readUInt16BE");

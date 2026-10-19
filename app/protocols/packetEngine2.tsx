@@ -28,12 +28,17 @@ export type FieldConstructor<T> = <
 >(
   fieldName: Name,
   optional?: Optional,
+  def?: T,
 ) => Optional extends true ? OptionalField2<T, Name> : Field2<T, Name>;
 
 export const makeFieldConstructor = <T,>(
   vtable: FieldVtable<T>,
 ): FieldConstructor<T> =>
-  ((name, optional) => [name, vtable, optional]) as FieldConstructor<T>;
+  ((name, optional, def) => [
+    name,
+    def != null && def === vtable.def ? vtable : { ...vtable, def },
+    optional,
+  ]) as FieldConstructor<T>;
 
 type _FieldValue<F> =
   F extends Field2<unknown, string>

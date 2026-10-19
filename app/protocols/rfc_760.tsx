@@ -30,15 +30,15 @@ import { countLeadingOnes } from "../common";
 import { RouterInternalState } from "../devices/list/Router";
 import { EmulatorContext, InternalState } from "../emulators/DeviceEmulator";
 import { MacAddress } from "./802_3";
-import { PacketSerializer } from "./packetEngine";
-import { FillingBufferField } from "./packetEngineFields/bufferFields";
-import { IPv4Field } from "./packetEngineFields/IPv4Field";
+import { FieldBuilder, PacketSerializer2, SerializerT } from "./packetEngine2";
+import { FillingBufferField } from "./packetEngineFields2/bufferFields";
+import { IPv4Field } from "./packetEngineFields2/IPv4Field";
 import {
   U16Field,
   U4MajorField,
   U4MinorField,
   U8Field,
-} from "./packetEngineFields/numberFields";
+} from "./packetEngineFields2/numberFields";
 
 // NOTE: Implementazione parziale, ad esempio IHL è sempre uguale a 5
 export type IPv4Address = number;
@@ -128,7 +128,8 @@ export enum ProtocolCode {
 export const MORE_FRAGMENTS_BIT = 1 << 13;
 export const OFFSET_MASK = (1 << 13) - 1;
 
-export type IPv4Packet = {
+export type IPv4Packet = SerializerT<typeof Ipv4Serializer>;
+export type IPv4Packet2 = {
   version?: number;
   ihl?: number;
   typeOfService?: number;
@@ -143,29 +144,30 @@ export type IPv4Packet = {
   payload: Buffer;
 };
 
-export const Ipv4Serializer = new (class extends PacketSerializer<IPv4Packet> {
-  constructor() {
-    super([
-      new U4MajorField("version", 4),
-      new U4MinorField("ihl", 5),
-      new U8Field("typeOfService"),
-      new U16Field("length"),
-      new U16Field("identification"),
-      new U16Field("offsetAndFlags"),
-      new U8Field("ttl"),
-      new U8Field("protocol"),
-      new U16Field("checksum"),
-      new IPv4Field("source"),
-      new IPv4Field("destination"),
-      new FillingBufferField("payload"),
-    ]);
-  }
-  override beforeToBytes(value: IPv4Packet) {
+const fields = [
+  U4MajorField("version", true, 4),
+  U4MinorField("ihl", true, 5),
+  U8Field("typeOfService", true),
+  U16Field("length", true),
+  U16Field("identification", true),
+  U16Field("offsetAndFlags", true),
+  U8Field("ttl"),
+  U8Field("protocol"),
+  U16Field("checksum", true),
+  IPv4Field("source"),
+  IPv4Field("destination"),
+  FillingBufferField("payload"),
+] as const;
+
+export const Ipv4Serializer = new (class extends PacketSerializer2<
+  typeof fields
+> {
+  override beforeToBytes(value: FieldBuilder<typeof fields>) {
     if (value.payload.byteLength > IPV4_MAX_PAYLOAD)
       throw "IPv4 packet payload too large";
     value.length = (value.ihl ?? 5) * 4 + value.payload.length;
   }
-})();
+})(fields);
 
 export function ipv4ToFragmentedBytes(
   packet: IPv4Packet,

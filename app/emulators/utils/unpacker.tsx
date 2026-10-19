@@ -10,10 +10,10 @@ import { ArpSerializer } from "@/app/protocols/rfc_826";
 import { TcpSerializer } from "@/app/protocols/tcp";
 import { UDPSerializer } from "@/app/protocols/udp";
 
+// TODO: reimplement with packetserializer2
 export function unpacket(packet: Buffer): Record<string, string>[] {
   const layers: Record<string, string>[] = [];
   const l2Pkt = EthernetFrameSerializer.fromBytes(packet);
-  // TODO: reimplement
 
   // layers.push(packetAsRecord(l2Pkt, EthernetFrameSerializer));
 
@@ -26,7 +26,7 @@ export function unpacket(packet: Buffer): Record<string, string>[] {
   }
   try {
     const l3Pkt = Ipv4Serializer.fromBytes(l2Pkt.payload);
-    layers.push(packetAsRecord(l3Pkt, Ipv4Serializer));
+    // layers.push(packetAsRecord(l3Pkt, Ipv4Serializer));
 
     const serializer = {
       [ProtocolCode.icmp]: ICMPPacketSerializer,
