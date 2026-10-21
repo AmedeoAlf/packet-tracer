@@ -75,7 +75,7 @@ export function cidrToIpv4AndMask(cidr: string): IPv4AndMask | undefined {
   if (typeof addr == "undefined") return;
   const mask = +(maskStr ?? "32");
   if (isNaN(mask) || mask < 0 || mask > 32) return;
-  return [addr, mask];
+  return [addr, 0xffffffff - (2 ** mask - 1)];
 }
 
 export function ipv4InNetwork(
