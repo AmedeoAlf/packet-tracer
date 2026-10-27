@@ -13,3 +13,4 @@ minimumReleaseAgeExclude:
   - braces@3.0.4
   - source-map-js@1.2.2
   - sharp@0.35.5
+  - zod@4.6.6
