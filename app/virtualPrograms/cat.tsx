@@ -16,7 +16,6 @@ export const cat = <
     }));
   },
   then: {
-    done: true,
     run(ctx) {
       // run() only gets called when validate() is true, when the file is
       // missing an error is printed by runOnInterpreter

@@ -5,7 +5,6 @@ export const hello = <
 >(): SubCommand<State> => ({
   desc: 'Prints "Hello, World!"',
   run: (ctx) => ctx.write("Hello, World!"),
-  done: true,
 });
 
 export default hello;

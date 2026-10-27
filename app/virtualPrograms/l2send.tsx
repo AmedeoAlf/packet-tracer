@@ -63,7 +63,6 @@ export const l2send = <
               }),
             );
           },
-          done: true,
         },
       },
     },

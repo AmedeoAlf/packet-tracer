@@ -40,7 +40,6 @@ export type Command<State extends InternalState<State>> =
     }
   | {
       run: (ctx: EmulatorContext<State>) => void;
-      done: true;
     };
 
 export type SubCommand<State extends InternalState<State>> = Command<State> & {
@@ -93,7 +92,6 @@ export function runOnInterpreter<State extends InternalState<State>>(
     }
   }
   if ("run" in cmd && cmd.run) cmd.run(ctx);
-  else if ("done" in cmd) cmd.run(ctx);
   else ctx.write(`ERROR: incomplete command`);
 }
 

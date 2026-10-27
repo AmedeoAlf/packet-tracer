@@ -26,14 +26,12 @@ export const tcplisten = <
             });
           });
         },
-        done: true,
       },
       stop: {
         desc: "Stops listening on port",
         run(ctx) {
           tcpClose(ctx, +ctx.args![1]);
         },
-        done: true,
       },
     },
   },

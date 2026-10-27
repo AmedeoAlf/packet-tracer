@@ -13,7 +13,6 @@ export const nslookup = <
   autocomplete: () => [],
   paramDesc: "Domain to resolve",
   then: {
-    done: true,
     run(ctx) {
       const dns = getDns(ctx.state.filesystem);
       if (typeof dns == "string") {

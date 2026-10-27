@@ -28,7 +28,6 @@ export const man = <State extends InternalState<State>>(
     validate: (_, past) => past[1] in shell.subcommands,
     paramDesc: "Command to inspect",
     then: {
-      done: true,
       run(ctx) {
         const cmdName = ctx.args![1];
         const cmd =

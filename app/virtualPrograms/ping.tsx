@@ -20,7 +20,6 @@ export const ping = <
   autocomplete: () => [],
   validate: (_, past) => parseIpv4(past[1]) !== undefined,
   then: {
-    done: true,
     run(ctx) {
       const addr = parseIpv4(ctx.args![1])!;
       const start = ctx.currTick();

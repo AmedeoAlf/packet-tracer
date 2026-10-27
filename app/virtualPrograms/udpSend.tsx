@@ -31,7 +31,6 @@ export const udpSend = <
         autocomplete: () => [],
         validate: () => true,
         then: {
-          done: true,
           run(ctx) {
             const toIp = parseIpv4(ctx.args![1])!;
             sendIPv4Packet(

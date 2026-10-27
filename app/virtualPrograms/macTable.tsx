@@ -22,7 +22,6 @@ export const macTable = (): SubCommand<SwitchInternalState> => ({
         ctx.state.macTable_t.clear();
         ctx.updateState();
       },
-      done: true,
     },
   },
 });

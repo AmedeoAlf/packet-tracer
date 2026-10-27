@@ -32,7 +32,6 @@ export const tcphello = <
           tcpClose(ctx, socket);
         });
       },
-      done: true,
     },
   },
 });

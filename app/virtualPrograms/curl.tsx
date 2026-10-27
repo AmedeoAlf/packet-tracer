@@ -17,7 +17,6 @@ export const curl = <
   paramDesc: "Address",
   validate: (_, past) => typeof parseURL(past[1]) != "undefined",
   then: {
-    done: true,
     run(ctx) {
       const [protocol, address, port, resource] = parseURL(ctx.args![1])!;
       if ((protocol ?? "http") != "http") {

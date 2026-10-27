@@ -56,7 +56,6 @@ export const interfacesL3 = <
                 ctx.state.l3Ifs[intfId] = [ip, mask];
                 ctx.updateState();
               },
-              done: true,
             },
           },
         },

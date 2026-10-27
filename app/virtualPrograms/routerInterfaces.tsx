@@ -65,7 +65,6 @@ export const routerInterfaces = <
                 ctx.state.l3Ifs[intfId] = [ip, mask];
                 ctx.updateState();
               },
-              done: true,
             },
           },
         },
@@ -120,7 +119,6 @@ export const routerInterfaces = <
                     ctx.state.assignedACLs[intf] = acl;
                   }
                 },
-                done: true,
               },
               out: {
                 desc: "run on exiting packets",
@@ -139,7 +137,6 @@ export const routerInterfaces = <
                     ctx.state.assignedACLsOut[intf] = acl;
                   }
                 },
-                done: true,
               },
             },
           },

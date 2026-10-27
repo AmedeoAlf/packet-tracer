@@ -10,7 +10,6 @@ export const gatewayCmd = <
   validate: (_, past) => typeof parseIpv4(past[1]) != "undefined",
   paramDesc: "New gateway",
   then: {
-    done: true,
     run(ctx) {
       ctx.state.gateway = parseIpv4(ctx.args![1])!;
       ctx.updateState();

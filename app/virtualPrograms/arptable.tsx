@@ -6,7 +6,6 @@ export const arptable = <
   State extends L3InternalState<State>,
 >(): SubCommand<State> => ({
   desc: "Dumps the device ARP table",
-  done: true,
   run: (ctx) =>
     ctx.write(
       ctx.state.macTable_t

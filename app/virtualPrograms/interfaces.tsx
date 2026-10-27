@@ -37,7 +37,6 @@ export const interfaces = <State extends InternalState<State>>(
             if (intf) intf.name = newName;
             ctx.updateState();
           },
-          done: true,
         },
       },
     },

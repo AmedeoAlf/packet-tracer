@@ -42,7 +42,6 @@ export const routing = {
             });
             ctx.updateState();
           },
-          done: true,
         },
       },
     },
@@ -60,7 +59,6 @@ export const routing = {
           );
           ctx.updateState();
         },
-        done: true,
       },
     },
     "set-priority": {
@@ -82,7 +80,6 @@ export const routing = {
             );
             ctx.updateState();
           },
-          done: true,
         },
       },
     },

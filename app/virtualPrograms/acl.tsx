@@ -84,7 +84,6 @@ export const acl = <
           }
           ctx.updateState();
         },
-        done: true,
       },
     },
   },
@@ -149,7 +148,6 @@ const l4FilterArgs = <S extends ACLInternalState<S>>(
           ctx.state.aclRules[idx].push(rule);
           ctx.updateState();
         },
-        done: true,
       },
     },
   },
@@ -184,7 +182,6 @@ const l3FilterArgs = <S extends ACLInternalState<S>>(
         ctx.state.aclRules[idx].push(rule);
         ctx.updateState();
       },
-      done: true,
     },
   },
 });

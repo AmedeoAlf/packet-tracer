@@ -86,7 +86,6 @@ export const interfacesDhcp = <
                 ctx.state.l3Ifs[intfId] = [ip, mask];
                 ctx.updateState();
               },
-              done: true,
             },
           },
         },

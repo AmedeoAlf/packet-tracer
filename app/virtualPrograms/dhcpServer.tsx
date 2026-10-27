@@ -39,7 +39,6 @@ export const dhcpCmd = (): SubCommand<RouterInternalState> => ({
         };
         ctx.updateState();
       },
-      done: true,
     },
     off: {
       desc: "Disables service",
@@ -47,7 +46,6 @@ export const dhcpCmd = (): SubCommand<RouterInternalState> => ({
         ctx.state.dhcpSettings = undefined;
         ctx.updateState();
       },
-      done: true,
     },
     // the actual properties
     ...Object.fromEntries(ipProps.map((it) => propGetSet(it))),
@@ -79,7 +77,6 @@ export const dhcpCmd = (): SubCommand<RouterInternalState> => ({
             ]);
             ctx.updateState();
           },
-          done: true,
         },
       },
       run(ctx) {
@@ -101,7 +98,6 @@ export const dhcpCmd = (): SubCommand<RouterInternalState> => ({
     },
     "clear-excluded": {
       desc: "Restores all ip addresses to dhcp pool",
-      done: true,
       run(ctx) {
         if (!ctx.state.dhcpSettings) {
           ctx.write("Service must be enabled");
@@ -141,7 +137,6 @@ function propGetSet(
           ctx.state.dhcpSettings[prop] = parseIpv4(ctx.args![2])!;
           ctx.updateState();
         },
-        done: true,
       },
     },
   ];

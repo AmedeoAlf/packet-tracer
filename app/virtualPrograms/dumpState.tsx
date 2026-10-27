@@ -7,7 +7,6 @@ export const dumpState = <
   run(ctx) {
     ctx.write(JSON.stringify(ctx.state));
   },
-  done: true,
 });
 
 export default dumpState;
