@@ -147,7 +147,6 @@ export function Editor({
         <Chrono tickRef={tickRef} />
       </div>
 
-      <PropertiesBar toolCtx={toolCtx} />
       <PacketLog
         log={project.packetLog}
         devices={project.devices.asImmutable}
@@ -159,6 +158,7 @@ export function Editor({
         anchor={lastTool}
         tooltip={tooltip}
       />
+      <PropertiesBar toolCtx={toolCtx} />
 
       <svg
         onClick={mouseHandler("click")}

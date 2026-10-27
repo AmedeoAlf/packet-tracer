@@ -40,6 +40,7 @@ export default function SelectToolPanel(ctx: ToolCtx<SelectTool>) {
               ctx.updateTool();
             },
             ctx.tool.stdout,
+            device.name,
           ),
           ...emulator.configPanel,
         };

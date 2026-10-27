@@ -1,12 +1,17 @@
+import { DetailedHTMLProps, InputHTMLAttributes } from "react";
+
 export function TextInput({
   value,
   setValue,
   className = "w-full text-xl",
+  ...props
 }: {
   value: string;
   setValue: (s: string) => void;
-  className?: string;
-}) {
+} & DetailedHTMLProps<
+  InputHTMLAttributes<HTMLInputElement>,
+  HTMLInputElement
+>) {
   return (
     <input
       className={
@@ -18,6 +23,7 @@ export function TextInput({
       onChange={(ev) => {
         setValue(ev.target.value);
       }}
+      {...props}
     />
   );
 }

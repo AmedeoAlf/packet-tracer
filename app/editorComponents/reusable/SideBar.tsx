@@ -55,7 +55,7 @@ export function SideBar({
     <>
       <div
         className={
-          `transition fixed top-12.5 h-(--h-spec-cont) ${rightSide ? "right-0" : "left-0"} p-3 pointer-events-none ` +
+          `transition fixed top-12.5 z-0 h-(--h-spec-cont) ${rightSide ? "right-0" : "left-0"} p-3 pointer-events-none ` +
           (children && open
             ? ""
             : rightSide
