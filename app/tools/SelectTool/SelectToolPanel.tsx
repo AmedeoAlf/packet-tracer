@@ -7,15 +7,13 @@ import { TextInput } from "@/app/editorComponents/reusable/TextInput";
 import {
   buildEmulatorContext,
   DevicePanel,
-  EmulatorContext,
-  getAutoComplete,
   InternalState,
-  runOnInterpreter,
 } from "@/app/emulators/DeviceEmulator";
 import { SelectTool } from "../SelectTool";
 import { ToolCtx } from "../Tool";
 import duplicateSelection from "./duplicateSelection";
 import SelectionActions from "./SelectionActions";
+import TerminalEmulator from "@/app/editorComponents/Terminal";
 
 export default function SelectToolPanel(ctx: ToolCtx<SelectTool>) {
   switch (ctx.tool.selected.size + ctx.tool.selectedDecals.size) {
@@ -36,13 +34,12 @@ export default function SelectToolPanel(ctx: ToolCtx<SelectTool>) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const panels: Record<string, DevicePanel<InternalState<any>>> = {
           terminale: TerminalEmulator(
-            ctx.tool.stdin,
-            (stdin) => {
-              ctx.toolRef.current.stdin = stdin;
+            ctx.tool.terminalState,
+            (state) => {
+              ctx.toolRef.current.terminalState = state;
               ctx.updateTool();
             },
             ctx.tool.stdout,
-            ctx.tool.previousCmds,
           ),
           ...emulator.configPanel,
         };
@@ -169,99 +166,4 @@ export default function SelectToolPanel(ctx: ToolCtx<SelectTool>) {
         </SelectionActions>
       );
   }
-}
-
-function splitArgs(cmd: string) {
-  if (cmd == "") return [""];
-  const args = cmd.split(" ").filter((it) => it);
-  if (cmd.endsWith(" ")) args.push("");
-  return args;
-}
-
-// NOTE: oldCmds is expected to be consistent and is appended to
-function TerminalEmulator<State extends InternalState<State>>(
-  inputBar: string,
-  setInputBar: (s: string) => void,
-  content: string,
-  oldCmds: string[],
-): DevicePanel<State> {
-  return function TerminalEmulator(ctx: EmulatorContext<State>) {
-    const setInput = (s: string) => {
-      if (!s.endsWith("?")) {
-        setInputBar(s);
-        return;
-      }
-      const lastArg = getAutoComplete({ ...ctx, args: splitArgs(inputBar) });
-      if (lastArg) {
-        const args = splitArgs(s);
-        args[args.length - 1] = lastArg;
-        setInputBar(args.join(" ") + " ");
-      }
-    };
-    return (
-      <div className="font-mono">
-        <textarea
-          ref={(area) => {
-            if (area) area.scrollTop = area.scrollHeight;
-          }}
-          className="w-full bg-onsidebar p-2"
-          value={content}
-          rows={8}
-          readOnly
-        />
-        <form
-          onSubmit={(ev) => {
-            ev.preventDefault();
-            ctx.write("> " + inputBar);
-            runOnInterpreter({
-              args: splitArgs(inputBar),
-              ...ctx,
-            });
-            oldCmds.push(inputBar);
-            setInput("");
-          }}
-        >
-          <input
-            type="text"
-            value={inputBar}
-            placeholder=">"
-            className="w-full bg-ontopbar p-1"
-            onKeyDown={(ev) => {
-              switch (ev.key) {
-                case "Tab":
-                  ev.preventDefault();
-                  const args = splitArgs(inputBar);
-                  const lastArg = getAutoComplete({
-                    ...ctx,
-                    args,
-                  });
-                  if (lastArg) {
-                    args[args.length - 1] = lastArg;
-                    setInput(args.join(" "));
-                  }
-                  break;
-                case "ArrowUp":
-                  ev.preventDefault();
-                  if (inputBar == "") {
-                    setInput(oldCmds.at(-1) ?? "");
-                  } else {
-                    const previousCmd =
-                      oldCmds.findLastIndex((it) => it == inputBar) - 1;
-                    if (previousCmd >= 0) setInput(oldCmds[previousCmd]);
-                  }
-                  break;
-                case "ArrowDown":
-                  ev.preventDefault();
-                  const nextCmd =
-                    oldCmds.findLastIndex((it) => it == inputBar) + 1;
-                  setInput(oldCmds.at(nextCmd) ?? "");
-                  break;
-              }
-            }}
-            onChange={(ev) => setInput(ev.target.value)}
-          />
-        </form>
-      </div>
-    );
-  };
 }

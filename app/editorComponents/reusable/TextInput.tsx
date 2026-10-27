@@ -10,8 +10,7 @@ export function TextInput({
   return (
     <input
       className={
-        "font-bold flex-1 bg-onsidebar px-2 py-1 rounded-md border-b " +
-        className
+        "font-bold bg-onsidebar px-2 py-1 rounded-md border-b " + className
       }
       type="text"
       size={2}

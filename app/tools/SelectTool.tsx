@@ -4,6 +4,7 @@ import { Device } from "../devices/Device";
 import { Decal } from "../Project";
 import onEvent from "./SelectTool/onEvent";
 import SelectToolPanel from "./SelectTool/SelectToolPanel";
+import { TerminalEmulatorState } from "../editorComponents/Terminal";
 
 export type SelectTool = Tool<SelectTool> & {
   selected: Set<number>;
@@ -13,8 +14,7 @@ export type SelectTool = Tool<SelectTool> & {
   // User is in rectangle selection if this is not undefined
   selectionRectangle?: Coords;
   stdout: string;
-  stdin: string;
-  previousCmds: string[];
+  terminalState: TerminalEmulatorState;
 
   currDevicePanel?: string;
   selectingDevicePanel: boolean;
@@ -50,10 +50,13 @@ export const makeSelectTool: ToolConstructor<SelectTool> = (
   return {
     selected: new Set<number>(),
     selectedDecals: new Set<number>(),
-    stdin: "",
     stdout: "= Terminal emulator =",
+    terminalState: {
+      inputBar: "",
+      oldCmds: [],
+      open: false,
+    },
     lastCursorPos: undefined,
-    previousCmds: [],
     selectingDevicePanel: true,
     ...prev,
     movedSelection: false,
