@@ -21,11 +21,26 @@ export default function FullscreenTerm({
   keyHandler: KeyboardEventHandler;
 }) {
   const logWindow = useRef<HTMLDivElement>(null);
+  const inputBox = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (logWindow.current)
       logWindow.current.scrollTop = logWindow.current.scrollHeight;
   }, [log]);
+
+  useEffect(() => {
+    if (active) {
+      if (inputBox.current) inputBox.current.focus();
+      const escHandler = (ev: KeyboardEvent) => {
+        if (ev.key == "Escape") {
+          ev.stopPropagation();
+          setActive(false);
+        }
+      };
+      window.addEventListener("keydown", escHandler);
+      return () => window.removeEventListener("keydown", escHandler);
+    }
+  }, [active, setActive]);
 
   return (
     <div
@@ -64,6 +79,7 @@ export default function FullscreenTerm({
             onKeyDown={keyHandler}
             placeholder="> "
             className="font-normal w-full text-lg"
+            ref={inputBox}
           />
         </form>
       </div>
